@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2025-10-30T19:26:05.658Z",
+  "entries": [
+    {
+      "prototypeId": "story-strip",
+      "prototypeTitle": "Story Strip",
+      "momentum": "skeptical",
+      "positive": "",
+      "challenges": "",
+      "priority": "unspecified",
+      "timestamp": "10/30/2025, 12:26:01 PM"
+    },
+    {
+      "prototypeId": "sidebar-insight",
+      "prototypeTitle": "Sidebar Insight",
+      "momentum": "skeptical",
+      "positive": "",
+      "challenges": "",
+      "priority": "unspecified",
+      "timestamp": "10/30/2025, 12:25:48 PM"
+    },
+    {
+      "prototypeId": "focus-flow",
+      "prototypeTitle": "Focus Flow Card",
+      "momentum": "curious",
+      "positive": "",
+      "challenges": "Okay, same issue as before, the reveal should be in the same position as the prompt (we're flipping a card after all) not below. Also the focus word shouldn't be shown on the prompt side. That gives the definition, defeating the purpose of the card. The highlight within the sentence is enough. Just preserve the full definition for the backside of the card.",
+      "priority": "unspecified",
+      "timestamp": "10/30/2025, 12:25:20 PM"
+    }
+  ]
+}
