@@ -3,344 +3,178 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Langy Interface Prototypes</title>
+  <title>Langy • Context Cards</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-900 antialiased">
-  <div id="app" class="min-h-screen flex flex-col lg:flex-row">
-    <main class="flex-1 p-6 lg:p-10 space-y-10">
-      <header class="space-y-5">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div class="space-y-2">
-            <p class="uppercase tracking-[0.35em] text-sm text-amber-500">Langy UI Lab</p>
-            <h1 class="text-3xl lg:text-4xl font-semibold text-slate-900">Flashcard Concepts for Contextual Chinese Learning</h1>
-          </div>
-          <div class="lg:w-80">
-            <p class="block text-xs uppercase tracking-[0.25em] text-slate-500 mb-2">Prototype Variant</p>
-            <div class="w-full rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 shadow-sm">
-              {{ activePrototype ? activePrototype.title : 'Focus Flow Card' }}
-            </div>
-            <p class="mt-2 text-xs text-slate-500">
-              Other explorations are archived for now—let&apos;s dial in this concept before revisiting variants.
-            </p>
-          </div>
-        </div>
-        <p class="max-w-3xl text-slate-600">
-          Three low-fidelity concepts explore different interaction patterns for the sentence-plus-focus-word flow.
-          Rotate through them with the selector, test the quick-response buttons, and note impressions in the feedback rail.
+<body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
+  <div id="app" class="mx-auto flex min-h-screen max-w-5xl flex-col px-5 py-8 lg:px-0 lg:py-14">
+    <header class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <div class="max-w-xl space-y-3">
+        <p class="text-xs uppercase tracking-[0.4em] text-amber-500">Langy Session</p>
+        <h1 class="text-3xl font-semibold text-slate-900 lg:text-4xl">Learn Chinese in full sentences, one focus word at a time.</h1>
+        <p class="text-sm text-slate-600 lg:text-base">
+          Read for meaning first, then flip to confirm your intuition. Your choices feed a personalized knowledge model that keeps the difficulty curve right where it should be.
         </p>
-      </header>
+      </div>
 
-      <section
-        v-if="activePrototype"
-        :key="activePrototype.id"
-        :id="activePrototype.id"
-        class="rounded-2xl border border-slate-200 bg-white shadow-lg shadow-slate-200/70"
-      >
-        <div class="p-6 border-b border-slate-200 flex flex-col gap-4 lg:flex-row lg:items-start lg:gap-8">
-          <div class="flex-1">
-            <p class="text-xs uppercase tracking-[0.3em] text-amber-600/80">{{ activePrototype.tagline }}</p>
-            <h2 class="text-2xl font-semibold text-slate-900 mt-2">{{ activePrototype.title }}</h2>
-            <p class="mt-3 text-slate-600">{{ activePrototype.summary }}</p>
-            <ul class="mt-4 flex flex-wrap gap-2">
-              <li
-                v-for="feature in activePrototype.features"
-                :key="feature"
-                class="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
-              >
-                {{ feature }}
-              </li>
-            </ul>
+      <div class="w-full max-w-xs rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Today&apos;s Progress</p>
+        <div class="mt-4 space-y-3">
+          <div class="flex items-end justify-between">
+            <p class="text-3xl font-semibold text-slate-900">{{ session.completed }}</p>
+            <p class="text-sm text-slate-500">of {{ session.total }} sentences</p>
           </div>
-          <div class="lg:w-64 bg-slate-50 border border-slate-200 rounded-xl p-4">
-            <h3 class="text-sm font-semibold text-slate-800 tracking-wide uppercase mb-3">Design Intent</h3>
-            <ul class="space-y-2 text-sm text-slate-600">
-              <li v-for="intent in activePrototype.intent" :key="intent" class="leading-snug">
-                <span class="text-amber-600 mr-2">•</span>{{ intent }}
-              </li>
-            </ul>
+          <div class="h-2 rounded-full bg-slate-200">
+            <div class="h-full rounded-full bg-amber-400 transition-all duration-500" :style="`width: ${progressPercent}%`"></div>
           </div>
+          <p class="text-xs text-slate-500">{{ progressLabel }}</p>
         </div>
+      </div>
+    </header>
 
-        <div class="grid gap-6 p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
-          <div class="space-y-6">
-            <div
-              class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-slate-100 transition-shadow duration-300 hover:shadow-2xl hover:shadow-slate-300/60"
-              @click="toggleCard(activePrototype.id)"
+    <main class="mt-10 grid flex-1 gap-8 lg:mt-14 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <section class="space-y-6">
+        <div
+          class="group relative aspect-[3/2] w-full cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-slate-100 shadow-lg shadow-slate-200/60 transition-shadow duration-300 hover:shadow-2xl"
+          @click="toggleCard"
+        >
+          <div class="transition duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
+            <article
+              class="card-face absolute inset-0 flex h-full flex-col justify-between gap-6 p-8"
+              :class="isFlipped ? 'invisible pointer-events-none' : ''"
             >
-              <div
-                class="transition duration-500"
-                :class="cardStates[activePrototype.id] ? 'rotate-y-180' : ''"
-              >
-                <article
-                  class="card-face px-6 py-8 flex h-full flex-col justify-between gap-6"
-                  :class="cardStates[activePrototype.id] ? 'invisible pointer-events-none' : ''"
-                >
-                  <div class="space-y-5">
-                    <div class="flex items-start justify-between gap-4">
-                      <p class="text-xs uppercase tracking-[0.3em] text-slate-500/80">Prompt</p>
-                      <span class="text-xs font-medium text-slate-500">Tap to reveal</span>
-                    </div>
-                    <p class="text-xl leading-relaxed text-slate-900" v-html="highlightChinese(activePrototype.sentence)"></p>
+              <div class="space-y-6">
+                <div class="flex items-start justify-between">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Prompt</p>
+                  <span class="text-xs font-medium text-slate-500">Tap to reveal</span>
+                </div>
+                <p class="text-2xl leading-relaxed text-slate-900" v-html="highlightFocus(card.sentence)"></p>
+              </div>
+              <div class="space-y-3 text-sm text-slate-600">
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Before you flip</p>
+                <ul class="space-y-2">
+                  <li v-for="tip in card.preFlip" :key="tip" class="flex gap-3 leading-snug">
+                    <span class="text-amber-500">•</span>
+                    <span>{{ tip }}</span>
+                  </li>
+                </ul>
+              </div>
+            </article>
+
+            <article
+              class="card-face absolute inset-0 flex h-full flex-col justify-between gap-6 p-8 rotate-y-180"
+              :class="isFlipped ? '' : 'invisible pointer-events-none'"
+            >
+              <div class="space-y-6">
+                <div class="flex items-start justify-between">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Reveal</p>
+                  <span class="text-xs font-medium text-slate-500">Tap to return</span>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-amber-600">Sentence meaning</p>
+                    <p class="mt-2 text-lg leading-relaxed text-slate-900">{{ card.translation }}</p>
                   </div>
-                  <div class="space-y-3">
-                    <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Pre-flip focus</p>
-                    <ul class="space-y-2 text-sm text-slate-600">
-                      <li v-for="note in activePrototype.frontGuidance" :key="note" class="flex gap-3 leading-snug">
-                        <span class="text-amber-600 mt-0.5">•</span>
-                        <span>{{ note }}</span>
+                  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex flex-wrap items-center gap-4">
+                      <span class="text-4xl font-semibold text-amber-600">{{ card.focus.hanzi }}</span>
+                      <div>
+                        <p class="text-sm text-slate-600">{{ card.focus.pinyin }}</p>
+                        <p class="text-xs text-slate-500">{{ card.focus.literal }}</p>
+                      </div>
+                    </div>
+                    <p class="mt-4 text-sm leading-relaxed text-slate-700">{{ card.focus.definition }}</p>
+                    <p class="mt-3 text-xs uppercase tracking-[0.2em] text-slate-400">Usage note</p>
+                    <p class="text-xs leading-snug text-slate-500">{{ card.focus.note }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Context cues</p>
+                    <ul class="mt-2 space-y-2 text-sm text-slate-600">
+                      <li v-for="cue in card.cues" :key="cue" class="flex gap-3 leading-snug">
+                        <span class="text-amber-500">↳</span>
+                        <span>{{ cue }}</span>
                       </li>
                     </ul>
                   </div>
-                </article>
-
-                <article
-                  class="card-face rotate-y-180 px-6 py-8 flex h-full flex-col justify-between gap-6 absolute inset-0"
-                  :class="cardStates[activePrototype.id] ? '' : 'invisible pointer-events-none'"
-                >
-                  <div class="space-y-6">
-                    <div class="flex items-start justify-between gap-4">
-                      <p class="text-xs uppercase tracking-[0.3em] text-slate-500/80">Reveal</p>
-                      <span class="text-xs font-medium text-slate-500">Tap to return</span>
-                    </div>
-                    <div class="space-y-4">
-                      <div>
-                        <p class="text-xs uppercase tracking-[0.2em] text-amber-600/90">Sentence meaning</p>
-                        <p class="mt-2 text-lg leading-relaxed text-slate-900">{{ activePrototype.sentence.translation }}</p>
-                      </div>
-                      <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                        <div class="flex flex-wrap items-center gap-4">
-                          <span class="text-3xl font-semibold text-amber-600">{{ activePrototype.sentence.focusWord.hanzi }}</span>
-                          <div>
-                            <p class="text-sm text-slate-600">{{ activePrototype.sentence.focusWord.pinyin }}</p>
-                            <p class="text-xs text-slate-500">{{ activePrototype.sentence.focusWord.literal }}</p>
-                          </div>
-                        </div>
-                        <p class="text-sm text-slate-700 leading-relaxed">{{ activePrototype.sentence.focusWord.definition }}</p>
-                        <div class="space-y-1 text-xs text-slate-500">
-                          <p class="uppercase tracking-[0.2em]">Usage note</p>
-                          <p class="leading-snug">{{ activePrototype.sentence.focusWord.note }}</p>
-                        </div>
-                      </div>
-                      <div>
-                        <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Context cues</p>
-                        <ul class="mt-2 space-y-2 text-sm text-slate-600">
-                          <li v-for="cue in activePrototype.cues" :key="cue" class="flex gap-3 leading-snug">
-                            <span class="text-amber-600 mt-0.5">↳</span>
-                            <span>{{ cue }}</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="text-xs text-slate-400">{{ activePrototype.revealFooter }}</p>
-                </article>
+                </div>
               </div>
-            </div>
-
-            <div class="grid gap-3 sm:grid-cols-3">
-              <button
-                v-for="button in responseButtons"
-                :key="button.type"
-                type="button"
-                :class="button.classes"
-                @click.stop="recordResponse(activePrototype.id, button.type)"
-              >
-                {{ button.label }}
-              </button>
-            </div>
-
-            <p v-if="responseStates[activePrototype.id]" class="text-sm text-slate-600">
-              <span class="uppercase tracking-[0.25em] text-xs text-slate-500 mr-3">Last response</span>
-              {{ responseCopy[responseStates[activePrototype.id]] }}
-            </p>
+              <p class="text-xs text-slate-400">{{ card.footer }}</p>
+            </article>
           </div>
+        </div>
 
-          <aside class="space-y-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <div>
-              <h3 class="text-sm uppercase tracking-[0.3em] text-slate-500/80">Interaction Notes</h3>
-              <p class="mt-3 text-sm text-slate-600 leading-relaxed">{{ activePrototype.interaction }}</p>
+        <div class="grid gap-3 sm:grid-cols-3">
+          <button
+            v-for="button in responseButtons"
+            :key="button.type"
+            type="button"
+            :class="button.classes"
+            @click.stop="recordResponse(button.type)"
+          >
+            <span>{{ button.label }}</span>
+            <span class="text-xs text-slate-500">{{ button.caption }}</span>
+          </button>
+        </div>
+
+        <transition name="fade">
+          <p v-if="responseCopy" class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+            {{ responseCopy }}
+          </p>
+        </transition>
+      </section>
+
+      <aside class="space-y-6">
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="text-sm uppercase tracking-[0.25em] text-slate-500">Session rhythm</h2>
+          <div class="mt-4 space-y-4 text-sm text-slate-600">
+            <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <div>
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Current streak</p>
+                <p class="text-lg font-semibold text-slate-900">{{ session.streak }}</p>
+              </div>
+              <span class="text-xs text-emerald-600">Keep it going →</span>
             </div>
             <div>
-              <h3 class="text-sm uppercase tracking-[0.3em] text-slate-500/80">Variation Hooks</h3>
-              <ul class="mt-3 space-y-2 text-sm text-slate-600 leading-snug">
-                <li v-for="hook in activePrototype.hooks" :key="hook" class="flex gap-3">
-                  <span class="text-amber-600 mt-0.5">◆</span>
-                  <span>{{ hook }}</span>
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning focus</p>
+              <ul class="mt-3 space-y-2">
+                <li v-for="tag in card.focus.tags" :key="tag" class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                  <span class="text-amber-500">◆</span>
+                  {{ tag }}
                 </li>
               </ul>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs uppercase tracking-[0.25em] text-amber-600/80 mb-2">What to Watch</p>
-              <p class="text-sm text-slate-600 leading-relaxed">{{ activePrototype.evaluationPrompt }}</p>
-            </div>
-          </aside>
-        </div>
-      </section>
-    </main>
-
-    <aside class="lg:w-96 border-t border-slate-200 lg:border-t-0 lg:border-l bg-white">
-      <div class="sticky top-0 p-6 lg:p-8 space-y-6 lg:h-screen overflow-y-auto">
-        <header>
-          <h2 class="text-lg font-semibold text-slate-900">Feedback Panel</h2>
-          <p class="mt-1 text-sm text-slate-600">
-            Log quick impressions while trying different prototypes. Download the JSON file to hand over structured notes for the next iteration.
-          </p>
-        </header>
-
-        <form class="space-y-4" @submit.prevent="submitFeedback">
-          <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p class="text-xs uppercase tracking-[0.25em] text-slate-500">Active Variant</p>
-            <p class="mt-1 text-sm font-semibold text-slate-900">
-              {{ activePrototype ? activePrototype.title : 'Select a variant above' }}
-            </p>
-            <p class="mt-1 text-xs text-slate-500">
-              Feedback entries automatically tag this concept.
-            </p>
-          </div>
-
-          <div class="rounded-xl border border-slate-200 bg-white px-4 py-4 space-y-2">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p class="text-xs uppercase tracking-[0.25em] text-slate-500">Feedback File</p>
-                <p class="mt-1 text-sm font-semibold text-slate-900">{{ feedbackStatusCopy.headline }}</p>
-                <p class="mt-1 text-xs text-slate-500">
-                  {{ feedbackStatusCopy.detail }}
-                </p>
-                <p class="mt-2 text-xs text-slate-400">
-                  Target: <span class="font-semibold text-slate-600">feedback/{{ feedbackFileName }}</span>
-                </p>
-                <p v-if="feedbackTarget.lastSavedAt" class="mt-1 text-xs text-slate-400">
-                  Last saved {{ feedbackTarget.lastSavedAt }}
-                </p>
-              </div>
-              <button
-                v-if="feedbackStatusCopy.buttonLabel"
-                type="button"
-                class="rounded-lg border border-amber-300 bg-amber-100 px-3 py-2 text-xs font-medium text-amber-700 hover:bg-amber-200 transition"
-                @click="connectFeedbackFolder"
-              >
-                {{ feedbackStatusCopy.buttonLabel }}
-              </button>
+            <div>
+              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Next up</p>
+              <ul class="mt-2 space-y-2">
+                <li v-for="word in upcoming" :key="word.hanzi" class="flex items-baseline justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2">
+                  <div class="flex items-center gap-3">
+                    <span class="text-lg font-semibold text-slate-900">{{ word.hanzi }}</span>
+                    <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ word.pinyin }}</span>
+                  </div>
+                  <span class="text-xs text-slate-500">{{ word.theme }}</span>
+                </li>
+              </ul>
             </div>
           </div>
+        </section>
 
-          <div>
-            <label class="block text-xs uppercase tracking-[0.25em] text-slate-500 mb-2">Immediate Gut Check</label>
-            <div class="grid gap-2 text-sm">
-              <label class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 cursor-pointer hover:border-amber-400/60">
-                <input type="radio" class="accent-amber-500" value="excited" v-model="feedbackForm.momentum">
-                Strongly leaning toward this direction
-              </label>
-              <label class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 cursor-pointer hover:border-amber-400/60">
-                <input type="radio" class="accent-amber-500" value="curious" v-model="feedbackForm.momentum">
-                Some elements resonate, needs refinement
-              </label>
-              <label class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 cursor-pointer hover:border-amber-400/60">
-                <input type="radio" class="accent-amber-500" value="skeptical" v-model="feedbackForm.momentum">
-                Not convinced; would park for now
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs uppercase tracking-[0.25em] text-slate-500 mb-2">What Felt Right</label>
-            <textarea
-              v-model="feedbackForm.positive"
-              rows="2"
-              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400/60 resize-none"
-              placeholder="Moments that match the mental model, layout choices that worked, etc."
-            ></textarea>
-          </div>
-
-          <div>
-            <label class="block text-xs uppercase tracking-[0.25em] text-slate-500 mb-2">What Needs Work</label>
-            <textarea
-              v-model="feedbackForm.challenges"
-              rows="3"
-              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-400/60 resize-none"
-              placeholder="Interaction friction, readability, missing info, etc."
-            ></textarea>
-          </div>
-
-          <div>
-            <label class="block text-xs uppercase tracking-[0.25em] text-slate-500 mb-2">Priority Signal</label>
-            <select v-model="feedbackForm.priority" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-300/60">
-              <option disabled value="">Choose urgency</option>
-              <option value="must">Must address next iteration</option>
-              <option value="should">Important but can defer</option>
-              <option value="nice">Nice-to-have polish</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            class="w-full h-11 rounded-xl bg-amber-500 text-white text-sm font-semibold tracking-wide uppercase hover:bg-amber-400 transition"
-          >
-            Save Feedback
-          </button>
-        </form>
-
-        <div v-if="feedbackLog.length" class="space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <h3 class="text-sm font-semibold text-slate-800 uppercase tracking-[0.25em]">Entries</h3>
-            <div class="flex items-center gap-2">
-              <button
-                type="button"
-                class="rounded-lg border px-3 py-1 text-xs uppercase tracking-[0.2em]"
-                :class="feedbackFilter === 'current' ? 'border-amber-400 text-amber-600 bg-amber-50' : 'border-slate-200 text-slate-500 bg-white'"
-                @click="setFeedbackFilter('current')"
-              >
-                Current
-              </button>
-              <button
-                type="button"
-                class="rounded-lg border px-3 py-1 text-xs uppercase tracking-[0.2em]"
-                :class="feedbackFilter === 'all' ? 'border-amber-400 text-amber-600 bg-amber-50' : 'border-slate-200 text-slate-500 bg-white'"
-                @click="setFeedbackFilter('all')"
-              >
-                All
-              </button>
-              <button
-                type="button"
-                class="text-xs text-amber-600 hover:text-amber-500 underline underline-offset-2"
-                @click="downloadFeedback"
-              >
-                Export JSON
-              </button>
-            </div>
-          </div>
-          <p class="text-xs text-slate-500">
-            Showing {{ feedbackFilter === 'current' ? (activePrototype ? activePrototype.title : 'selected prototype') : 'all prototypes' }}.
-          </p>
-          <ul v-if="visibleFeedback.length" class="space-y-3">
-            <li v-for="entry in visibleFeedback" :key="entry.id" class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div class="flex items-center justify-between text-xs text-slate-500">
-                <span class="uppercase tracking-[0.3em]">{{ entry.prototypeTitle }}</span>
-                <span>{{ entry.timestamp }}</span>
-              </div>
-              <p class="mt-2 text-sm text-slate-600 leading-snug">{{ entry.summary }}</p>
-              <p class="mt-1 text-xs text-slate-500">Priority • {{ entry.priorityLabel }}</p>
+        <section class="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+          <h2 class="text-sm uppercase tracking-[0.25em] text-slate-500">Reflection prompts</h2>
+          <ul class="mt-4 space-y-3 text-sm text-slate-600">
+            <li v-for="prompt in reflections" :key="prompt" class="rounded-xl border border-slate-200 bg-white px-4 py-3 leading-snug shadow-sm">
+              {{ prompt }}
             </li>
           </ul>
-          <p v-else class="text-sm text-slate-500">
-            No feedback for this view yet — save a note above or switch filters.
-          </p>
-        </div>
-        <p v-else class="text-sm text-slate-600">
-          Saved feedback appears here for quick recall. Export once you have a good read on which concept to pursue.
-        </p>
-      </div>
-    </aside>
+        </section>
+      </aside>
+    </main>
   </div>
 
   <style>
     .card-face {
       backface-visibility: hidden;
       transform-style: preserve-3d;
-      position: relative;
-      min-height: 380px;
     }
     .rotate-y-180 {
       transform: rotateY(180deg);
@@ -350,7 +184,15 @@
       transition: transform 0.6s;
     }
     .group.relative {
-      perspective: 1200px;
+      perspective: 1600px;
+    }
+    .fade-enter-active,
+    .fade-leave-active {
+      transition: opacity 0.3s;
+    }
+    .fade-enter-from,
+    .fade-leave-to {
+      opacity: 0;
     }
   </style>
 
@@ -360,438 +202,129 @@
     createApp({
       data() {
         return {
-          prototypes: [
-            {
-              id: 'focus-flow',
-              title: 'Focus Flow Card',
-              tagline: 'Sequential reveal with thumb-friendly controls',
-              summary:
-                'Front face prioritizes the Chinese sentence with a single focal highlight. Flip to reveal the full translation and definition in the exact same footprint so the mental map stays stable.',
-              features: ['Tap-to-flip microinteraction', 'Context-first prompt', 'Compact reveal details'],
-              intent: [
-                'Stay centered on reading comprehension before translation.',
-                'Lean on the highlighted word without giving away meaning prematurely.',
-                'Support quick logging of learner confidence.'
-              ],
-              frontGuidance: [
-                'Skim for overall meaning before dwelling on the highlighted word.',
-                'Notice contextual hints that might confirm or disconfirm your guess.',
-                'Commit to a confidence choice before flipping.'
-              ],
-              revealFooter: 'Log how it went so the spaced repetition model can tune the next sentence.',
-              sentence: {
-                chinese: '今天的天气非常好，我们决定去公园散步。',
-                translation: 'The weather is great today, so we decided to take a walk in the park.',
-                focusWord: {
-                  hanzi: '散步',
-                  pinyin: 'sànbù',
-                  literal: 'to scatter steps',
-                  definition: 'A casual walk taken for leisure or health.',
-                  note: 'Pairs with 去 (to go) or 出去 (to go out) and often indicates a relaxed context.'
-                }
-              },
-              cues: [
-                'Does the flip feel spatially consistent — no jumping between prompt and reveal?',
-                'Is the focus word definition rich enough without needing to peek back?'
-              ],
-              interaction: 'Thumb zone placement keeps the confidence buttons reachable without shifting grip.',
-              hooks: [
-                'Could swap tap-to-flip for swipe later without disrupting layout.',
-                'Room under the card for streak or progress dots.'
-              ],
-              evaluationPrompt: 'Gauge how the reveal pacing feels — do you absorb the sentence before flipping?'
-            }
+          isFlipped: false,
+          lastResponse: '',
+          session: {
+            total: 24,
+            completed: 9,
+            streak: 4
+          },
+          card: {
+            sentence: {
+              text: '今天的天气非常好，我们决定去公园散步。',
+              focus: '散步'
+            },
+            translation: 'The weather is great today, so we decided to take a walk in the park.',
+            preFlip: [
+              'Absorb the mood of the sentence before zeroing in on the highlight.',
+              'Predict the focus word from context — is it describing the action or the setting?',
+              'Commit to your confidence level before revealing the answer.'
+            ],
+            cues: [
+              'Did the surrounding verbs and particles give away the leisurely tone?',
+              'Would you use the same structure to invite a friend out?'
+            ],
+            focus: {
+              hanzi: '散步',
+              pinyin: 'sànbù',
+              literal: 'scatter + steps',
+              definition: 'A relaxed walk taken for leisure or light exercise.',
+              note: 'Often pairs with 去 (to go) or 出去 (to go out). Works well with yǔ péngyǒu (with friends) or dúzì (alone) for nuance.',
+              tags: ['Outdoor routine', 'Everyday action', 'Leisure vocabulary']
+            },
+            footer: 'Tell us how confident you felt. That feedback tunes tomorrow’s queue.'
+          },
+          upcoming: [
+            { hanzi: '锻炼', pinyin: 'duànliàn', theme: 'Fitness habit' },
+            { hanzi: '放松', pinyin: 'fàngsōng', theme: 'Downtime' },
+            { hanzi: '计划', pinyin: 'jìhuà', theme: 'Planning ahead' }
           ],
-          selectedPrototypeId: 'focus-flow',
-          feedbackArchivePath: 'feedback/langy-feedback-live.json',
-          feedbackFileName: 'langy-feedback-live.json',
-          feedbackDirectoryHandle: null,
-          feedbackFileHandle: null,
-          feedbackTarget: {
-            status: 'disconnected',
-            lastSavedAt: '',
-            message: ''
-          },
-          cardStates: {},
-          responseStates: {},
-          feedbackForm: {
-            momentum: '',
-            positive: '',
-            challenges: '',
-            priority: ''
-          },
-          feedbackLog: [],
-          feedbackFilter: 'current'
+          reflections: [
+            'Where would you naturally use this sentence in your own life?',
+            'Could you swap 散步 for another activity verb without changing grammar?',
+            'What cue tipped you off about the sentence mood before flipping?'
+          ],
+          responseMap: {
+            sentence: {
+              toast: 'Nice! We’ll raise the bar with a trickier sentence next.',
+              increment: 1
+            },
+            focus: {
+              toast: 'Logged the focus word. We’ll recycle the sentence with new framing soon.',
+              increment: 1
+            },
+            unknown: {
+              toast: 'No problem — we’ll surface supporting sentences to reinforce this word.',
+              increment: 0
+            }
+          }
         };
       },
       computed: {
-        activePrototype() {
-          return this.prototypes.find((prototype) => prototype.id === this.selectedPrototypeId) || null;
+        progressPercent() {
+          const percent = (this.session.completed / this.session.total) * 100;
+          return Math.min(100, Math.round(percent));
+        },
+        progressLabel() {
+          if (this.progressPercent === 100) {
+            return 'Session complete — feel free to review or jump ahead.';
+          }
+          if (this.progressPercent >= 75) {
+            return 'Final stretch! Stay focused on nuance.';
+          }
+          if (this.progressPercent >= 40) {
+            return 'Solid momentum. Keep logging your instincts.';
+          }
+          return 'Warming up — let the context guide your guesses.';
         },
         responseCopy() {
-          return {
-            sentence: 'Logged as knowing the entire sentence.',
-            focus: 'Logged as feeling confident in the focus word only.',
-            unknown: 'Logged as unsure about the focus word.'
-          };
+          return this.lastResponse ? this.responseMap[this.lastResponse].toast : '';
         },
         responseButtons() {
           return [
             {
               type: 'sentence',
-              label: 'I knew the full sentence',
+              label: 'I understood the whole sentence',
+              caption: 'Count it toward mastery',
               classes:
-                'h-12 w-full rounded-xl border border-emerald-500/40 bg-emerald-50 px-4 text-emerald-700 text-sm font-medium transition hover:bg-emerald-100 hover:border-emerald-500'
+                'flex h-16 flex-col justify-center rounded-2xl border border-emerald-400/60 bg-emerald-50 px-4 text-left text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-500'
             },
             {
               type: 'focus',
-              label: 'Only the focus word made sense',
+              label: 'Only the focus word landed',
+              caption: 'Keep similar sentences coming',
               classes:
-                'h-12 w-full rounded-xl border border-sky-500/40 bg-sky-50 px-4 text-sky-700 text-sm font-medium transition hover:bg-sky-100 hover:border-sky-500'
+                'flex h-16 flex-col justify-center rounded-2xl border border-sky-400/60 bg-sky-50 px-4 text-left text-sky-700 transition hover:bg-sky-100 hover:border-sky-500'
             },
             {
               type: 'unknown',
-              label: "I didn't know the focus word",
+              label: 'Not yet — I need more support',
+              caption: 'Surface scaffold cards',
               classes:
-                'h-12 w-full rounded-xl border border-rose-500/40 bg-rose-50 px-4 text-rose-700 text-sm font-medium transition hover:bg-rose-100 hover:border-rose-500'
+                'flex h-16 flex-col justify-center rounded-2xl border border-rose-400/60 bg-rose-50 px-4 text-left text-rose-700 transition hover:bg-rose-100 hover:border-rose-500'
             }
           ];
-        },
-        feedbackStatusCopy() {
-          const { status, message, lastSavedAt } = this.feedbackTarget;
-
-          const copies = {
-            disconnected: {
-              headline: 'Not connected',
-              detail: 'Pick the feedback folder once to enable automatic saves.',
-              buttonLabel: 'Connect folder'
-            },
-            needsConnection: {
-              headline: 'Folder needed',
-              detail: 'Choose the feedback folder so notes write straight to disk.',
-              buttonLabel: 'Connect folder'
-            },
-            connected: {
-              headline: 'Ready to save',
-              detail: message || 'Auto-save will trigger after each note.',
-              buttonLabel: 'Reconnect'
-            },
-            saving: {
-              headline: 'Saving…',
-              detail: message || 'Writing the latest feedback entries.',
-              buttonLabel: ''
-            },
-            saved: {
-              headline: 'Saved to disk',
-              detail: message || `Last saved ${lastSavedAt || 'moments ago'}.`,
-              buttonLabel: 'Reconnect'
-            },
-            error: {
-              headline: 'Save failed',
-              detail: message || 'Try reconnecting the folder or exporting manually.',
-              buttonLabel: 'Reconnect'
-            },
-            unsupported: {
-              headline: 'Browser limitation',
-              detail: 'Automatic saving needs the File System Access API. Use Export JSON instead.',
-              buttonLabel: ''
-            }
-          };
-
-          const fallback = {
-            headline: 'Status unknown',
-            detail: 'Reconnect the folder if saving seems stuck.',
-            buttonLabel: 'Reconnect'
-          };
-
-          return copies[status] || fallback;
-        },
-        visibleFeedback() {
-          if (this.feedbackFilter === 'all') {
-            return this.feedbackLog;
-          }
-          return this.feedbackLog.filter((entry) => entry.prototypeId === this.selectedPrototypeId);
         }
-      },
-      mounted() {
-        // Initialize card flip states
-        this.prototypes.forEach((prototype) => {
-          this.cardStates = { ...this.cardStates, [prototype.id]: false };
-        });
-        if (!('showDirectoryPicker' in window)) {
-          this.feedbackTarget.status = 'unsupported';
-          this.feedbackTarget.message = 'Automatic saving is unavailable in this browser.';
-        } else {
-          this.feedbackTarget.status = 'disconnected';
-          this.feedbackTarget.message = 'Connect the feedback folder to enable auto-save.';
-        }
-        this.loadFeedbackArchive();
       },
       methods: {
-        toggleCard(prototypeId) {
-          this.cardStates = {
-            ...this.cardStates,
-            [prototypeId]: !this.cardStates[prototypeId]
-          };
+        toggleCard() {
+          this.isFlipped = !this.isFlipped;
         },
-        highlightChinese(sentence) {
-          const focus = sentence.focusWord.hanzi;
-          const highlight = `<span class="bg-amber-300 text-slate-900 px-1 rounded-md">${focus}</span>`;
-          return sentence.chinese.replace(new RegExp(focus, 'g'), highlight);
+        highlightFocus(sentence) {
+          const focus = sentence.focus;
+          const highlight = `<span class="rounded-md bg-amber-200 px-1 text-slate-900">${focus}</span>`;
+          return sentence.text.replace(new RegExp(focus, 'g'), highlight);
         },
-        recordResponse(prototypeId, type) {
-          this.responseStates = {
-            ...this.responseStates,
-            [prototypeId]: type
-          };
-        },
-        async submitFeedback() {
-          if (!this.activePrototype) {
-            alert('Select a prototype before saving feedback.');
-            return;
+        recordResponse(type) {
+          if (!this.responseMap[type]) return;
+          const { increment } = this.responseMap[type];
+          this.lastResponse = type;
+          if (increment) {
+            this.session.completed = Math.min(this.session.total, this.session.completed + increment);
+            this.session.streak += 1;
+          } else {
+            this.session.streak = 0;
           }
-          if (!this.feedbackForm.momentum) {
-            alert('Choose your gut check before saving feedback.');
-            return;
-          }
-
-          const prototype = this.activePrototype;
-          const cleanForm = {
-            positive: this.feedbackForm.positive.trim(),
-            challenges: this.feedbackForm.challenges.trim(),
-            momentum: this.feedbackForm.momentum,
-            priority: this.feedbackForm.priority || 'unspecified'
-          };
-
-          const entry = {
-            id: `${prototype.id}-${Date.now()}`,
-            prototypeId: prototype.id,
-            prototypeTitle: prototype.title,
-            momentum: cleanForm.momentum,
-            positive: cleanForm.positive,
-            challenges: cleanForm.challenges,
-            priority: cleanForm.priority,
-            timestamp: new Date().toLocaleString(),
-            summary: this.buildSummary(cleanForm),
-            priorityLabel: this.priorityCopy(cleanForm.priority)
-          };
-
-          this.feedbackLog = [entry, ...this.feedbackLog];
-          this.feedbackFilter = 'current';
-          try {
-            await this.persistFeedback();
-          } catch (error) {
-            // Persist errors are surfaced via status messaging; no extra alert here.
-          } finally {
-            this.feedbackForm = {
-              momentum: '',
-              positive: '',
-              challenges: '',
-              priority: ''
-            };
-          }
-        },
-        buildSummary(form) {
-          const tone = {
-            excited: 'Strong contender.',
-            curious: 'Worth iterating.',
-            skeptical: 'Needs rethinking.'
-          }[form.momentum] || 'Initial reaction noted.';
-
-          const highlights = form.positive ? `Wins: ${form.positive}` : 'Wins: —';
-          const blockers = form.challenges ? `Friction: ${form.challenges}` : 'Friction: —';
-
-          return `${tone} ${highlights} ${blockers}`;
-        },
-        priorityCopy(priority) {
-          const labels = {
-            must: 'Must address',
-            should: 'Important',
-            nice: 'Nice to have',
-            unspecified: 'Not set'
-          };
-          return labels[priority || 'unspecified'];
-        },
-        async loadFeedbackArchive() {
-          try {
-            const response = await fetch(this.feedbackArchivePath, { cache: 'no-store' });
-            if (!response.ok) {
-              return;
-            }
-            const payload = await response.json();
-            if (!payload || !Array.isArray(payload.entries)) {
-              return;
-            }
-
-            const mapped = payload.entries.map((entry) => {
-              const normalized = {
-                id:
-                  entry.id ||
-                  `${entry.prototypeId || 'focus-flow'}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-                prototypeId: entry.prototypeId || 'focus-flow',
-                prototypeTitle: entry.prototypeTitle || (this.activePrototype ? this.activePrototype.title : 'Focus Flow Card'),
-                momentum: entry.momentum || 'curious',
-                positive: entry.positive || '',
-                challenges: entry.challenges || '',
-                priority: entry.priority || 'unspecified',
-                timestamp: entry.timestamp || new Date().toLocaleString()
-              };
-              return {
-                ...normalized,
-                summary: entry.summary || this.buildSummary(normalized),
-                priorityLabel: entry.priorityLabel || this.priorityCopy(normalized.priority)
-              };
-            });
-
-            if (mapped.length) {
-              const existingIds = new Set(this.feedbackLog.map((entry) => entry.id));
-              const merged = [
-                ...mapped.filter((entry) => !existingIds.has(entry.id)),
-                ...this.feedbackLog
-              ];
-              this.feedbackLog = merged;
-            }
-          } catch (error) {
-            console.warn('Unable to load feedback archive', error);
-          }
-        },
-        async connectFeedbackFolder() {
-          try {
-            const handle = await this.ensureFeedbackFileHandle(true);
-            if (handle && this.feedbackLog.length) {
-              await this.persistFeedback();
-            }
-          } catch (error) {
-            console.error('Feedback folder connection failed', error);
-          }
-        },
-        async ensureFeedbackFileHandle(forcePrompt = false) {
-          if (!('showDirectoryPicker' in window)) {
-            this.feedbackTarget.status = 'unsupported';
-            this.feedbackTarget.message = 'Automatic saving is unavailable in this browser.';
-            return null;
-          }
-
-          if (this.feedbackDirectoryHandle && this.feedbackFileHandle && !forcePrompt) {
-            return this.feedbackFileHandle;
-          }
-
-          try {
-            const directoryHandle =
-              forcePrompt || !this.feedbackDirectoryHandle
-                ? await window.showDirectoryPicker({ id: 'langy-feedback' })
-                : this.feedbackDirectoryHandle;
-
-            const dirPermission = await directoryHandle.requestPermission({ mode: 'readwrite' });
-            if (dirPermission !== 'granted') {
-              this.feedbackTarget.status = 'error';
-              this.feedbackTarget.message = 'Permission denied for the feedback folder.';
-              return null;
-            }
-
-            const fileHandle = await directoryHandle.getFileHandle(this.feedbackFileName, { create: true });
-            const filePermission = await fileHandle.requestPermission({ mode: 'readwrite' });
-            if (filePermission !== 'granted') {
-              this.feedbackTarget.status = 'error';
-              this.feedbackTarget.message = 'Permission denied for the feedback file.';
-              return null;
-            }
-
-            this.feedbackDirectoryHandle = directoryHandle;
-            this.feedbackFileHandle = fileHandle;
-            this.feedbackTarget.status = 'connected';
-            this.feedbackTarget.message = 'Auto-save ready.';
-            return fileHandle;
-          } catch (error) {
-            if (error.name === 'AbortError') {
-              if (this.feedbackDirectoryHandle && this.feedbackFileHandle) {
-                this.feedbackTarget.status = 'connected';
-                this.feedbackTarget.message = 'Folder selection cancelled; keeping previous connection.';
-              } else {
-                this.feedbackTarget.status = 'disconnected';
-                this.feedbackTarget.message = 'Folder selection cancelled.';
-              }
-            } else {
-              console.error('Feedback folder access failed', error);
-              this.feedbackTarget.status = 'error';
-              this.feedbackTarget.message = 'Could not access the feedback folder.';
-            }
-            return null;
-          }
-        },
-        serializeFeedbackPayload() {
-          return {
-            generatedAt: new Date().toISOString(),
-            entries: this.feedbackLog.map((entry) => ({
-              id: entry.id,
-              prototypeId: entry.prototypeId,
-              prototypeTitle: entry.prototypeTitle,
-              momentum: entry.momentum,
-              positive: entry.positive,
-              challenges: entry.challenges,
-              priority: entry.priority,
-              timestamp: entry.timestamp,
-              summary: entry.summary,
-              priorityLabel: entry.priorityLabel
-            }))
-          };
-        },
-        serializeFeedback() {
-          return JSON.stringify(this.serializeFeedbackPayload(), null, 2);
-        },
-        async persistFeedback() {
-          if (!this.feedbackLog.length) {
-            return;
-          }
-          if (!('showDirectoryPicker' in window)) {
-            return;
-          }
-
-          let fileHandle = await this.ensureFeedbackFileHandle(false);
-          if (!fileHandle) {
-            fileHandle = await this.ensureFeedbackFileHandle(true);
-          }
-          if (!fileHandle) {
-            this.feedbackTarget.status = 'needsConnection';
-            this.feedbackTarget.message = 'Connect the feedback folder to finish saving.';
-            return;
-          }
-
-          try {
-            this.feedbackTarget.status = 'saving';
-            this.feedbackTarget.message = 'Writing the latest feedback entries…';
-            const writable = await fileHandle.createWritable();
-            await writable.write(this.serializeFeedback());
-            await writable.close();
-            this.feedbackTarget.status = 'saved';
-            this.feedbackTarget.lastSavedAt = new Date().toLocaleTimeString();
-            const count = this.feedbackLog.length;
-            this.feedbackTarget.message = `Saved ${count} entr${count === 1 ? 'y' : 'ies'} automatically.`;
-          } catch (error) {
-            console.error('Persist feedback failed', error);
-            this.feedbackTarget.status = 'error';
-            this.feedbackTarget.message = 'Automatic save failed. Try reconnecting or exporting.';
-            throw error;
-          }
-        },
-        downloadFeedback() {
-          if (!this.feedbackLog.length) {
-            alert('No feedback captured yet.');
-            return;
-          }
-
-          const blob = new Blob([this.serializeFeedback()], {
-            type: 'application/json'
-          });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `langy-ui-feedback-${Date.now()}.json`;
-          link.click();
-          URL.revokeObjectURL(url);
-        },
-        setFeedbackFilter(filter) {
-          this.feedbackFilter = filter;
         }
       }
     }).mount('#app');
