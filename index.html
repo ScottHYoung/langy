@@ -1,174 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Langy • Context Cards</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Langy • Study Card</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
-  <div id="app" class="mx-auto flex min-h-screen max-w-5xl flex-col px-5 py-8 lg:px-0 lg:py-14">
-    <header class="flex flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-      <div class="max-w-xl space-y-3">
-        <p class="text-xs uppercase tracking-[0.4em] text-amber-500">Langy Session</p>
-        <h1 class="text-3xl font-semibold text-slate-900 lg:text-4xl">Learn Chinese in full sentences, one focus word at a time.</h1>
-        <p class="text-sm text-slate-600 lg:text-base">
-          Read for meaning first, then flip to confirm your intuition. Your choices feed a personalized knowledge model that keeps the difficulty curve right where it should be.
-        </p>
-      </div>
-
-      <div class="w-full max-w-xs rounded-2xl border border-slate-200 bg-slate-50 p-6">
-        <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Today&apos;s Progress</p>
-        <div class="mt-4 space-y-3">
-          <div class="flex items-end justify-between">
-            <p class="text-3xl font-semibold text-slate-900">{{ session.completed }}</p>
-            <p class="text-sm text-slate-500">of {{ session.total }} sentences</p>
-          </div>
-          <div class="h-2 rounded-full bg-slate-200">
-            <div class="h-full rounded-full bg-amber-400 transition-all duration-500" :style="`width: ${progressPercent}%`"></div>
-          </div>
-          <p class="text-xs text-slate-500">{{ progressLabel }}</p>
-        </div>
-      </div>
-    </header>
-
-    <main class="mt-10 grid flex-1 gap-8 lg:mt-14 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <section class="space-y-6">
-        <div
-          class="group relative aspect-[3/2] w-full cursor-pointer overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-slate-100 shadow-lg shadow-slate-200/60 transition-shadow duration-300 hover:shadow-2xl"
-          @click="toggleCard"
-        >
-          <div class="transition duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
-            <article
-              class="card-face absolute inset-0 flex h-full flex-col justify-between gap-6 p-8"
-              :class="isFlipped ? 'invisible pointer-events-none' : ''"
-            >
-              <div class="space-y-6">
-                <div class="flex items-start justify-between">
-                  <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Prompt</p>
-                  <span class="text-xs font-medium text-slate-500">Tap to reveal</span>
-                </div>
-                <p class="text-2xl leading-relaxed text-slate-900" v-html="highlightFocus(card.sentence)"></p>
-              </div>
-              <div class="space-y-3 text-sm text-slate-600">
-                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Before you flip</p>
-                <ul class="space-y-2">
-                  <li v-for="tip in card.preFlip" :key="tip" class="flex gap-3 leading-snug">
-                    <span class="text-amber-500">•</span>
-                    <span>{{ tip }}</span>
-                  </li>
-                </ul>
-              </div>
-            </article>
-
-            <article
-              class="card-face absolute inset-0 flex h-full flex-col justify-between gap-6 p-8 rotate-y-180"
-              :class="isFlipped ? '' : 'invisible pointer-events-none'"
-            >
-              <div class="space-y-6">
-                <div class="flex items-start justify-between">
-                  <p class="text-xs uppercase tracking-[0.3em] text-slate-500">Reveal</p>
-                  <span class="text-xs font-medium text-slate-500">Tap to return</span>
-                </div>
-                <div class="space-y-4">
-                  <div>
-                    <p class="text-xs uppercase tracking-[0.2em] text-amber-600">Sentence meaning</p>
-                    <p class="mt-2 text-lg leading-relaxed text-slate-900">{{ card.translation }}</p>
-                  </div>
-                  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div class="flex flex-wrap items-center gap-4">
-                      <span class="text-4xl font-semibold text-amber-600">{{ card.focus.hanzi }}</span>
-                      <div>
-                        <p class="text-sm text-slate-600">{{ card.focus.pinyin }}</p>
-                        <p class="text-xs text-slate-500">{{ card.focus.literal }}</p>
-                      </div>
-                    </div>
-                    <p class="mt-4 text-sm leading-relaxed text-slate-700">{{ card.focus.definition }}</p>
-                    <p class="mt-3 text-xs uppercase tracking-[0.2em] text-slate-400">Usage note</p>
-                    <p class="text-xs leading-snug text-slate-500">{{ card.focus.note }}</p>
-                  </div>
-                  <div>
-                    <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Context cues</p>
-                    <ul class="mt-2 space-y-2 text-sm text-slate-600">
-                      <li v-for="cue in card.cues" :key="cue" class="flex gap-3 leading-snug">
-                        <span class="text-amber-500">↳</span>
-                        <span>{{ cue }}</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <p class="text-xs text-slate-400">{{ card.footer }}</p>
-            </article>
-          </div>
-        </div>
-
-        <div class="grid gap-3 sm:grid-cols-3">
-          <button
-            v-for="button in responseButtons"
-            :key="button.type"
-            type="button"
-            :class="button.classes"
-            @click.stop="recordResponse(button.type)"
+  <div id="app" class="flex min-h-screen flex-col items-center justify-center gap-10 px-6 py-16 text-center">
+    <div class="flex w-full max-w-2xl items-center justify-center">
+      <div
+        class="group relative w-full max-w-2xl cursor-pointer rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)]"
+        @click="toggleCard"
+      >
+        <div class="transition-transform duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
+          <article
+            class="card-face absolute inset-0 flex min-h-[420px] flex-col items-center justify-center gap-6 px-12 text-center"
+            :class="isFlipped ? 'invisible pointer-events-none' : ''"
           >
-            <span>{{ button.label }}</span>
-            <span class="text-xs text-slate-500">{{ button.caption }}</span>
-          </button>
-        </div>
-
-        <transition name="fade">
-          <p v-if="responseCopy" class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
-            {{ responseCopy }}
-          </p>
-        </transition>
-      </section>
-
-      <aside class="space-y-6">
-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="text-sm uppercase tracking-[0.25em] text-slate-500">Session rhythm</h2>
-          <div class="mt-4 space-y-4 text-sm text-slate-600">
-            <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <div>
-                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Current streak</p>
-                <p class="text-lg font-semibold text-slate-900">{{ session.streak }}</p>
+            <p class="max-w-xl text-3xl leading-relaxed text-slate-900" v-html="highlightFocus(card.sentence)"></p>
+            <span class="text-xs uppercase tracking-[0.35em] text-slate-400">Tap to reveal</span>
+          </article>
+          <article
+            class="card-face absolute inset-0 flex min-h-[420px] flex-col items-center justify-center gap-6 px-12 rotate-y-180 text-center"
+            :class="isFlipped ? '' : 'invisible pointer-events-none'"
+          >
+            <div class="space-y-4 text-slate-900">
+              <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(card.sentence)"></p>
+              <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ card.translation }}</p>
+            </div>
+            <div class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
+              <div class="flex flex-wrap items-center gap-4">
+                <span class="text-4xl font-semibold text-amber-500">{{ card.focus.hanzi }}</span>
+                <div>
+                  <p class="text-sm text-slate-600">{{ card.focus.pinyin }}</p>
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ card.focus.literal }}</p>
+                </div>
               </div>
-              <span class="text-xs text-emerald-600">Keep it going →</span>
+              <p class="mt-4 text-sm leading-relaxed text-slate-700">{{ card.focus.definition }}</p>
             </div>
-            <div>
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Learning focus</p>
-              <ul class="mt-3 space-y-2">
-                <li v-for="tag in card.focus.tags" :key="tag" class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
-                  <span class="text-amber-500">◆</span>
-                  {{ tag }}
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Next up</p>
-              <ul class="mt-2 space-y-2">
-                <li v-for="word in upcoming" :key="word.hanzi" class="flex items-baseline justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2">
-                  <div class="flex items-center gap-3">
-                    <span class="text-lg font-semibold text-slate-900">{{ word.hanzi }}</span>
-                    <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ word.pinyin }}</span>
-                  </div>
-                  <span class="text-xs text-slate-500">{{ word.theme }}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
+            <span class="text-xs uppercase tracking-[0.35em] text-slate-400">Tap to return</span>
+          </article>
+        </div>
+      </div>
+    </div>
 
-        <section class="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-          <h2 class="text-sm uppercase tracking-[0.25em] text-slate-500">Reflection prompts</h2>
-          <ul class="mt-4 space-y-3 text-sm text-slate-600">
-            <li v-for="prompt in reflections" :key="prompt" class="rounded-xl border border-slate-200 bg-white px-4 py-3 leading-snug shadow-sm">
-              {{ prompt }}
-            </li>
-          </ul>
-        </section>
-      </aside>
-    </main>
+    <div class="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
+      <button
+        v-for="button in responseButtons"
+        :key="button.type"
+        type="button"
+        :class="button.classes"
+        @click.stop="recordResponse(button.type)"
+      >
+        {{ button.label }}
+      </button>
+    </div>
+
+    <transition name="fade">
+      <p
+        v-if="responseCopy"
+        class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm"
+      >
+        {{ responseCopy }}
+      </p>
+    </transition>
   </div>
 
   <style>
@@ -204,104 +101,49 @@
         return {
           isFlipped: false,
           lastResponse: '',
-          session: {
-            total: 24,
-            completed: 9,
-            streak: 4
-          },
           card: {
             sentence: {
               text: '今天的天气非常好，我们决定去公园散步。',
               focus: '散步'
             },
             translation: 'The weather is great today, so we decided to take a walk in the park.',
-            preFlip: [
-              'Absorb the mood of the sentence before zeroing in on the highlight.',
-              'Predict the focus word from context — is it describing the action or the setting?',
-              'Commit to your confidence level before revealing the answer.'
-            ],
-            cues: [
-              'Did the surrounding verbs and particles give away the leisurely tone?',
-              'Would you use the same structure to invite a friend out?'
-            ],
             focus: {
               hanzi: '散步',
               pinyin: 'sànbù',
               literal: 'scatter + steps',
-              definition: 'A relaxed walk taken for leisure or light exercise.',
-              note: 'Often pairs with 去 (to go) or 出去 (to go out). Works well with yǔ péngyǒu (with friends) or dúzì (alone) for nuance.',
-              tags: ['Outdoor routine', 'Everyday action', 'Leisure vocabulary']
-            },
-            footer: 'Tell us how confident you felt. That feedback tunes tomorrow’s queue.'
-          },
-          upcoming: [
-            { hanzi: '锻炼', pinyin: 'duànliàn', theme: 'Fitness habit' },
-            { hanzi: '放松', pinyin: 'fàngsōng', theme: 'Downtime' },
-            { hanzi: '计划', pinyin: 'jìhuà', theme: 'Planning ahead' }
-          ],
-          reflections: [
-            'Where would you naturally use this sentence in your own life?',
-            'Could you swap 散步 for another activity verb without changing grammar?',
-            'What cue tipped you off about the sentence mood before flipping?'
-          ],
-          responseMap: {
-            sentence: {
-              toast: 'Nice! We’ll raise the bar with a trickier sentence next.',
-              increment: 1
-            },
-            focus: {
-              toast: 'Logged the focus word. We’ll recycle the sentence with new framing soon.',
-              increment: 1
-            },
-            unknown: {
-              toast: 'No problem — we’ll surface supporting sentences to reinforce this word.',
-              increment: 0
+              definition: 'A relaxed walk taken for leisure or light exercise.'
             }
+          },
+          responseMap: {
+            sentence: 'Logged full comprehension. We’ll queue something harder.',
+            focus: 'Focus word captured. We’ll recycle the sentence soon.',
+            unknown: 'Logged for review. We’ll surface supporting cards.'
           }
         };
       },
       computed: {
-        progressPercent() {
-          const percent = (this.session.completed / this.session.total) * 100;
-          return Math.min(100, Math.round(percent));
-        },
-        progressLabel() {
-          if (this.progressPercent === 100) {
-            return 'Session complete — feel free to review or jump ahead.';
-          }
-          if (this.progressPercent >= 75) {
-            return 'Final stretch! Stay focused on nuance.';
-          }
-          if (this.progressPercent >= 40) {
-            return 'Solid momentum. Keep logging your instincts.';
-          }
-          return 'Warming up — let the context guide your guesses.';
-        },
         responseCopy() {
-          return this.lastResponse ? this.responseMap[this.lastResponse].toast : '';
+          return this.lastResponse ? this.responseMap[this.lastResponse] : '';
         },
         responseButtons() {
           return [
             {
               type: 'sentence',
-              label: 'I understood the whole sentence',
-              caption: 'Count it toward mastery',
+              label: 'Fully understood.',
               classes:
-                'flex h-16 flex-col justify-center rounded-2xl border border-emerald-400/60 bg-emerald-50 px-4 text-left text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-500'
+                'h-14 rounded-2xl border border-emerald-400/60 bg-emerald-50 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-500'
             },
             {
               type: 'focus',
-              label: 'Only the focus word landed',
-              caption: 'Keep similar sentences coming',
+              label: 'Focus word understood.',
               classes:
-                'flex h-16 flex-col justify-center rounded-2xl border border-sky-400/60 bg-sky-50 px-4 text-left text-sky-700 transition hover:bg-sky-100 hover:border-sky-500'
+                'h-14 rounded-2xl border border-sky-400/60 bg-sky-50 text-sm font-medium text-sky-700 transition hover:bg-sky-100 hover:border-sky-500'
             },
             {
               type: 'unknown',
-              label: 'Not yet — I need more support',
-              caption: 'Surface scaffold cards',
+              label: "I don't know the focus word.",
               classes:
-                'flex h-16 flex-col justify-center rounded-2xl border border-rose-400/60 bg-rose-50 px-4 text-left text-rose-700 transition hover:bg-rose-100 hover:border-rose-500'
+                'h-14 rounded-2xl border border-rose-400/60 bg-rose-50 text-sm font-medium text-rose-700 transition hover:bg-rose-100 hover:border-rose-500'
             }
           ];
         }
@@ -317,14 +159,7 @@
         },
         recordResponse(type) {
           if (!this.responseMap[type]) return;
-          const { increment } = this.responseMap[type];
           this.lastResponse = type;
-          if (increment) {
-            this.session.completed = Math.min(this.session.total, this.session.completed + increment);
-            this.session.streak += 1;
-          } else {
-            this.session.streak = 0;
-          }
         }
       }
     }).mount('#app');
