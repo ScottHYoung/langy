@@ -6,48 +6,91 @@
   <title>Langy • Study Card</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="corpus_raw/zh_cn_sampled_1000.js"></script>
+  <script src="corpus_raw/zh_cn_lexicon_meta.js"></script>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
   <div id="app" class="flex min-h-screen flex-col items-center justify-center gap-10 px-6 py-16 text-center">
     <div class="flex w-full max-w-2xl items-center justify-center">
       <div
         class="group relative h-[420px] w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)] sm:h-[460px]"
-        :class="isFlipped ? 'cursor-default' : 'cursor-pointer'"
+        :class="[
+          isFlipped ? 'cursor-default' : 'cursor-pointer',
+          isLoadingCard ? 'pointer-events-none cursor-progress opacity-70' : ''
+        ]"
         @click="revealCard"
+        :aria-busy="isLoadingCard"
       >
         <div class="relative h-full transition-transform duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
           <article
             class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 text-center"
             :class="isFlipped ? 'invisible pointer-events-none' : ''"
           >
-            <p class="max-w-xl text-3xl leading-relaxed text-slate-900" v-html="highlightFocus(currentCard.sentence)"></p>
-            <span class="text-xs uppercase tracking-[0.35em] text-slate-400">Tap to reveal</span>
+            <p v-if="isLoadingCard" class="max-w-xl text-2xl leading-relaxed text-slate-500">
+              Generating a fresh sentence…
+            </p>
+            <p v-else-if="errorMessage" class="max-w-xl text-lg leading-relaxed text-rose-600">
+              {{ errorMessage }}
+            </p>
+            <p
+              v-else-if="currentCard"
+              class="max-w-xl text-3xl leading-relaxed text-slate-900"
+              v-html="highlightFocus(currentCard.sentence)"
+            ></p>
+            <p v-else class="max-w-xl text-2xl leading-relaxed text-slate-500">
+              Preparing the next card…
+            </p>
+            <span
+              v-if="currentCard && !isLoadingCard"
+              class="text-xs uppercase tracking-[0.35em] text-slate-400"
+            >
+              Tap to reveal
+            </span>
+            <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Please wait</span>
           </article>
           <article
             class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 rotate-y-180 text-center"
             :class="isFlipped ? '' : 'invisible pointer-events-none'"
           >
-            <div class="space-y-4 text-slate-900">
+            <div v-if="currentCard" class="space-y-4 text-slate-900">
               <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(currentCard.sentence)"></p>
               <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ currentCard.translation }}</p>
             </div>
-            <div class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
+            <div v-else class="space-y-2 text-center text-sm text-slate-500">
+              <p v-if="isLoadingCard">Hold tight—we’re preparing a new context sentence.</p>
+              <p v-else-if="errorMessage">{{ errorMessage }}</p>
+              <p v-else>Flip once a card is ready.</p>
+            </div>
+            <div v-if="currentCard" class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
               <div class="flex flex-wrap items-center gap-4">
                 <span class="text-4xl font-semibold text-amber-500">{{ currentCard.focus.hanzi }}</span>
                 <div>
-                  <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin }}</p>
-                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ currentCard.focus.literal }}</p>
+                  <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin || '—' }}</p>
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {{ currentCard.focus.literal || '—' }}
+                  </p>
                 </div>
               </div>
-              <p class="mt-4 text-sm leading-relaxed text-slate-700">{{ currentCard.focus.definition }}</p>
+              <p class="mt-4 text-sm leading-relaxed text-slate-700">
+                {{ currentCard.focus.definition || '—' }}
+              </p>
             </div>
-            <span class="text-xs uppercase tracking-[0.35em] text-slate-400">Choose your response</span>
+            <div
+              v-else
+              class="w-full max-w-xl rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm"
+            >
+              Context details will appear once a sentence loads.
+            </div>
+            <span v-if="currentCard" class="text-xs uppercase tracking-[0.35em] text-slate-400"
+              >Choose your response</span
+            >
+            <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Awaiting generation</span>
           </article>
         </div>
       </div>
     </div>
 
-    <div v-if="isFlipped" class="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
+    <div v-if="isFlipped && currentCard && !isLoadingCard" class="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
       <button
         v-for="button in responseButtons"
         :key="button.type"
@@ -68,18 +111,21 @@
       </p>
     </transition>
 
-    <div v-if="debugMode" class="w-full max-w-2xl">
+    <div v-if="debugMode && lexicon.length" class="w-full max-w-2xl">
       <div
         class="mt-10 grid grid-cols-5 gap-1 rounded-2xl border border-slate-200 bg-white p-3 text-[10px] text-slate-600 shadow-sm"
       >
         <div
-          v-for="word in focusOrder"
-          :key="word"
+          v-for="entry in lexicon"
+          :key="entry.word"
           class="flex flex-col items-center gap-1 rounded-md border border-slate-100 p-2 text-center"
-          :style="{ backgroundColor: knowledgeColor(userModel[word]) }"
+          :style="{ backgroundColor: knowledgeColor(userModel[entry.word]) }"
+          :title="entry.frequency ? `Frequency: ${entry.frequency}` : ''"
         >
-          <span class="text-sm font-medium text-slate-800">{{ word }}</span>
-          <span class="text-[9px] tabular-nums text-slate-600">{{ userModel[word].toFixed(2) }}</span>
+          <span class="text-sm font-medium text-slate-800">{{ entry.word }}</span>
+          <span class="text-[9px] tabular-nums text-slate-600">
+            {{ (userModel[entry.word] ?? 0.5).toFixed(2) }}
+          </span>
         </div>
       </div>
     </div>
@@ -113,7 +159,7 @@
   <script>
     const { createApp } = Vue;
 
-    const cards = [
+    const seedCards = [
       {
         sentence: {
           text: '今晚是我们第一次一起做饭。',
@@ -1416,14 +1462,24 @@
       }
     ];
 
-    const focusOrder = Array.from(new Set(cards.map((card) => card.focus.hanzi)));
-    const initialUserModel = focusOrder.reduce((acc, word) => {
-      acc[word] = 0.5;
+    const lexiconMeta = window.__LANGY_LEXICON_META__ || {};
+    const focusMetaMap = seedCards.reduce((acc, card) => {
+      acc[card.focus.hanzi] = { ...card.focus };
       return acc;
     }, {});
+    for (const [word, meta] of Object.entries(lexiconMeta)) {
+      const existing = focusMetaMap[word] || {};
+      focusMetaMap[word] = {
+        hanzi: word,
+        pinyin: meta.pinyin || existing.pinyin || '',
+        literal: existing.literal || meta.literal || '',
+        definition: meta.definition || existing.definition || ''
+      };
+    }
+
     const likelihoods = {
-      sentence: { known: 0.9, unknown: 0.2 },
-      focus: { known: 0.75, unknown: 0.35 }
+      sentence: { known: 0.85, unknown: 0.25 },
+      focus: { known: 0.85, unknown: 0.25 }
     };
 
     createApp({
@@ -1432,10 +1488,15 @@
           isFlipped: false,
           lastResponse: '',
           currentIndex: 0,
-          cards,
-          focusOrder,
-          userModel: { ...initialUserModel },
+          lexicon: [],
+          activeCard: null,
+          userModel: {},
           debugMode: true,
+          isLoadingCard: false,
+          errorMessage: '',
+          stepSize: 1,
+          streakDirection: null,
+          maxStepSize: 35,
           likelihoods,
           responseMap: {
             sentence: 'Logged full comprehension. We’ll queue something harder.',
@@ -1444,9 +1505,18 @@
           }
         };
       },
+      created() {
+        const seedWords = new Set(Object.keys(focusMetaMap));
+        seedWords.forEach((word) => {
+          this.userModel[word] = 0.5;
+        });
+      },
+      mounted() {
+        this.loadLexicon();
+      },
       computed: {
         currentCard() {
-          return this.cards[this.currentIndex] || this.cards[0];
+          return this.activeCard;
         },
         responseCopy() {
           return this.lastResponse ? this.responseMap[this.lastResponse] : '';
@@ -1475,33 +1545,172 @@
         }
       },
       methods: {
-        revealCard() {
-          if (this.isFlipped) return;
+        async loadLexicon() {
+          const preload = Array.isArray(window.__LANGY_LEXICON__)
+            ? window.__LANGY_LEXICON__
+            : null;
+          if (preload?.length) {
+            await this.applyLexicon(preload);
+            return;
+          }
+          try {
+            const response = await fetch('corpus_raw/zh_cn_sampled_1000.txt');
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            const raw = await response.text();
+            const parsed = raw
+              .trim()
+              .split('\n')
+              .map((line) => {
+                const [word, frequency] = line.split(/\s+/);
+                return {
+                  word,
+                  frequency: Number.parseInt(frequency, 10)
+                };
+              })
+              .filter((entry) => entry.word);
+            if (parsed.length) {
+              await this.applyLexicon(parsed.slice(0, 1000));
+            }
+          } catch (error) {
+            console.warn('Unable to load sampled corpus; falling back to focus list.', error);
+            if (!this.lexicon.length) {
+              const fallback = Array.from(
+                new Set(Object.keys(focusMetaMap))
+              ).map((word) => ({
+                word,
+                frequency: null
+              }));
+              await this.applyLexicon(fallback);
+            }
+          }
+        },
+        async applyLexicon(entries) {
+          if (!entries?.length) return;
+          this.lexicon = entries.slice(0, 1000);
+          this.lexicon.forEach(({ word }) => {
+            if (this.userModel[word] == null) {
+              this.userModel[word] = 0.5;
+            }
+          });
+          this.stepSize = 1;
+          this.streakDirection = null;
+          if (!this.activeCard) {
+            this.currentIndex = 0;
+            await this.loadNextCard({ resetIndex: true });
+          }
+        },
+        async loadNextCard({ advance = false, resetIndex = false, targetIndex = null } = {}) {
+          if (!this.lexicon.length || this.isLoadingCard) return;
+          const maxIndex = this.lexicon.length - 1;
+          if (targetIndex != null) {
+            const clamped = Math.max(0, Math.min(maxIndex, targetIndex));
+            this.currentIndex = clamped;
+          } else if (resetIndex) {
+            this.currentIndex = 0;
+          } else if (advance) {
+            this.currentIndex = Math.min(maxIndex, this.currentIndex + 1);
+          } else if (this.currentIndex > maxIndex) {
+            this.currentIndex = maxIndex;
+          }
+          const entry = this.lexicon[this.currentIndex];
+          if (!entry) return;
+          await this.fetchCardForWord(entry.word);
+        },
+        async fetchCardForWord(word) {
+          if (!word) return;
+          if (this.userModel[word] == null) {
+            this.userModel[word] = 0.5;
+          }
+          this.isLoadingCard = true;
+          this.errorMessage = '';
+          try {
+            const response = await fetch('/api/generate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ word })
+            });
+            let payload = null;
+            try {
+              payload = await response.json();
+            } catch (error) {
+              payload = null;
+            }
+            if (!response.ok) {
+              const message =
+                (payload && payload.error) ||
+                `OpenAI request failed with status ${response.status}`;
+              throw new Error(message);
+            }
+            if (!payload || !payload.sentence || !payload.translation) {
+              throw new Error('Generator returned incomplete data.');
+            }
+            const meta = focusMetaMap[word] || {};
+            this.activeCard = {
+              sentence: {
+                text: payload.sentence,
+                focus: word
+              },
+              translation: payload.translation,
+              focus: {
+                hanzi: word,
+                pinyin: meta.pinyin || '',
+                literal: meta.literal || '',
+                definition: meta.definition || ''
+              }
+            };
+          } catch (error) {
+            this.errorMessage = error.message || 'Unable to load sentence.';
+            this.activeCard = null;
+          } finally {
+            this.isLoadingCard = false;
+            this.isFlipped = false;
+          }
+        },
+        async revealCard() {
+          if (this.isFlipped || this.isLoadingCard || !this.currentCard) return;
           this.lastResponse = '';
+          this.errorMessage = '';
           this.isFlipped = true;
         },
         highlightFocus(sentence) {
-          if (!sentence || !sentence.text || !sentence.focus) return '';
+          if (!sentence || !sentence.text || !sentence.focus) {
+            return '';
+          }
           const focus = sentence.focus;
+          const escaped = focus.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const highlight = `<span class="rounded-md bg-amber-200 px-1 text-slate-900">${focus}</span>`;
-          return sentence.text.replace(new RegExp(focus, 'g'), highlight);
+          return sentence.text.replace(new RegExp(escaped, 'g'), highlight);
         },
-        recordResponse(type) {
-          if (!this.responseMap[type]) return;
+        async recordResponse(type) {
+          if (!this.responseMap[type] || this.isLoadingCard || !this.currentCard) return;
           this.lastResponse = type;
           const currentWord = this.currentCard?.focus?.hanzi;
           if (currentWord && (type === 'sentence' || type === 'focus')) {
+            // TODO: when sentence-level evidence wiring lands, promote the other tokens on green
+            // and apply a gentle dampening when only the focus word is known.
             this.updateKnowledge(type, currentWord);
           }
-          this.advanceCard();
+          const isCorrect = type === 'sentence' || type === 'focus';
+          const nextIndex = this.selectNextIndex(isCorrect);
+          await this.loadNextCard({ targetIndex: nextIndex });
         },
-        advanceCard() {
-          if (!this.cards.length) return;
-          this.isFlipped = false;
-          this.currentIndex = (this.currentIndex + 1) % this.cards.length;
+        async advanceCard() {
+          if (!this.lexicon.length) return;
+          const nextIndex = Math.min(
+            this.lexicon.length - 1,
+            this.currentIndex + 1
+          );
+          await this.loadNextCard({ targetIndex: nextIndex });
         },
         updateKnowledge(type, word) {
-          const prior = this.userModel[word] ?? 0.5;
+          if (this.userModel[word] == null) {
+            this.userModel[word] = 0.5;
+          }
+          const prior = this.userModel[word];
           const likelihood = this.likelihoods[type];
           if (!likelihood) return;
           const known = likelihood.known;
@@ -1519,6 +1728,33 @@
           const hue = prob * 120; // 0 -> red, 120 -> green
           const lightness = 92 - prob * 12;
           return `hsl(${hue}, 80%, ${lightness}%)`;
+        },
+        selectNextIndex(isCorrect) {
+          if (!this.lexicon.length) return this.currentIndex || 0;
+          const direction = isCorrect ? 'forward' : 'backward';
+          if (this.streakDirection !== direction) {
+            this.stepSize = 1;
+            this.streakDirection = direction;
+          } else {
+            this.stepSize = Math.min(this.stepSize + 1, this.maxStepSize);
+          }
+          const delta = direction === 'forward' ? this.stepSize : -this.stepSize;
+          const maxIndex = this.lexicon.length - 1;
+          let target = this.currentIndex + delta;
+          if (target > maxIndex) {
+            target = maxIndex;
+            this.stepSize = 1;
+          } else if (target < 0) {
+            target = 0;
+            this.stepSize = 1;
+          }
+          if (target === this.currentIndex) {
+            target =
+              direction === 'forward'
+                ? Math.min(maxIndex, this.currentIndex + 1)
+                : Math.max(0, this.currentIndex - 1);
+          }
+          return target;
         }
       }
     }).mount('#app');
