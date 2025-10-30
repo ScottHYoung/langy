@@ -11,42 +11,43 @@
   <div id="app" class="flex min-h-screen flex-col items-center justify-center gap-10 px-6 py-16 text-center">
     <div class="flex w-full max-w-2xl items-center justify-center">
       <div
-        class="group relative w-full max-w-2xl cursor-pointer rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)]"
-        @click="toggleCard"
+        class="group relative h-[420px] w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)] sm:h-[460px]"
+        :class="isFlipped ? 'cursor-default' : 'cursor-pointer'"
+        @click="revealCard"
       >
-        <div class="transition-transform duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
+        <div class="relative h-full transition-transform duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
           <article
-            class="card-face absolute inset-0 flex min-h-[420px] flex-col items-center justify-center gap-6 px-12 text-center"
+            class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 text-center"
             :class="isFlipped ? 'invisible pointer-events-none' : ''"
           >
-            <p class="max-w-xl text-3xl leading-relaxed text-slate-900" v-html="highlightFocus(card.sentence)"></p>
+            <p class="max-w-xl text-3xl leading-relaxed text-slate-900" v-html="highlightFocus(currentCard.sentence)"></p>
             <span class="text-xs uppercase tracking-[0.35em] text-slate-400">Tap to reveal</span>
           </article>
           <article
-            class="card-face absolute inset-0 flex min-h-[420px] flex-col items-center justify-center gap-6 px-12 rotate-y-180 text-center"
+            class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 rotate-y-180 text-center"
             :class="isFlipped ? '' : 'invisible pointer-events-none'"
           >
             <div class="space-y-4 text-slate-900">
-              <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(card.sentence)"></p>
-              <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ card.translation }}</p>
+              <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(currentCard.sentence)"></p>
+              <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ currentCard.translation }}</p>
             </div>
             <div class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
               <div class="flex flex-wrap items-center gap-4">
-                <span class="text-4xl font-semibold text-amber-500">{{ card.focus.hanzi }}</span>
+                <span class="text-4xl font-semibold text-amber-500">{{ currentCard.focus.hanzi }}</span>
                 <div>
-                  <p class="text-sm text-slate-600">{{ card.focus.pinyin }}</p>
-                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ card.focus.literal }}</p>
+                  <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin }}</p>
+                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ currentCard.focus.literal }}</p>
                 </div>
               </div>
-              <p class="mt-4 text-sm leading-relaxed text-slate-700">{{ card.focus.definition }}</p>
+              <p class="mt-4 text-sm leading-relaxed text-slate-700">{{ currentCard.focus.definition }}</p>
             </div>
-            <span class="text-xs uppercase tracking-[0.35em] text-slate-400">Tap to return</span>
+            <span class="text-xs uppercase tracking-[0.35em] text-slate-400">Choose your response</span>
           </article>
         </div>
       </div>
     </div>
 
-    <div class="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
+    <div v-if="isFlipped" class="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
       <button
         v-for="button in responseButtons"
         :key="button.type"
@@ -66,6 +67,22 @@
         {{ responseCopy }}
       </p>
     </transition>
+
+    <div v-if="debugMode" class="w-full max-w-2xl">
+      <div
+        class="mt-10 grid grid-cols-5 gap-1 rounded-2xl border border-slate-200 bg-white p-3 text-[10px] text-slate-600 shadow-sm"
+      >
+        <div
+          v-for="word in focusOrder"
+          :key="word"
+          class="flex flex-col items-center gap-1 rounded-md border border-slate-100 p-2 text-center"
+          :style="{ backgroundColor: knowledgeColor(userModel[word]) }"
+        >
+          <span class="text-sm font-medium text-slate-800">{{ word }}</span>
+          <span class="text-[9px] tabular-nums text-slate-600">{{ userModel[word].toFixed(2) }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <style>
@@ -96,24 +113,1330 @@
   <script>
     const { createApp } = Vue;
 
+    const cards = [
+      {
+        sentence: {
+          text: '今晚是我们第一次一起做饭。',
+          focus: '是'
+        },
+        translation: 'Tonight is the first time we cook together.',
+        focus: {
+          hanzi: '是',
+          pinyin: 'shì',
+          literal: 'to be',
+          definition: 'Used to express identification or equivalence.'
+        }
+      },
+      {
+        sentence: {
+          text: '城市里有很多安静的咖啡馆供人休息。',
+          focus: '有'
+        },
+        translation: 'The city has many quiet cafés where people can rest.',
+        focus: {
+          hanzi: '有',
+          pinyin: 'yǒu',
+          literal: 'to have',
+          definition: 'Indicates possession or existence of something.'
+        }
+      },
+      {
+        sentence: {
+          text: '我在图书馆等待下午的讲座。',
+          focus: '在'
+        },
+        translation: 'I am waiting at the library for the afternoon lecture.',
+        focus: {
+          hanzi: '在',
+          pinyin: 'zài',
+          literal: 'at',
+          definition: 'Marks location or ongoing action.'
+        }
+      },
+      {
+        sentence: {
+          text: '我每天早上都会写十分钟日记。',
+          focus: '我'
+        },
+        translation: 'I write in my journal for ten minutes every morning.',
+        focus: {
+          hanzi: '我',
+          pinyin: 'wǒ',
+          literal: 'I',
+          definition: 'First-person singular pronoun.'
+        }
+      },
+      {
+        sentence: {
+          text: '你记得带上会议需要的资料了吗？',
+          focus: '你'
+        },
+        translation: 'Do you remember to bring the materials needed for the meeting?',
+        focus: {
+          hanzi: '你',
+          pinyin: 'nǐ',
+          literal: 'you',
+          definition: 'Second-person singular pronoun.'
+        }
+      },
+      {
+        sentence: {
+          text: '他最近开始练习冥想放松心情。',
+          focus: '他'
+        },
+        translation: 'He recently started practicing meditation to relax.',
+        focus: {
+          hanzi: '他',
+          pinyin: 'tā',
+          literal: 'he',
+          definition: 'Third-person masculine pronoun.'
+        }
+      },
+      {
+        sentence: {
+          text: '她准备报名参加周末的摄影课。',
+          focus: '她'
+        },
+        translation: 'She plans to sign up for the weekend photography class.',
+        focus: {
+          hanzi: '她',
+          pinyin: 'tā',
+          literal: 'she',
+          definition: 'Third-person feminine pronoun.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们计划明年春天一起去云南旅行。',
+          focus: '我们'
+        },
+        translation: 'We plan to travel to Yunnan together next spring.',
+        focus: {
+          hanzi: '我们',
+          pinyin: 'wǒmen',
+          literal: 'we',
+          definition: 'First-person plural pronoun.'
+        }
+      },
+      {
+        sentence: {
+          text: '他们已经完成了产品的最终测试。',
+          focus: '他们'
+        },
+        translation: 'They have already finished the final testing of the product.',
+        focus: {
+          hanzi: '他们',
+          pinyin: 'tāmen',
+          literal: 'they',
+          definition: 'Third-person plural pronoun.'
+        }
+      },
+      {
+        sentence: {
+          text: '这次活动的主题是城市可持续发展。',
+          focus: '这'
+        },
+        translation: 'This event focuses on sustainable urban development.',
+        focus: {
+          hanzi: '这',
+          pinyin: 'zhè',
+          literal: 'this',
+          definition: 'Demonstrative pronoun indicating proximity.'
+        }
+      },
+      {
+        sentence: {
+          text: '那家面馆的汤头特别鲜。',
+          focus: '那'
+        },
+        translation: 'That noodle shop has especially fresh broth.',
+        focus: {
+          hanzi: '那',
+          pinyin: 'nà',
+          literal: 'that',
+          definition: 'Demonstrative pronoun indicating distance.'
+        }
+      },
+      {
+        sentence: {
+          text: '你会发现耐心倾听能赢得更多信任。',
+          focus: '会'
+        },
+        translation: 'You will find that patient listening earns more trust.',
+        focus: {
+          hanzi: '会',
+          pinyin: 'huì',
+          literal: 'can',
+          definition: 'Indicates ability or possibility.'
+        }
+      },
+      {
+        sentence: {
+          text: '要按时醒来就得提前关掉手机。',
+          focus: '要'
+        },
+        translation: 'To wake up on time you must turn off your phone early.',
+        focus: {
+          hanzi: '要',
+          pinyin: 'yào',
+          literal: 'to want',
+          definition: 'Expresses desire, need, or future intention.'
+        }
+      },
+      {
+        sentence: {
+          text: '只要合理安排，你能在周末完成论文。',
+          focus: '能'
+        },
+        translation: 'With proper planning you can finish the paper over the weekend.',
+        focus: {
+          hanzi: '能',
+          pinyin: 'néng',
+          literal: 'able',
+          definition: 'Indicates capability or possibility.'
+        }
+      },
+      {
+        sentence: {
+          text: '我下班后想去河边跑步。',
+          focus: '去'
+        },
+        translation: 'I want to go running by the river after work.',
+        focus: {
+          hanzi: '去',
+          pinyin: 'qù',
+          literal: 'to go',
+          definition: 'Indicates movement away from the speaker.'
+        }
+      },
+      {
+        sentence: {
+          text: '欢迎来我们工作室体验新项目。',
+          focus: '来'
+        },
+        translation: 'Welcome to come to our studio to try the new project.',
+        focus: {
+          hanzi: '来',
+          pinyin: 'lái',
+          literal: 'to come',
+          definition: 'Indicates movement toward the speaker.'
+        }
+      },
+      {
+        sentence: {
+          text: '我喜欢坐在窗边看雨滴滑落。',
+          focus: '看'
+        },
+        translation: 'I like to sit by the window and watch the raindrops slide down.',
+        focus: {
+          hanzi: '看',
+          pinyin: 'kàn',
+          literal: 'to look',
+          definition: 'Means to look at or read.'
+        }
+      },
+      {
+        sentence: {
+          text: '他决定自己做一份更健康的午餐。',
+          focus: '做'
+        },
+        translation: 'He decided to make a healthier lunch for himself.',
+        focus: {
+          hanzi: '做',
+          pinyin: 'zuò',
+          literal: 'to do',
+          definition: 'Means to make or to do.'
+        }
+      },
+      {
+        sentence: {
+          text: '医生建议我慢慢吃，细嚼慢咽更好。',
+          focus: '吃'
+        },
+        translation: 'The doctor advised me to eat slowly and chew carefully.',
+        focus: {
+          hanzi: '吃',
+          pinyin: 'chī',
+          literal: 'to eat',
+          definition: 'Refers to consuming food.'
+        }
+      },
+      {
+        sentence: {
+          text: '她每天睡前喝一杯温牛奶帮自己入睡。',
+          focus: '喝'
+        },
+        translation: 'She drinks a warm glass of milk before bed to fall asleep.',
+        focus: {
+          hanzi: '喝',
+          pinyin: 'hē',
+          literal: 'to drink',
+          definition: 'Refers to consuming liquids.'
+        }
+      },
+      {
+        sentence: {
+          text: '我想稍微调整一下研究方案。',
+          focus: '想'
+        },
+        translation: 'I would like to adjust the research plan a little.',
+        focus: {
+          hanzi: '想',
+          pinyin: 'xiǎng',
+          literal: 'to think',
+          definition: 'Means to think, want, or miss.'
+        }
+      },
+      {
+        sentence: {
+          text: '他们觉得合作比竞争能带来更多机会。',
+          focus: '觉得'
+        },
+        translation: 'They feel that cooperation brings more opportunities than competition.',
+        focus: {
+          hanzi: '觉得',
+          pinyin: 'juéde',
+          literal: 'to feel',
+          definition: 'Expresses personal feelings or opinions.'
+        }
+      },
+      {
+        sentence: {
+          text: '我知道这个项目还有很大的改进空间。',
+          focus: '知道'
+        },
+        translation: 'I know there is still much room for improvement in this project.',
+        focus: {
+          hanzi: '知道',
+          pinyin: 'zhīdào',
+          literal: 'to know',
+          definition: 'Indicates awareness of facts or information.'
+        }
+      },
+      {
+        sentence: {
+          text: '我很高兴认识这么多志同道合的朋友。',
+          focus: '认识'
+        },
+        translation: 'I am glad to meet so many like-minded friends.',
+        focus: {
+          hanzi: '认识',
+          pinyin: 'rènshi',
+          literal: 'to recognize',
+          definition: 'Means to know or be acquainted with someone.'
+        }
+      },
+      {
+        sentence: {
+          text: '我喜欢在周末清晨探索新书店。',
+          focus: '喜欢'
+        },
+        translation: 'I like exploring new bookstores on weekend mornings.',
+        focus: {
+          hanzi: '喜欢',
+          pinyin: 'xǐhuān',
+          literal: 'to like',
+          definition: 'Expresses fondness or preference.'
+        }
+      },
+      {
+        sentence: {
+          text: '他爱在旅途中记录小城的日常。',
+          focus: '爱'
+        },
+        translation: 'He loves recording daily life in small towns while traveling.',
+        focus: {
+          hanzi: '爱',
+          pinyin: 'ài',
+          literal: 'to love',
+          definition: 'Expresses deep affection or passion.'
+        }
+      },
+      {
+        sentence: {
+          text: '老师给我们分享了最新的数据报告。',
+          focus: '给'
+        },
+        translation: 'The teacher gave us the latest data report.',
+        focus: {
+          hanzi: '给',
+          pinyin: 'gěi',
+          literal: 'to give',
+          definition: 'Indicates giving or providing to someone.'
+        }
+      },
+      {
+        sentence: {
+          text: '她正在找一个安静的地方写稿。',
+          focus: '找'
+        },
+        translation: 'She is looking for a quiet place to write.',
+        focus: {
+          hanzi: '找',
+          pinyin: 'zhǎo',
+          literal: 'to look for',
+          definition: 'Means to seek or look for something.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们在大厅等客户来签署合约。',
+          focus: '等'
+        },
+        translation: 'We are waiting in the lobby for the client to sign the contract.',
+        focus: {
+          hanzi: '等',
+          pinyin: 'děng',
+          literal: 'to wait',
+          definition: 'Means to wait for or to await.'
+        }
+      },
+      {
+        sentence: {
+          text: '她每天利用地铁的时间学习法语。',
+          focus: '学习'
+        },
+        translation: 'She studies French every day while riding the subway.',
+        focus: {
+          hanzi: '学习',
+          pinyin: 'xuéxí',
+          literal: 'to learn',
+          definition: 'Refers to the act of studying or learning.'
+        }
+      },
+      {
+        sentence: {
+          text: '他的工作需要频繁拜访客户。',
+          focus: '工作'
+        },
+        translation: 'His job requires frequent visits to clients.',
+        focus: {
+          hanzi: '工作',
+          pinyin: 'gōngzuò',
+          literal: 'to work',
+          definition: 'Means job or to work.'
+        }
+      },
+      {
+        sentence: {
+          text: '他们希望在海边开始新的生活。',
+          focus: '生活'
+        },
+        translation: 'They hope to start a new life by the sea.',
+        focus: {
+          hanzi: '生活',
+          pinyin: 'shēnghuó',
+          literal: 'to live',
+          definition: 'Refers to life or daily living.'
+        }
+      },
+      {
+        sentence: {
+          text: '宝宝听完故事就乖乖睡觉了。',
+          focus: '睡觉'
+        },
+        translation: 'The baby went to sleep obediently after hearing the story.',
+        focus: {
+          hanzi: '睡觉',
+          pinyin: 'shuìjiào',
+          literal: 'sleep + sleep',
+          definition: 'Means to sleep or go to bed.'
+        }
+      },
+      {
+        sentence: {
+          text: '我习惯起床后先喝一杯温水。',
+          focus: '起床'
+        },
+        translation: 'I am used to drinking a cup of warm water after getting up.',
+        focus: {
+          hanzi: '起床',
+          pinyin: 'qǐchuáng',
+          literal: 'rise + bed',
+          definition: 'Means to get out of bed.'
+        }
+      },
+      {
+        sentence: {
+          text: '我稍后打电话确认会议时间。',
+          focus: '打电话'
+        },
+        translation: 'I will call later to confirm the meeting time.',
+        focus: {
+          hanzi: '打电话',
+          pinyin: 'dǎ diànhuà',
+          literal: 'make + telephone',
+          definition: 'Means to make a phone call.'
+        }
+      },
+      {
+        sentence: {
+          text: '我刚看见邮递员把包裹放在门口。',
+          focus: '看见'
+        },
+        translation: 'I just saw the mail carrier leave the package at the door.',
+        focus: {
+          hanzi: '看见',
+          pinyin: 'kànjiàn',
+          literal: 'look + see',
+          definition: 'Means to catch sight of something.'
+        }
+      },
+      {
+        sentence: {
+          text: '她听见隔壁在弹钢琴就过去搭话。',
+          focus: '听见'
+        },
+        translation: 'She heard the neighbor playing piano and went over to chat.',
+        focus: {
+          hanzi: '听见',
+          pinyin: 'tīngjiàn',
+          literal: 'hear + perceive',
+          definition: 'Means to hear something.'
+        }
+      },
+      {
+        sentence: {
+          text: '他习惯说话前先整理思路。',
+          focus: '说话'
+        },
+        translation: 'He usually organizes his thoughts before speaking.',
+        focus: {
+          hanzi: '说话',
+          pinyin: 'shuōhuà',
+          literal: 'speak + words',
+          definition: 'Means to talk or speak.'
+        }
+      },
+      {
+        sentence: {
+          text: '志愿者们帮助整理社区图书。',
+          focus: '帮助'
+        },
+        translation: 'Volunteers help organize the community books.',
+        focus: {
+          hanzi: '帮助',
+          pinyin: 'bāngzhù',
+          literal: 'assist + aid',
+          definition: 'Means to help or assist.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们打算参加周末的手作市集。',
+          focus: '参加'
+        },
+        translation: 'We plan to attend the handmade market this weekend.',
+        focus: {
+          hanzi: '参加',
+          pinyin: 'cānjiā',
+          literal: 'participate + add',
+          definition: 'Means to take part in an event.'
+        }
+      },
+      {
+        sentence: {
+          text: '我打算这个季度完成作品集。',
+          focus: '打算'
+        },
+        translation: 'I plan to finish my portfolio this quarter.',
+        focus: {
+          hanzi: '打算',
+          pinyin: 'dǎsuàn',
+          literal: 'hit + calculate',
+          definition: 'Means to plan or intend to do something.'
+        }
+      },
+      {
+        sentence: {
+          text: '这个计划需要更多跨部门合作。',
+          focus: '需要'
+        },
+        translation: 'This plan requires more cross-department cooperation.',
+        focus: {
+          hanzi: '需要',
+          pinyin: 'xūyào',
+          literal: 'need + want',
+          definition: 'Means to need or require.'
+        }
+      },
+      {
+        sentence: {
+          text: '她发现问题出在数据清洗步骤。',
+          focus: '发现'
+        },
+        translation: 'She discovered that the issue was in the data cleaning step.',
+        focus: {
+          hanzi: '发现',
+          pinyin: 'fāxiàn',
+          literal: 'emit + appear',
+          definition: 'Means to discover or find out.'
+        }
+      },
+      {
+        sentence: {
+          text: '请记得给植物浇水别让它们干枯。',
+          focus: '记得'
+        },
+        translation: 'Please remember to water the plants so they do not dry out.',
+        focus: {
+          hanzi: '记得',
+          pinyin: 'jìdé',
+          literal: 'record + obtain',
+          definition: 'Means to remember something.'
+        }
+      },
+      {
+        sentence: {
+          text: '他忘记带上演示用的转接头。',
+          focus: '忘记'
+        },
+        translation: 'He forgot to bring the adapter needed for the presentation.',
+        focus: {
+          hanzi: '忘记',
+          pinyin: 'wàngjì',
+          literal: 'forget + remember',
+          definition: 'Means to forget something.'
+        }
+      },
+      {
+        sentence: {
+          text: '我相信持续练习会让口语自然许多。',
+          focus: '相信'
+        },
+        translation: 'I believe that steady practice will make speaking more natural.',
+        focus: {
+          hanzi: '相信',
+          pinyin: 'xiāngxìn',
+          literal: 'mutual + trust',
+          definition: 'Means to believe in or trust.'
+        }
+      },
+      {
+        sentence: {
+          text: '先了解用户需求再开始设计更高效。',
+          focus: '了解'
+        },
+        translation: 'Understanding user needs before designing is more efficient.',
+        focus: {
+          hanzi: '了解',
+          pinyin: 'liǎojiě',
+          literal: 'clear + explain',
+          definition: 'Means to comprehend or understand deeply.'
+        }
+      },
+      {
+        sentence: {
+          text: '她想尝试用纪录片的方式讲故事。',
+          focus: '尝试'
+        },
+        translation: 'She wants to try telling stories through documentaries.',
+        focus: {
+          hanzi: '尝试',
+          pinyin: 'chángshì',
+          literal: 'taste + test',
+          definition: 'Means to attempt or try.'
+        }
+      },
+      {
+        sentence: {
+          text: '团队决定把发布推迟一周。',
+          focus: '决定'
+        },
+        translation: 'The team decided to delay the release by a week.',
+        focus: {
+          hanzi: '决定',
+          pinyin: 'juédìng',
+          literal: 'determine + decide',
+          definition: 'Means to decide or determine.'
+        }
+      },
+      {
+        sentence: {
+          text: '请保持文件命名的一致格式。',
+          focus: '保持'
+        },
+        translation: 'Please keep the file naming in a consistent format.',
+        focus: {
+          hanzi: '保持',
+          pinyin: 'bǎochí',
+          literal: 'preserve + maintain',
+          definition: 'Means to maintain or keep.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们需要继续跟踪这些实验数据。',
+          focus: '继续'
+        },
+        translation: 'We need to continue tracking the experimental data.',
+        focus: {
+          hanzi: '继续',
+          pinyin: 'jìxù',
+          literal: 'connect + continue',
+          definition: 'Means to continue or carry on.'
+        }
+      },
+      {
+        sentence: {
+          text: '他终于完成了长达一年的调查报告。',
+          focus: '完成'
+        },
+        translation: 'He finally completed the year-long investigation report.',
+        focus: {
+          hanzi: '完成',
+          pinyin: 'wánchéng',
+          literal: 'finish + accomplish',
+          definition: 'Means to finish or accomplish.'
+        }
+      },
+      {
+        sentence: {
+          text: '请合理使用会议室的共享设备。',
+          focus: '使用'
+        },
+        translation: 'Please use the shared equipment in the meeting room wisely.',
+        focus: {
+          hanzi: '使用',
+          pinyin: 'shǐyòng',
+          literal: 'make + use',
+          definition: 'Means to use or employ.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们会提供详细的培训手册。',
+          focus: '提供'
+        },
+        translation: 'We will provide a detailed training manual.',
+        focus: {
+          hanzi: '提供',
+          pinyin: 'tígōng',
+          literal: 'raise + supply',
+          definition: 'Means to offer or supply.'
+        }
+      },
+      {
+        sentence: {
+          text: '她决定接受新的城市挑战。',
+          focus: '接受'
+        },
+        translation: 'She decided to accept the challenge of living in a new city.',
+        focus: {
+          hanzi: '接受',
+          pinyin: 'jiēshòu',
+          literal: 'receive + accept',
+          definition: 'Means to accept or receive.'
+        }
+      },
+      {
+        sentence: {
+          text: '请在注册时选择合适的课程组别。',
+          focus: '选择'
+        },
+        translation: 'Please choose the appropriate course group when registering.',
+        focus: {
+          hanzi: '选择',
+          pinyin: 'xuǎnzé',
+          literal: 'select + choose',
+          definition: 'Means to choose or select.'
+        }
+      },
+      {
+        sentence: {
+          text: '很多企业愿意支持环保创业团队。',
+          focus: '支持'
+        },
+        translation: 'Many companies are willing to support eco-friendly startups.',
+        focus: {
+          hanzi: '支持',
+          pinyin: 'zhīchí',
+          literal: 'branch + hold',
+          definition: 'Means to support or uphold.'
+        }
+      },
+      {
+        sentence: {
+          text: '我已经安排好明天的参观路线。',
+          focus: '安排'
+        },
+        translation: 'I have already arranged the route for tomorrow’s visit.',
+        focus: {
+          hanzi: '安排',
+          pinyin: 'ānpái',
+          literal: 'peace + arrange',
+          definition: 'Means to arrange or schedule.'
+        }
+      },
+      {
+        sentence: {
+          text: '下午我们一起讨论预算优化方案。',
+          focus: '讨论'
+        },
+        translation: 'This afternoon we will discuss the budget optimization plan.',
+        focus: {
+          hanzi: '讨论',
+          pinyin: 'tǎolùn',
+          literal: 'examine + discuss',
+          definition: 'Means to discuss or deliberate.'
+        }
+      },
+      {
+        sentence: {
+          text: '他愿意分享在国外工作的经验。',
+          focus: '分享'
+        },
+        translation: 'He is willing to share his experience working abroad.',
+        focus: {
+          hanzi: '分享',
+          pinyin: 'fēnxiǎng',
+          literal: 'divide + enjoy',
+          definition: 'Means to share with others.'
+        }
+      },
+      {
+        sentence: {
+          text: '请提前准备好演讲需要的资料。',
+          focus: '准备'
+        },
+        translation: 'Please prepare the materials needed for the speech in advance.',
+        focus: {
+          hanzi: '准备',
+          pinyin: 'zhǔnbèi',
+          literal: 'accurate + prepare',
+          definition: 'Means to prepare or get ready.'
+        }
+      },
+      {
+        sentence: {
+          text: '她想改变长期加班的生活模式。',
+          focus: '改变'
+        },
+        translation: 'She wants to change the habit of long-term overtime work.',
+        focus: {
+          hanzi: '改变',
+          pinyin: 'gǎibiàn',
+          literal: 'alter + change',
+          definition: 'Means to change or alter.'
+        }
+      },
+      {
+        sentence: {
+          text: '到站前请提醒我收拾电脑。',
+          focus: '提醒'
+        },
+        translation: 'Please remind me to pack up the laptop before the stop.',
+        focus: {
+          hanzi: '提醒',
+          pinyin: 'tíxǐng',
+          literal: 'raise + awaken',
+          definition: 'Means to remind or warn.'
+        }
+      },
+      {
+        sentence: {
+          text: '医生建议他减少含糖饮料。',
+          focus: '建议'
+        },
+        translation: 'The doctor suggested that he reduce sugary drinks.',
+        focus: {
+          hanzi: '建议',
+          pinyin: 'jiànyì',
+          literal: 'build + discuss',
+          definition: 'Means to suggest or recommend.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们计划在年底发布新版本。',
+          focus: '计划'
+        },
+        translation: 'We plan to release the new version by the end of the year.',
+        focus: {
+          hanzi: '计划',
+          pinyin: 'jìhuà',
+          literal: 'plan + draw',
+          definition: 'Means to plan or project.'
+        }
+      },
+      {
+        sentence: {
+          text: '这个功能还有改进界面的空间。',
+          focus: '改进'
+        },
+        translation: 'This feature still has room to improve the interface.',
+        focus: {
+          hanzi: '改进',
+          pinyin: 'gǎijìn',
+          literal: 'alter + advance',
+          definition: 'Means to improve or enhance.'
+        }
+      },
+      {
+        sentence: {
+          text: '他们专注推动本地创意产业的发展。',
+          focus: '发展'
+        },
+        translation: 'They focus on promoting the development of the local creative industry.',
+        focus: {
+          hanzi: '发展',
+          pinyin: 'fāzhǎn',
+          literal: 'expand + unfold',
+          definition: 'Means to develop or expand.'
+        }
+      },
+      {
+        sentence: {
+          text: '如有问题请随时联系技术团队。',
+          focus: '联系'
+        },
+        translation: 'Please contact the tech team anytime if there are issues.',
+        focus: {
+          hanzi: '联系',
+          pinyin: 'liánxì',
+          literal: 'connect + tie',
+          definition: 'Means to contact or connect.'
+        }
+      },
+      {
+        sentence: {
+          text: '越来越多人关注心理健康议题。',
+          focus: '关注'
+        },
+        translation: 'More and more people are paying attention to mental health topics.',
+        focus: {
+          hanzi: '关注',
+          pinyin: 'guānzhù',
+          literal: 'observe + focus',
+          definition: 'Means to pay attention to or follow closely.'
+        }
+      },
+      {
+        sentence: {
+          text: '请考虑把会议改在上午。',
+          focus: '考虑'
+        },
+        translation: 'Please consider moving the meeting to the morning.',
+        focus: {
+          hanzi: '考虑',
+          pinyin: 'kǎolǜ',
+          literal: 'examine + think',
+          definition: 'Means to consider or think over.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们比较了三家供应商的报价。',
+          focus: '比较'
+        },
+        translation: 'We compared the quotes from three suppliers.',
+        focus: {
+          hanzi: '比较',
+          pinyin: 'bǐjiào',
+          literal: 'compare + relatively',
+          definition: 'Means to compare or contrast.'
+        }
+      },
+      {
+        sentence: {
+          text: '她耐心解释算法背后的逻辑。',
+          focus: '解释'
+        },
+        translation: 'She patiently explained the logic behind the algorithm.',
+        focus: {
+          hanzi: '解释',
+          pinyin: 'jiěshì',
+          literal: 'untie + explain',
+          definition: 'Means to explain or clarify.'
+        }
+      },
+      {
+        sentence: {
+          text: '新的数据足以证明假设成立。',
+          focus: '证明'
+        },
+        translation: 'The new data is enough to prove the hypothesis holds.',
+        focus: {
+          hanzi: '证明',
+          pinyin: 'zhèngmíng',
+          literal: 'evidence + clarify',
+          definition: 'Means to prove or verify.'
+        }
+      },
+      {
+        sentence: {
+          text: '他用了两周适应新的作息安排。',
+          focus: '适应'
+        },
+        translation: 'He took two weeks to adapt to the new schedule.',
+        focus: {
+          hanzi: '适应',
+          pinyin: 'shìyìng',
+          literal: 'fit + respond',
+          definition: 'Means to adapt or adjust.'
+        }
+      },
+      {
+        sentence: {
+          text: '请控制发言时间给别人机会。',
+          focus: '控制'
+        },
+        translation: 'Please control your speaking time to give others a chance.',
+        focus: {
+          hanzi: '控制',
+          pinyin: 'kòngzhì',
+          literal: 'control + govern',
+          definition: 'Means to control or manage.'
+        }
+      },
+      {
+        sentence: {
+          text: '团队学会面对不确定的市场变化。',
+          focus: '面对'
+        },
+        translation: 'The team has learned to face uncertain market changes.',
+        focus: {
+          hanzi: '面对',
+          pinyin: 'miànduì',
+          literal: 'face + toward',
+          definition: 'Means to face or confront.'
+        }
+      },
+      {
+        sentence: {
+          text: '工程师一上午就解决了网络故障。',
+          focus: '解决'
+        },
+        translation: 'The engineer solved the network failure in one morning.',
+        focus: {
+          hanzi: '解决',
+          pinyin: 'jiějué',
+          literal: 'untie + decide',
+          definition: 'Means to resolve or solve.'
+        }
+      },
+      {
+        sentence: {
+          text: '写作是她表达情绪的方式。',
+          focus: '表达'
+        },
+        translation: 'Writing is her way of expressing emotions.',
+        focus: {
+          hanzi: '表达',
+          pinyin: 'biǎodá',
+          literal: 'express + reach',
+          definition: 'Means to express or convey.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们要保护海岸线的自然生态。',
+          focus: '保护'
+        },
+        translation: 'We must protect the natural ecology of the coastline.',
+        focus: {
+          hanzi: '保护',
+          pinyin: 'bǎohù',
+          literal: 'guard + protect',
+          definition: 'Means to protect or safeguard.'
+        }
+      },
+      {
+        sentence: {
+          text: '今年希望增加社区的阅读活动。',
+          focus: '增加'
+        },
+        translation: 'This year we hope to increase reading activities in the community.',
+        focus: {
+          hanzi: '增加',
+          pinyin: 'zēngjiā',
+          literal: 'increase + add',
+          definition: 'Means to increase or add.'
+        }
+      },
+      {
+        sentence: {
+          text: '新流程明显减少了人工错误。',
+          focus: '减少'
+        },
+        translation: 'The new process has clearly reduced manual errors.',
+        focus: {
+          hanzi: '减少',
+          pinyin: 'jiǎnshǎo',
+          literal: 'decrease + few',
+          definition: 'Means to reduce or lessen.'
+        }
+      },
+      {
+        sentence: {
+          text: '她负责设计展览的导览动线。',
+          focus: '设计'
+        },
+        translation: 'She is responsible for designing the flow of the exhibition tour.',
+        focus: {
+          hanzi: '设计',
+          pinyin: 'shèjì',
+          literal: 'setup + plan',
+          definition: 'Means to design or plan.'
+        }
+      },
+      {
+        sentence: {
+          text: '每天练习发音能提升自信。',
+          focus: '练习'
+        },
+        translation: 'Practicing pronunciation every day can boost confidence.',
+        focus: {
+          hanzi: '练习',
+          pinyin: 'liànxí',
+          literal: 'refine + practice',
+          definition: 'Means to practice or drill.'
+        }
+      },
+      {
+        sentence: {
+          text: '他们计划暑假旅行探索西北。',
+          focus: '旅行'
+        },
+        translation: 'They plan to travel and explore the northwest during summer vacation.',
+        focus: {
+          hanzi: '旅行',
+          pinyin: 'lǚxíng',
+          literal: 'journey + travel',
+          definition: 'Means to travel or take a trip.'
+        }
+      },
+      {
+        sentence: {
+          text: '周日下午我喜欢去植物园放松。',
+          focus: '放松'
+        },
+        translation: 'I like to go to the botanical garden to relax on Sunday afternoons.',
+        focus: {
+          hanzi: '放松',
+          pinyin: 'fàngsōng',
+          literal: 'release + loose',
+          definition: 'Means to relax or loosen up.'
+        }
+      },
+      {
+        sentence: {
+          text: '我们感谢大家对项目的耐心。',
+          focus: '感谢'
+        },
+        translation: 'We are thankful for everyone’s patience with the project.',
+        focus: {
+          hanzi: '感谢',
+          pinyin: 'gǎnxiè',
+          literal: 'feel + thank',
+          definition: 'Means to thank or be grateful.'
+        }
+      },
+      {
+        sentence: {
+          text: '多花时间理解数据背景很重要。',
+          focus: '理解'
+        },
+        translation: 'It is important to spend time understanding the data background.',
+        focus: {
+          hanzi: '理解',
+          pinyin: 'lǐjiě',
+          literal: 'reason + untie',
+          definition: 'Means to understand or comprehend.'
+        }
+      },
+      {
+        sentence: {
+          text: '学生们期待新学期的实验课。',
+          focus: '期待'
+        },
+        translation: 'Students look forward to the lab class in the new semester.',
+        focus: {
+          hanzi: '期待',
+          pinyin: 'qīdài',
+          literal: 'period + wait',
+          definition: 'Means to look forward to or anticipate.'
+        }
+      },
+      {
+        sentence: {
+          text: '她学会享受独自用餐的时光。',
+          focus: '享受'
+        },
+        translation: 'She has learned to enjoy the time of dining alone.',
+        focus: {
+          hanzi: '享受',
+          pinyin: 'xiǎngshòu',
+          literal: 'enjoy + receive',
+          definition: 'Means to enjoy or take pleasure in.'
+        }
+      },
+      {
+        sentence: {
+          text: '听到最新消息后大家都安心了。',
+          focus: '安心'
+        },
+        translation: 'Everyone felt at ease after hearing the latest news.',
+        focus: {
+          hanzi: '安心',
+          pinyin: 'ānxīn',
+          literal: 'peace + heart',
+          definition: 'Means to feel relieved or at ease.'
+        }
+      },
+      {
+        sentence: {
+          text: '他坚持每天跑步无论天气如何。',
+          focus: '坚持'
+        },
+        translation: 'He insists on running every day no matter the weather.',
+        focus: {
+          hanzi: '坚持',
+          pinyin: 'jiānchí',
+          literal: 'firm + hold',
+          definition: 'Means to persist or stick to something.'
+        }
+      },
+      {
+        sentence: {
+          text: '两家公司决定合作开发新产品。',
+          focus: '合作'
+        },
+        translation: 'Two companies decided to cooperate to develop a new product.',
+        focus: {
+          hanzi: '合作',
+          pinyin: 'hézuò',
+          literal: 'join + work',
+          definition: 'Means to cooperate or collaborate.'
+        }
+      },
+      {
+        sentence: {
+          text: '设计师希望创造更包容的空间。',
+          focus: '创造'
+        },
+        translation: 'The designer hopes to create more inclusive spaces.',
+        focus: {
+          hanzi: '创造',
+          pinyin: 'chuàngzào',
+          literal: 'initiate + make',
+          definition: 'Means to create or produce.'
+        }
+      },
+      {
+        sentence: {
+          text: '科学家持续探索深海的秘密。',
+          focus: '探索'
+        },
+        translation: 'Scientists continue exploring the secrets of the deep sea.',
+        focus: {
+          hanzi: '探索',
+          pinyin: 'tànsuǒ',
+          literal: 'probe + search',
+          definition: 'Means to explore or search.'
+        }
+      },
+      {
+        sentence: {
+          text: '她明天要面试一家创业公司。',
+          focus: '面试'
+        },
+        translation: 'She has an interview with a startup company tomorrow.',
+        focus: {
+          hanzi: '面试',
+          pinyin: 'miànshì',
+          literal: 'face + test',
+          definition: 'Means to interview or have an interview.'
+        }
+      },
+      {
+        sentence: {
+          text: '他们考虑投资可再生能源项目。',
+          focus: '投资'
+        },
+        translation: 'They are considering investing in a renewable energy project.',
+        focus: {
+          hanzi: '投资',
+          pinyin: 'tóuzī',
+          literal: 'throw + resources',
+          definition: 'Means to invest money or resources.'
+        }
+      },
+      {
+        sentence: {
+          text: '社交媒体影响年轻人的消费习惯。',
+          focus: '影响'
+        },
+        translation: 'Social media influences the spending habits of young people.',
+        focus: {
+          hanzi: '影响',
+          pinyin: 'yǐngxiǎng',
+          literal: 'shadow + echo',
+          definition: 'Means to influence or affect.'
+        }
+      },
+      {
+        sentence: {
+          text: '记者准备调查这起环保事件。',
+          focus: '调查'
+        },
+        translation: 'The reporters are preparing to investigate the environmental incident.',
+        focus: {
+          hanzi: '调查',
+          pinyin: 'diàochá',
+          literal: 'investigate + examine',
+          definition: 'Means to investigate or survey.'
+        }
+      },
+      {
+        sentence: {
+          text: '团队努力实现自动化的目标。',
+          focus: '实现'
+        },
+        translation: 'The team works hard to realize the goal of automation.',
+        focus: {
+          hanzi: '实现',
+          pinyin: 'shíxiàn',
+          literal: 'real + appear',
+          definition: 'Means to realize or achieve.'
+        }
+      },
+      {
+        sentence: {
+          text: '我每天记录花费以掌握预算。',
+          focus: '记录'
+        },
+        translation: 'I record daily expenses to keep track of the budget.',
+        focus: {
+          hanzi: '记录',
+          pinyin: 'jìlù',
+          literal: 'record + path',
+          definition: 'Means to record or document.'
+        }
+      }
+    ];
+
+    const focusOrder = Array.from(new Set(cards.map((card) => card.focus.hanzi)));
+    const initialUserModel = focusOrder.reduce((acc, word) => {
+      acc[word] = 0.5;
+      return acc;
+    }, {});
+    const likelihoods = {
+      sentence: { known: 0.9, unknown: 0.2 },
+      focus: { known: 0.75, unknown: 0.35 }
+    };
+
     createApp({
       data() {
         return {
           isFlipped: false,
           lastResponse: '',
-          card: {
-            sentence: {
-              text: '今天的天气非常好，我们决定去公园散步。',
-              focus: '散步'
-            },
-            translation: 'The weather is great today, so we decided to take a walk in the park.',
-            focus: {
-              hanzi: '散步',
-              pinyin: 'sànbù',
-              literal: 'scatter + steps',
-              definition: 'A relaxed walk taken for leisure or light exercise.'
-            }
-          },
+          currentIndex: 0,
+          cards,
+          focusOrder,
+          userModel: { ...initialUserModel },
+          debugMode: true,
+          likelihoods,
           responseMap: {
             sentence: 'Logged full comprehension. We’ll queue something harder.',
             focus: 'Focus word captured. We’ll recycle the sentence soon.',
@@ -122,6 +1445,9 @@
         };
       },
       computed: {
+        currentCard() {
+          return this.cards[this.currentIndex] || this.cards[0];
+        },
         responseCopy() {
           return this.lastResponse ? this.responseMap[this.lastResponse] : '';
         },
@@ -141,7 +1467,7 @@
             },
             {
               type: 'unknown',
-              label: "I don't know the focus word.",
+              label: 'I do not know the focus word.',
               classes:
                 'h-14 rounded-2xl border border-rose-400/60 bg-rose-50 text-sm font-medium text-rose-700 transition hover:bg-rose-100 hover:border-rose-500'
             }
@@ -149,10 +1475,13 @@
         }
       },
       methods: {
-        toggleCard() {
-          this.isFlipped = !this.isFlipped;
+        revealCard() {
+          if (this.isFlipped) return;
+          this.lastResponse = '';
+          this.isFlipped = true;
         },
         highlightFocus(sentence) {
+          if (!sentence || !sentence.text || !sentence.focus) return '';
           const focus = sentence.focus;
           const highlight = `<span class="rounded-md bg-amber-200 px-1 text-slate-900">${focus}</span>`;
           return sentence.text.replace(new RegExp(focus, 'g'), highlight);
@@ -160,6 +1489,36 @@
         recordResponse(type) {
           if (!this.responseMap[type]) return;
           this.lastResponse = type;
+          const currentWord = this.currentCard?.focus?.hanzi;
+          if (currentWord && (type === 'sentence' || type === 'focus')) {
+            this.updateKnowledge(type, currentWord);
+          }
+          this.advanceCard();
+        },
+        advanceCard() {
+          if (!this.cards.length) return;
+          this.isFlipped = false;
+          this.currentIndex = (this.currentIndex + 1) % this.cards.length;
+        },
+        updateKnowledge(type, word) {
+          const prior = this.userModel[word] ?? 0.5;
+          const likelihood = this.likelihoods[type];
+          if (!likelihood) return;
+          const known = likelihood.known;
+          const unknown = likelihood.unknown;
+          const numerator = known * prior;
+          const denominator = numerator + unknown * (1 - prior);
+          if (denominator === 0) return;
+          this.userModel[word] = Math.min(
+            0.999,
+            Math.max(0.001, numerator / denominator)
+          );
+        },
+        knowledgeColor(probability) {
+          const prob = typeof probability === 'number' ? probability : 0.5;
+          const hue = prob * 120; // 0 -> red, 120 -> green
+          const lightness = 92 - prob * 12;
+          return `hsl(${hue}, 80%, ${lightness}%)`;
         }
       }
     }).mount('#app');
