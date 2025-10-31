@@ -6,7 +6,6 @@
   <title>Langy • Study Card</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="corpus_raw/zh_cn_lexicon_meta.js"></script>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
   <div id="app" class="flex min-h-screen flex-col items-center justify-center gap-10 px-6 py-16 text-center">
@@ -53,7 +52,7 @@
           >
             <div v-if="currentCard" class="space-y-4 text-slate-900">
               <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(currentCard.sentence)"></p>
-              <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ currentCard.translation }}</p>
+              <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ currentCard.sentenceTranslation }}</p>
             </div>
             <div v-else class="space-y-2 text-center text-sm text-slate-500">
               <p v-if="isLoadingCard">Hold tight—we’re preparing a new context sentence.</p>
@@ -65,6 +64,7 @@
                 <span class="text-4xl font-semibold text-amber-500">{{ currentCard.focus.hanzi }}</span>
                 <div>
                   <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin || '—' }}</p>
+                  <p class="text-sm text-slate-500">{{ currentCard.wordTranslation || '—' }}</p>
                   <p class="text-xs uppercase tracking-[0.2em] text-slate-400">
                     {{ currentCard.focus.literal || '—' }}
                   </p>
@@ -72,6 +72,9 @@
               </div>
               <p class="mt-4 text-sm leading-relaxed text-slate-700">
                 {{ currentCard.focus.definition || '—' }}
+              </p>
+              <p v-if="currentCard.focus.usage" class="mt-2 text-xs italic text-slate-500">
+                {{ currentCard.focus.usage }}
               </p>
             </div>
             <div
@@ -100,15 +103,6 @@
         {{ button.label }}
       </button>
     </div>
-
-    <transition name="fade">
-      <p
-        v-if="responseCopy"
-        class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm"
-      >
-        {{ responseCopy }}
-      </p>
-    </transition>
 
     <div v-if="debugMode && samplePoints.length" class="w-full max-w-2xl">
       <div class="mt-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -173,14 +167,6 @@
     }
     .group.relative {
       perspective: 1600px;
-    }
-    .fade-enter-active,
-    .fade-leave-active {
-      transition: opacity 0.3s;
-    }
-    .fade-enter-from,
-    .fade-leave-to {
-      opacity: 0;
     }
   </style>
 
@@ -1490,31 +1476,15 @@
       }
     ];
 
-    const lexiconMeta = window.__LANGY_LEXICON_META__ || {};
     const focusMetaMap = seedCards.reduce((acc, card) => {
       acc[card.focus.hanzi] = { ...card.focus };
       return acc;
     }, {});
-    for (const [word, meta] of Object.entries(lexiconMeta)) {
-      const existing = focusMetaMap[word] || {};
-      focusMetaMap[word] = {
-        hanzi: word,
-        pinyin: meta.pinyin || existing.pinyin || '',
-        literal: existing.literal || meta.literal || '',
-        definition: meta.definition || existing.definition || ''
-      };
-    }
-
-    const likelihoods = {
-      sentence: { known: 0.85, unknown: 0.25 },
-      focus: { known: 0.85, unknown: 0.25 }
-    };
 
     createApp({
       data() {
         return {
           isFlipped: false,
-          lastResponse: '',
           currentIndex: 0,
           lexicon: [],
           frequencyMap: {},
@@ -1534,12 +1504,7 @@
           betaConfidenceRamp: 2,
           targetSuccessRate: 0.8,
           targetWindowSize: 100,
-          likelihoods,
-          responseMap: {
-            sentence: 'Logged full comprehension. We’ll queue something harder.',
-            focus: 'Focus word captured. We’ll recycle the sentence soon.',
-            unknown: 'Logged for review. We’ll surface supporting cards.'
-          }
+          responseOptions: ['sentence', 'focus', 'unknown']
         };
       },
       created() {
@@ -1551,9 +1516,6 @@
       computed: {
         currentCard() {
           return this.activeCard;
-        },
-        responseCopy() {
-          return this.lastResponse ? this.responseMap[this.lastResponse] : '';
         },
         responseButtons() {
           return [
@@ -1714,7 +1676,15 @@
                 `OpenAI request failed with status ${response.status}`;
               throw new Error(message);
             }
-            if (!payload || !payload.sentence || !payload.translation) {
+            if (
+              !payload ||
+              !payload.sentence ||
+              !payload.word_pinyin ||
+              !payload.sentence_translation ||
+              !payload.word_translation ||
+              !payload.definition ||
+              !payload.usage_hint
+            ) {
               throw new Error('Generator returned incomplete data.');
             }
             const meta = focusMetaMap[word] || {};
@@ -1723,12 +1693,14 @@
                 text: payload.sentence,
                 focus: word
               },
-              translation: payload.translation,
+              sentenceTranslation: payload.sentence_translation,
+              wordTranslation: payload.word_translation,
               focus: {
                 hanzi: word,
-                pinyin: meta.pinyin || '',
+                pinyin: payload.word_pinyin || meta.pinyin || '',
                 literal: meta.literal || '',
-                definition: meta.definition || ''
+                definition: payload.definition || meta.definition || '',
+                usage: payload.usage_hint || ''
               }
             };
           } catch (error) {
@@ -1741,7 +1713,6 @@
         },
         async revealCard() {
           if (this.isFlipped || this.isLoadingCard || !this.currentCard) return;
-          this.lastResponse = '';
           this.errorMessage = '';
           this.isFlipped = true;
         },
@@ -1755,8 +1726,8 @@
           return sentence.text.replace(new RegExp(escaped, 'g'), highlight);
         },
         async recordResponse(type) {
-          if (!this.responseMap[type] || this.isLoadingCard || !this.currentCard) return;
-          this.lastResponse = type;
+          if (this.isLoadingCard || !this.currentCard) return;
+          if (!this.responseOptions.includes(type)) return;
           const currentWord = this.currentCard?.focus?.hanzi;
           const isCorrect = type === 'sentence' || type === 'focus';
           if (currentWord) {
