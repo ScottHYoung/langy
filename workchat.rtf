@@ -1,0 +1,1331 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Bold;\f1\fnil\fcharset0 Menlo-Regular;\f2\fnil\fcharset0 Menlo-Italic;
+}
+{\colortbl;\red255\green255\blue255;\red133\green133\blue133;\red221\green221\blue221;\red0\green0\blue0;
+\red153\green153\blue153;\red46\green174\blue187;\red47\green180\blue29;\red180\green36\blue25;\red74\green0\blue255;
+}
+{\*\expandedcolortbl;;\csgenericrgb\c52108\c52108\c52108;\cspthree\c89412\c89412\c89412;\csgray\c0;
+\csgenericrgb\c60000\c60000\c60000;\cssrgb\c20199\c73241\c78251;\cssrgb\c20241\c73898\c14950;\cssrgb\c76411\c21697\c12527;\cssrgb\c36733\c20484\c100000;
+}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\b\fs24 \cf2 \cb3 \CocoaLigature0 \'9b 
+\f1\b0 \cf4 Hmmm this all sounds too complicated, and I'm realizing that the individual card\
+  knowledge and level prediction are somewhat separated in their roles. After all, the data\
+  for individual words comes through the program itself, whereas the "level" is more of a\
+  global parameter we need to update through Bayes' Rule. Here's what I suggest: we abandon\
+  the individual beta weights in a kind of hierarchical regime. Instead, all we're trying\
+  to do is predict and overall "level" that would smoothly interpolate all of the results.\
+  Then, we instead store separate data on each individual word, noting when it has been\
+  seen, whether it was correctly identified, incorrectly identified and the timestamps of\
+  those viewing (in case we want to implement some kind of spaced repetition later). The\
+  button presses would separately (1) perform adjustments to the overall level and (2)\
+  update the history of word coverage/exposure and correctness therein. To start, let's\
+  look at modeling the user's level as a single-parameter function that would estimate\
+  their likelihood of knowing a word, given which words they already know. Abandon the beta\
+  weights, there would only be one parameter. Right now we need to determine which kind of\
+  function best approximates a realistic knowledge base, where both zero and perfectly\
+  fluent are achievable options (not merely asymptotes) but that the frequency data on\
+  words is a factor. One idea I have is that maybe a good proxy for level would be overall\
+  exposure to Chinese. If you can imagine a human being has read/listened to X words in\
+  Chinese total in one's lifetime, then you can imagine they would have seen/recognized\
+  words according to X * wordfrequency. If Y exposures are required to "know" a word\
+  passively this way, then this could model the likelihood of knowing a word based on the #\
+  of exposures in their likely context. In this case, the parameter we'd want to measure\
+  would be lifetime # of tokens seen. What do you think about this approach?\
+\
+\cb1 \
+\cf5 \'95 
+\f2\i I'm putting together a detailed, supportive response that evaluates modeling word
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 knowledge as a function of exposures using a Poisson-based survival curve. I'll explain
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 how to map lifetime tokens and word frequency into an exposure count, propose the
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 probability formula ( p = 1 - e^\{-\\text\{exposures\}/Y\} ), and suggest ways to update
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 lifetime tokens with Bayesian inference from user responses. I'll also compare this to
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 logistic approaches and clarify how to manage exposure history efficiently, aiming to
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 deliver this all in a tidy bullet-point format.
+\f1\i0 \cf4 \
+\
+\cf5 \uc0\u9472  Worked for 10s \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \cf4 \
+\
+\cf5 \'95 
+\f0\b \cf4 Single-Parameter Level via Exposure Budget
+\f1\b0 \
+\
+  - Treat the user\'92s \'93level\'94 as lifetime token exposure \cf5 T\cf4  (number of Chinese words read/\
+    heard). For a word with corpus rate \cf5 f\cf4  (occurrences per token), the expected encounters\
+    are \cf5 E = T \'b7 f\cf4 . If roughly \cf5 Y\cf4  exposures are needed to internalize a word, model mastery as\
+    \cf5 P(know|T,f) = 1 - exp(-E / Y)\cf4 . This saturates at 0 when T = 0 and hits 1 when exposure\
+    dwarfs the threshold.\
+  - SUBTLEX gives \cf5 W/million\cf4 ; convert to \cf5 f = (W/million) / 10\uc0\u8310 \cf4  so common function words reach\
+    high probabilities even with small \cf5 T\cf4 , while rare words require large \cf5 T\cf4 . Make \cf5 Y\cf4  a tunable\
+    constant (or random variable if you want per-user variation).\
+\
+  
+\f0\b Updating the Level
+\f1\b0 \
+\
+  - Keep a prior over \cf5 log T\cf4  (log-normal or gamma). Each button press supplies likelihood\
+    factors:\
+    \'95 \'93Known\'94 \uc0\u8658  multiply by \cf5 P(know|T,f)\cf4  for the focus word.\
+    \'95 \'93Unknown\'94 \uc0\u8658  multiply by \cf5 1 - P(know|T,f)\cf4 .\
+    \'95 \'93Sentence known\'94 vs. \'93focus known\'94 still differ in how you store word history, but the\
+    level update only uses the focus-word observation.\
+  - After each response, renormalize (closed form for gamma if you stick to Poisson-style\
+    exposures; otherwise do a one-step gradient or keep a small particle set for \cf5 T\cf4 ). This\
+    keeps zero\uc0\u8209 knowledge and native\u8209 level both reachable without awkward asymptotes.\
+\
+  
+\f0\b Per-Word History (No Embedded Betas)
+\f1\b0 \
+\
+  - For every word, log \cf5 [\{timestamp, responseType\}]\cf4 , plus maybe a counter for total\
+    exposures. This lets you add spaced-repetition logic later (e.g., schedule the next\
+    review when \uc0\u916 t exceeds a decay threshold). The actual probability of knowing still comes\
+    from \cf5 T\cf4  and corpus frequency, so history doesn\'92t skew the global model.\
+\
+  
+\f0\b Card Selection
+\f1\b0 \
+\
+  - Define utility \uc0\u8776  \cf5 frequency weight \'d7 (1 - P(know|T,f))\cf4 , optionally modulated by time\
+    since last exposure. Sample or rank by this to surface high-impact unknowns. Because\
+    \cf5 P(know)\cf4  comes straight from \cf5 T\cf4 , you avoid double-counting the \'93teaching\'94 effect while\
+    still upweighting frequent words.\
+\
+  
+\f0\b Why This Fits the Goals
+\f1\b0 \
+\
+  - New learners (tiny \cf5 T\cf4 ) naturally sit near 0 for every word; fluent users (huge \cf5 T\cf4 )\
+    approach 1 quickly for the whole frequency range.\
+  - Corpus frequency still matters, but you don\'92t need per-word Beta evidence. The model is\
+    monotonic, easy to invert (\'93how many tokens would make this word 80% known?\'94), and it\
+    keeps response updates simple.\
+\
+  If that direction sounds right, next step is to codify the likelihood update for \cf5 T\cf4 \
+  (probably on a log scale for numerical stability) and swap the UI logic to compute card\
+  difficulty via the exposure formula while word histories just log timestamps and outcomes.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 okay sure, do we want to store the parameter as a number, or a floating point or a log\
+  value. I'm not sure what makes more sense here. Intuitively user "level" is probably a\
+  log-valued function (so that someone with an order of magnitude more experience is\
+  probably only a single level higher) given the zipf frequency distribution. But I'm not\
+  sure whether storing it as a (potentially) huge number versus a log number has any\
+  advantages/disadvantages when considering both compute and the influence of calculations\
+  here.\
+\
+\cb1 \
+\cf5 \'95 \cf4 Storing the level as log-exposure (\cf5 log T\cf4 ) is usually the cleanest option:\
+\
+  - 
+\f0\b Dynamic range:
+\f1\b0  \cf5 T\cf4  spans many orders of magnitude\'97from a few hundred tokens for a beginner\
+    to 10\uc0\u8310 \'9610\u8312  for heavy exposure. Keeping it in log form keeps arithmetic stable and avoids\
+    overflow/underflow when you plug it into exponentials.\
+  - 
+\f0\b Updates stay additive:
+\f1\b0  Bayes-style updates based on likelihood ratios become additions\
+    in log-space, which is cheaper to compute and less prone to precision loss than\
+    multiplying huge/small numbers directly.\
+  - 
+\f0\b Interpretability:
+\f1\b0  Each +1 step in \cf5 log T\cf4  means \'93~2.7\'d7 more lifetime tokens,\'94 so your\
+    \'93levels\'94 already behave like the intuitive \'93one order of magnitude more experience = one\
+    level higher.\'94\
+  - 
+\f0\b When you need 
+\f1\b0 \cf5 T
+\f0\b \cf4 :
+\f1\b0  Only convert back to linear exposure when you have to evaluate \cf5 P(know)\cf4 \
+    \cf5 = 1 - exp(-(T\'b7f)/Y)\cf4 . You can still compute this directly from the log value via \cf5 T\'b7f =\cf4 \
+    \cf5 exp(logT + log f)\cf4  to stay in stable territory.\
+  - 
+\f0\b Storage cost:
+\f1\b0  A single float is the same either way, but keeping the canonical value in\
+    log form avoids ever holding truly huge numbers in memory or local state.\
+\
+  So I\'92d store the canonical level as \cf5 logT\cf4 , keep all updates/additions there, and only\
+  exponentiate inline when evaluating the knowledge probability for a word.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 okay that sounds good. Let's implement this and clean up the code so there's none of the\
+  beta-parameter estimation going on. We just have the one parameter that signifies the\
+  user's approximate level. But, since we want to maintain updates of word-level granular\
+  knowledge, I suggest that you instead create a kind of "knowledge base" which would\
+  contain exposures to words. I'm not sure the best way to do this. One would be to have a\
+  kind of "knowledge" strength, that would have some kind of array of all exposures to a\
+  particular word, (perhaps more heavily modified for focal words) that would have some\
+  kind of expontential decay a la the spacing effect so that we could model user knowledge\
+  as a function of both exposures and time involved. But I think trying to implement both\
+  of these things at once may get tricky. So maybe just make notes in the planning document\
+  that we need to implement the work-level knowledge base and let's just focus on the level\
+  estimation right now. In addition, let's drop "curve" at the bottom of the interface that\
+  measures word knowledge and have the current "best estimate" of the user's knowledge base\
+  so I can see how it updates instead.\
+\
+\cb1 \
+\cf5 \'95 
+\f0\b \cf4 Updated Plan
+\f1\b0 \
+\cf5   \uc0\u9492  \cf4 \uc0\u9633  
+\f0\b \cf6 Strip beta-based user model and introduce single log-exposure parameter for level
+\f1\b0 \cf4 \
+      
+\f0\b \cf6 tracking.
+\f1\b0 \cf4 \
+    \uc0\u9633  \cf5 Adjust UI to display current level estimate and remove knowledge curve.\cf4 \
+    \uc0\u9633  \cf5 Document future per-word knowledge base in plan.md update.\cf4 \
+    \uc0\u9633  \cf5 Verify UI logic and summarize changes.\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  beta\cf5  in \cf4 index.html\
+\
+\cf5 \'95 
+\f2\i I\'92m planning a big overhaul to ditch the Beta-based ability model and simplify to a
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 single level parameter tied to logExposure. This involves removing ability-related
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 fields, adopting a new probability formula based on exposures computed from frequency and
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 logExposure, and updating level via gradient steps from observed outcomes. I\'92ll rework
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 data structures, update response recording to use this new level update, remove old
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 knowledge curve logic and panels, and adjust lexicon processing to maintain total corpus
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 frequency for probability calculations. The debug UI also gets revamped to show current
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 level estimates and recent interactions instead of curves. This streamlines knowledge
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 tracking into a cleaner, exposure-centered system.
+\f1\i0 \cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  normalizedFreqMap\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  freqStats\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  frequencyWeight\cf5  in \cf4 index.html\
+\
+\cf5 \'95 
+\f2\i I'm reorganizing the data structure and replacing ability-related functions with a new
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 model focused on exposure and mastery probabilities. I plan to update the data object with
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 new fields like logExposure, learning rates, and recent updates, revamp methods to compute
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 mastery from frequency and exposure, and adjust the UI to reflect a level estimate panel
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 that replaces the old knowledge curve. I'll handle detailed formula adjustments carefully
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 and remove obsolete fields and references, including the userModel.
+\f1\i0 \cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  userModel\cf5  in \cf4 index.html\
+\
+\cf5 \'95 
+\f0\b \cf4 Edited
+\f1\b0  index.html (\cf7 +10\cf4  \cf8 -26\cf4 )\
+    \cf5 1538 \cf4            frequencyMap: \{\},\
+    \cf5 1539 \cf8 -          normalizedFreqMap: \{\},\cf4 \
+    \cf5 1539 \cf7 +          frequencyProbabilityMap: \{\},\cf4 \
+    \cf5 1540 \cf4            activeCard: null,\
+    \cf5 1541 \cf8 -          userModel: \{\},\cf4 \
+    \cf5 1541 \cf4            debugMode: true,\
+    \cf5      \uc0\u8942 \cf4 \
+    \cf5 1543 \cf4            errorMessage: '',\
+    \cf5 1545 \cf8 -          abilityMean: -1.1,\cf4 \
+    \cf5 1546 \cf8 -          abilityVar: 9.0,\cf4 \
+    \cf5 1547 \cf8 -          minAbilityVar: 0.01,\cf4 \
+    \cf5 1548 \cf8 -          frequencyWeight: 1.05,\cf4 \
+    \cf5 1549 \cf8 -          freqStats: \{ mean: 0, std: 1 \},\cf4 \
+    \cf5 1550 \cf8 -          sampleCount: 200,\cf4 \
+    \cf5 1551 \cf8 -          betaPriorStrength: 0.5,\cf4 \
+    \cf5 1552 \cf8 -          betaConfidenceRamp: 2,\cf4 \
+    \cf5 1544 \cf7 +          logExposure: Math.log(5000),\cf4 \
+    \cf5 1545 \cf7 +          levelLearningRate: 0.05,\cf4 \
+    \cf5 1546 \cf7 +          exposuresForMastery: 8,\cf4 \
+    \cf5 1547 \cf7 +          minLogExposure: Math.log(10),\cf4 \
+    \cf5 1548 \cf7 +          maxLogExposure: Math.log(1e8),\cf4 \
+    \cf5 1549 \cf7 +          totalCorpusFrequency: 1,\cf4 \
+    \cf5 1550 \cf4            targetSuccessRate: 0.8,\
+    \cf5      \uc0\u8942 \cf4 \
+    \cf5 1552 \cf4            responseOptions: ['sentence', 'focus', 'unknown'],\
+    \cf5 1556 \cf8 -          knowledgeSignalConfig: \{\cf4 \
+    \cf5 1557 \cf8 -            sentence: \{\cf4 \
+    \cf5 1558 \cf8 -              focus: \{ alpha: 2 \},\cf4 \
+    \cf5 1559 \cf8 -              others: \{ alpha: 0.5 \}\cf4 \
+    \cf5 1560 \cf8 -            \},\cf4 \
+    \cf5 1561 \cf8 -            focus: \{\cf4 \
+    \cf5 1562 \cf8 -              focus: \{ alpha: 2 \},\cf4 \
+    \cf5 1563 \cf8 -              others: \{ betaScale: 0.8 \}\cf4 \
+    \cf5 1564 \cf8 -            \},\cf4 \
+    \cf5 1565 \cf8 -            unknown: \{\cf4 \
+    \cf5 1566 \cf8 -              focus: \{ beta: 2 \},\cf4 \
+    \cf5 1567 \cf8 -              others: \{ betaScale: 1 \}\cf4 \
+    \cf5 1568 \cf8 -            \}\cf4 \
+    \cf5 1569 \cf8 -          \},\cf4 \
+    \cf5 1553 \cf4            activeSentenceTokens: [],\
+    \cf5      \uc0\u8942 \cf4 \
+    \cf5 1557 \cf4            maxLexemeLength: 1,\
+    \cf5 1575 \cf8 -          recentUpdates: [],\cf4 \
+    \cf5 1576 \cf8 -          maxRecentUpdates: 40\cf4 \
+    \cf5 1558 \cf7 +          recentLevelUpdates: [],\cf4 \
+    \cf5 1559 \cf7 +          maxRecentLevelUpdates: 30,\cf4 \
+    \cf5 1560 \cf7 +          totalResponses: 0\cf4 \
+    \cf5 1561 \cf4          \};\
+\
+\cf5 \'95 
+\f0\b \cf4 Edited
+\f1\b0  index.html (\cf7 +0\cf4  \cf8 -3\cf4 )\
+    \cf5 1562 \cf4        \},\
+    \cf5 1563 \cf8 -      created() \{\cf4 \
+    \cf5 1564 \cf8 -        this.userModel = \{\};\cf4 \
+    \cf5 1565 \cf8 -      \},\cf4 \
+    \cf5 1563 \cf4        mounted() \{\
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Read\cf4  index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +70 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Read\cf4  index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +61 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +9 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +23 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Read\cf4  index.html\
+\
+\cf5 \'95 
+\f2\i I\'92m removing old functions from ensureWordState through recordKnowledgeUpdates and
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 replacing them with new methods focused on calculating word probability, updating
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 knowledge levels with controlled gradients, and recording updates with unique IDs. I\'92ll
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 carefully implement gradient calculations to handle edge cases and clamp values for
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 stability, while also removing deprecated functions like collectSentenceWords. This will
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 involve replacing lines 1801-1903 with the new method definitions.
+\f1\i0 \cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +189 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  recentUpdates\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  knowledgeSignalConfig\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  applyKnowledgeDelta\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  collectSentenceWords\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  formatAlphaBeta\cf5  in \cf4 index.html\
+    \cf6 Read\cf4  index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +207 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Read\cf4  index.html\
+    \cf6 Search\cf4  selectNextIndex\cf5  in \cf4 index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +165 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  ability\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  normalizedFreqMap\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  freqStats\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  beta\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  recentUpdates\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  sampleCount\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  userModel\cf5  in \cf4 index.html\
+\
+\cf5 \'95 
+\f2\i I'm reviewing code changes around loading and applying the lexicon, checking async
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 usage and ensuring exposure calculations won't overflow. I want to confirm that response
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 tracking resets properly, and that recent refactors like levelPreview and rank handling
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 integrate cleanly. Before updating the plan document, I'll verify there are no errors
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 referencing new functions, then add a clear TODO note in the knowledge model section about
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 implementing per-word exposure history with decay. I'll use a patch to neatly append this
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 to plan.md as instructed.
+\f1\i0 \cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: plan.md\cf4 \
+\cf5   \uc0\u9474  \'85 +7 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M plan.md\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  levelPreview\cf5  in \cf4 index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  git status -sb\
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 ## master...origin/master\cf4 \
+    \cf5  M index.html\cf4 \
+    \cf5  M plan.md\cf4 \
+\
+\cf5 \'95 
+\f0\b \cf4 Updated Plan
+\f1\b0 \
+\cf5   \uc0\u9492  \cf4 \uc0\u10004  \cf5 Strip beta-based user model and introduce single log-exposure parameter for level\cf4 \
+      \cf5 tracking.\cf4 \
+    \uc0\u10004  \cf5 Adjust UI to display current level estimate and remove knowledge curve.\cf4 \
+    \uc0\u10004  \cf5 Document future per-word knowledge base in plan.md update.\cf4 \
+    \uc0\u9633  
+\f0\b \cf6 Verify UI logic and summarize changes.
+\f1\b0 \cf4 \
+\
+\cf5 \'95 
+\f0\b \cf4 Updated Plan
+\f1\b0 \
+\cf5   \uc0\u9492  \cf4 \uc0\u10004  \cf5 Strip beta-based user model and introduce single log-exposure parameter for level\cf4 \
+      \cf5 tracking.\cf4 \
+    \uc0\u10004  \cf5 Adjust UI to display current level estimate and remove knowledge curve.\cf4 \
+    \uc0\u10004  \cf5 Document future per-word knowledge base in plan.md update.\cf4 \
+    \uc0\u10004  \cf5 Verify UI logic and summarize changes.\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Read\cf4  index.html\
+\
+\cf5 \'95 
+\f2\i I'll ensure the plan reflects the new debug UI area, verify levelPreview uses the right
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 formatting, and confirm removal of old logistic functions. I'll detail main updates in
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 index.html with exact line numbers for data restructuring, computed preview, lexicon
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 loading, response recording, and the new debug UI layout. Before finalizing, I'll
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 note that tests haven't run yet and mention future knowledge base tasks in the summary
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 referencing changed file sections.
+\f1\i0 \cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Read\cf4  index.html\cf5 , \cf4 plan.md\
+\
+\cf5 \'95 
+\f2\i I'll highlight the main changes: replacing the Beta approach with a single log exposure
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 parameter in index.html:1533-1841, updates to knowledgeProbability functions, the UI
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 debug panel overhaul at index.html:108-167, and notes from plan.md:20 on future exposure
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 features. I\'92ll mention that random selection via selectNextIndex remains unaffected but
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 now uses wordProbability, and note that no tests were run. For next steps, I\'92ll suggest
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 verifying parameter updates, calibrating exposuresForMastery, and manually checking the
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 interplay. This summary will be clear and bullet-pointed for easy reading.
+\f1\i0 \cf4 \
+\
+\cf5 \uc0\u9472  Worked for 7m 25s \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \cf4 \
+\
+\cf5 \'95 \cf4 - Replaced the per-word Beta machinery with a single log-exposure level model\
+    that drives knowledge probabilities and gradient updates (\cf5 index.html:1533-1841\cf4 ,\
+    \cf5 index.html:1964-2022\cf4 ). Word mastery now comes from \cf5 P = 1 - exp(-(exp(logExposure)\'b7freq)/\cf4 \
+    \cf5 exposuresForMastery)\cf4 , and each response nudges \cf5 logExposure\cf4  while clamping it within\
+    practical bounds.\
+  - Rebuilt the debug UI to surface the new estimate instead of the old curve\'97showing\
+    lifetime token exposure, mastery threshold, rank-based knowledge previews, and recent\
+    response deltas (\cf5 index.html:108-167\cf4 ).\
+  - Normalized lexicon loading to compute frequency probabilities directly for the exposure\
+    model (\cf5 index.html:1624-1662\cf4 ) and kept the adaptive window but now sample randomly within\
+    it using the new probability function.\
+  - Logged a follow-up task to capture per-word exposure histories once we\'92re ready to layer\
+    spaced repetition on top of the level model (\cf5 plan.md:20\cf4 ).\
+\
+  Tests not run (UI changes only).\
+\
+  Next steps you might take:\
+\
+  \cf9 1. \cf4 Play a few sessions and watch the \'93Level Estimate\'94 panel to tune \cf5 exposuresForMastery\cf4 \
+     and the learning rate so updates feel realistic.\
+  \cf9 2. \cf4 Decide on the data shape for per-word exposure history before we wire it into\
+     persistence, using the new plan.md note as a starting point.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 okay, can you explain how the logExposure gets updated as we do cards?\
+\
+\cb1 \
+\cf5 \'95 \cf4 Every time you answer a card, we run the following steps for the focus word:\
+\
+  \cf9 1. 
+\f0\b \cf4 Look up the word\'92s frequency weight
+\f1\b0 \
+     \cf5 freqProbability = frequency / totalCorpusFrequency\cf4  (how much of the corpus it\
+     occupies).\
+  \cf9 2. 
+\f0\b \cf4 Compute expected exposures at your current level
+\f1\b0 \
+     \cf5 T = exp(logExposure)\cf4  gives lifetime tokens; expected encounters with the word are\
+     \cf5 exposures = T * freqProbability\cf4 .\
+  \cf9 3. 
+\f0\b \cf4 Prior probability of knowing the word
+\f1\b0 \
+     We treat mastery as \cf5 P(know|T) = 1 - exp(-exposures / exposuresForMastery)\cf4  (default\
+     \cf5 exposuresForMastery = 8\cf4 ).\
+     This covers the beginner\uc0\u8594 fluent range cleanly.\
+  \cf9 4. 
+\f0\b \cf4 Gradient sign based on the button press
+\f1\b0 \
+      - If you said \'93sentence\'94 or \'93focus\'94, \cf5 isKnown = 1\cf4 .\
+        We compute \cf5 baseTerm = (1 - P) / P\cf4  so the gradient is positive\'97pushing \cf5 logExposure\cf4 \
+        upward.\
+      - If you said \'93unknown\'94, \cf5 isKnown = 0\cf4 .\
+        \cf5 baseTerm = -1\cf4 , so the gradient is negative\'97dragging the level down.\
+        To keep the math stable we clamp \cf5 P\cf4  to \cf5 [1e-6, 1-1e-6]\cf4 .\
+  \cf9 5. 
+\f0\b \cf4 Gradient magnitude
+\f1\b0 \
+     \cf5 gradient = (exposures / exposuresForMastery) * baseTerm\cf4 .\
+     Intuition: the more often you\'92d expect to have seen the word at this level, the larger\
+     the adjustment.\
+  \cf9 6. 
+\f0\b \cf4 Apply learning rate and limits
+\f1\b0 \
+     We clamp the gradient to \'b15, multiply by \cf5 levelLearningRate\cf4  (currently 0.05), and add it\
+     to \cf5 logExposure\cf4 .\
+     Finally we clamp \cf5 logExposure\cf4  between \cf5 minLogExposure = ln(10)\cf4  and \cf5 maxLogExposure =\cf4 \
+     \cf5 ln(1e8)\cf4  so the estimate doesn\'92t explode.\
+\
+  That\'92s the entire update: each response shifts the single \cf5 logExposure\cf4  parameter according\
+  to how surprising the result was relative to the frequency-implied expectation.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 walk me through the calculation. Give me the start parameter, and suppose I guess a word\
+  that is near the 75% percentile for frequency distribution. What would that mean for the\
+  update to the logExposure variable after one time?\
+\
+\cb1 \
+\cf5 \'95 \cf4 Starting from the default \cf5 logExposure = ln(5000) \uc0\u8776  8.52\cf4  (i.e., we assume the learner has\
+  seen about 5\uc0\u8239 000 Chinese tokens).\
+\
+  \cf9 1. 
+\f0\b \cf4 Pick a 75th\uc0\u8209 percentile word.
+\f1\b0 \
+     SUBTLEX\'92s total token count is about 33\uc0\u8239 546\u8239 516. A word around the 75th percentile\
+     shows up roughly 120 times, so\
+     \cf5 freqProbability \uc0\u8776  120 / 33,546,516 \u8776  3.6 \'d7 10\u8315 \u8310 \cf4 .\
+  \cf9 2. 
+\f0\b \cf4 Expected encounters at the current level.
+\f1\b0 \
+     \cf5 T = exp(logExposure) = 5\uc0\u8239 000\cf4 , so\
+     \cf5 exposures = T \'d7 freqProbability \uc0\u8776  5\u8239 000 \'d7 3.6 \'d7 10\u8315 \u8310  \u8776  0.018\cf4 .\
+  \cf9 3. 
+\f0\b \cf4 Prior probability of knowing it.
+\f1\b0 \
+     We need ~8 exposures to master a word (\cf5 exposuresForMastery = 8\cf4 ), so\
+     `P = 1 - exp(-(exposures / exposuresForMastery))\
+     In other words, before seeing your answer the model thinks you\'92ve got about a 0.22\uc0\u8239 %\
+     chance of knowing this word.\
+  \cf9 4. 
+\f0\b \cf4 Apply the response.
+\f1\b0 \
+     Suppose you mark it as \'93known\'94 (either \'93sentence\'94 or \'93focus\'94).\
+      - Clamp \cf5 P\cf4  to avoid divide-by-zero (\cf5 P \uc0\u8776  0.00224\cf4  already fine).\
+      - \cf5 baseTerm = (1 - P) / P \uc0\u8776  0.9978 / 0.00224 \u8776  445\cf4 .\
+      - \cf5 exposures / exposuresForMastery = 0.018 / 8 \uc0\u8776  0.00224\cf4 .\
+      - Gradient \cf5 = 0.00224 \'d7 445 \uc0\u8776  0.998\cf4  (clamped to \'b15, so unchanged).\
+  \cf9 5. 
+\f0\b \cf4 Update 
+\f1\b0 \cf5 logExposure
+\f0\b \cf4 .
+\f1\b0 \
+     With \cf5 levelLearningRate = 0.05\cf4 ,\
+     \cf5 \uc0\u916 logExposure = 0.05 \'d7 0.998 \u8776  0.050\cf4 .\
+     New \cf5 logExposure \uc0\u8776  8.52 + 0.05 = 8.57\cf4 , i.e.\
+     \cf5 T_new \uc0\u8776  exp(8.57) \u8776  5.3 \'d7 10\'b3 tokens\cf4 .\
+  \cf9 6. 
+\f0\b \cf4 If you had answered \'93unknown\'94 instead
+\f1\b0 , everything through step 3 is identical, but\
+     \cf5 baseTerm = -1\cf4 , giving \cf5 gradient \uc0\u8776  -0.00224\cf4  and \cf5 \uc0\u916 logExposure \u8776  -0.00011\cf4 \'97a very small\
+     downward tweak.\
+\
+  So a single correct hit on a moderately frequent word nudges the lifetime token estimate\
+  up about 10\uc0\u8239 %, while a miss barely lowers it at this level.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 okay, so I think I see something that's missing here. The issue is that when we *start*\
+  the program, we have no idea what the user's level is, so we should update the prior\
+  relatively quickly. In other words, the 5000 default is essentially a blind guess, we\
+  should have no great confidence of their *actual* level. But once we've done 100 cards,\
+  we should have a fairly good idea of their level and incremental adjustments should be\
+  smaller. I'm worried here that the approach we've taken is simultaneously too slow to\
+  update in the beginning *and* too fast to update later on (when we've potentially done\
+  thousands of cards and the computer actually has a pretty precise estimate). I guess the\
+  idea here is that when we're doing Bayes' Rule update, we can assume some minimal prior,\
+  but the updates should assume that there was some sequence of observations and, given\
+  that sequence of observations (perhaps with a decaying weight in time, so that really old\
+  observations count for less) then we should know the level with greater and greater\
+  certainty. Can you suggest a mathematical approach that would handle this without too\
+  much computational overload?\
+\
+\cb1 \
+\cf5 \'95 
+\f2\i I'm mapping out a method to treat logExposure as a random variable with a Gaussian prior
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 and update its posterior using approximate Bayesian techniques like Laplace approximation
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 or an extended Kalman filter. This approach adapts learning rates as evidence grows by
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 shrinking variance, blending gradient and Hessian info from logistic observations to
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 refine estimates while allowing for forgetting or recency scaling. I'll also contrast this
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 with a simpler effective-sample-based learning rate method to offer intuitive grounding.
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 Let's craft a detailed explanation covering these update steps and their rationale.
+\f1\i0 \cf4 \
+\
+\cf5 \uc0\u9472  Worked for 14s \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \cf4 \
+\
+\cf5 \'95 \cf4 Right now we treat \cf5 logExposure\cf4  as just a point estimate with a fixed learning rate,\
+  so it drifts slowly at first and never really \'93trusts\'94 the growing pile of evidence. A\
+  lightweight way to fix both issues is to track a posterior distribution over \cf5 logExposure\cf4 ,\
+  not just the mean. If you maintain a Normal belief \cf5 x = logExposure ~ N(\uc0\u956 , \u963 \'b2)\cf4 , you can use\
+  each button press to update both the mean and the variance:\
+\
+  \cf9 1. \cf4 Start with a very wide prior, e.g. \cf5 \uc0\u956 \u8320  = ln 5\u8239 000\cf4 , \cf5 \uc0\u963 \u8320 \'b2 = 4\cf4 . That\'92s enough slack to swing\
+     from beginner to native in a handful of cards.\
+  \cf9 2. \cf4 For each observation (known/unknown on a word of frequency \cf5 f\cf4 ):\
+      - Compute the log-likelihood \cf5 \uc0\u8467 (x)\cf4  of that observation under the mastery model \cf5 p(x) = 1\cf4 \
+        \cf5 - exp(-(exp(x)\'b7f)/Y)\cf4 .\
+      - Evaluate its first derivative \cf5 g = d\uc0\u8467 /dx\cf4  and second derivative \cf5 h = d\'b2\uc0\u8467 /dx\'b2\cf4  at the\
+        current mean \cf5 \uc0\u956 \cf4 . (You already compute most of this for the gradient update.)\
+      - Update the posterior via a Laplace/extended-Kalman step:\
+\
+        posterior_precision = 1/\uc0\u963 \'b2 - h\
+        \uc0\u963 new\'b2 = 1 / posterior_precision\
+        \uc0\u956 new = \u956  + \u963 new\'b2 * g\
+        (Note \cf5 h\cf4  is negative for Bernoulli log-likelihoods, so the precision increases.)\
+  \cf9 3. \cf4 Clamp \cf5 \uc0\u963 new\'b2\cf4  to stay positive; you can also inject a small \'93process noise\'94 term between\
+     cards to avoid locking up completely (e.g. \cf5 \uc0\u963 new\'b2 += q\cf4  with a tiny \cf5 q\cf4  so very old\
+     evidence decays slowly).\
+\
+  Intuition: at the start \cf5 \uc0\u963 \'b2\cf4  is huge, so the update behaves like the aggressive step you\
+  want. As more consistent evidence rolls in, \cf5 \uc0\u963 \'b2\cf4  shrinks, so the Kalman gain \cf5 \uc0\u963 \'b2 * g\cf4  gets\
+  smaller and the mean consolidates. You no longer need a hand-tuned learning rate; the\
+  data decides how much to move the level. Because the update only uses scalar arithmetic\
+  per card (storing \cf5 \uc0\u956 \cf4  and \cf5 \uc0\u963 \'b2\cf4 ), it\'92s computationally trivial and gives you a built-in\
+  notion of \'93confidence\'94 that you can later show in the UI or use to choose exploration\
+  vs. exploitation.\
+\
+  If you want recency weighting, you can periodically inflate \cf5 \uc0\u963 \'b2\cf4  (or multiply the precision\
+  by a decay factor) so that very old observations gradually lose influence\'97again, still\
+  O(1) per card.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 how would you implement recency weighting here?\
+\
+\cb1 \
+\cf5 \'95 \cf4 A simple way to give recent cards more influence is to treat the level estimate as\
+  drifting over time. In the Kalman/Laplace update, that means you \'93forget\'94 a bit of\
+  precision between observations:\
+\
+  \cf9 1. 
+\f0\b \cf4 Keep a decay factor
+\f1\b0  \cf5 0 < \uc0\u955  \u8804  1\cf4 . After each card (or after a fixed time interval) scale\
+     the precision by \uc0\u955 :\
+\
+     prior_precision = \uc0\u955  * (1 / \u963 \'b2)\
+     prior_variance  = 1 / prior_precision\
+     With \uc0\u955  < 1, the variance inflates slightly before the next observation, so new evidence\
+     carries more weight. \uc0\u955  near 1 forgets slowly; \u955  much smaller forgets faster and adapts\
+     quickly to jumps in ability.\
+     quickly to jumps in ability.\
+  \cf9 2. 
+\f0\b \cf4 Equivalent view:
+\f1\b0  Add \'93process noise\'94 \cf5 q\cf4  to the variance before the update:\
+\
+     prior_variance = \uc0\u963 \'b2 + q\
+\
+     Choosing \cf5 q = (1 - \uc0\u955 )/\u955  * \u963 \'b2\cf4  makes it identical to the precision shrink above. You can\
+     let \cf5 q\cf4  depend on elapsed real time if you want older sessions to matter less.\
+  \cf9 3. 
+\f0\b \cf4 Then run the usual update.
+\f1\b0  Use the inflated variance as the prior, compute the\
+     gradient/curvature of the log-likelihood at the current mean, and update:\
+\
+     posterior_precision = 1/prior_variance - h\
+     \uc0\u963 new\'b2 = 1 / posterior_precision\
+     \uc0\u956 new  = \u956  + \u963 new\'b2 * g\
+\
+     (With h negative for Bernoulli observations, the precision still increases, but from a\
+     lower starting point.)\
+\
+  By tuning \uc0\u955  (or q), you control how quickly the system \'93lets go\'94 of old evidence. For\
+  example, \uc0\u955  = 0.99 would forget about 1% of precision per card, giving fresh answers extra\
+  sway while still maintaining overall stability.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 okay, let's hold off on putting in recency weighting for now, just for testing purposes,\
+  but maybe lets make a note to include this in a future update. My feeling is that it\
+  isn't so much the number of cards that should cause the decay but real clock time since\
+  the last usage. So, for instance, a user who hasn't touched the program in 6 months\
+  should have a much higher variance of ability, since they might have done a lot of\
+  independent study (thus pushing up their exposure) or simply done nothing and had a loss\
+  of learning owing to forgetting (thus pushing it down), so having some kind of\
+  "timestamp" for their level might be advisable. But let's just make this a comment for\
+  now, focusing instead on implementing the mean and variance estimators as you suggest so\
+  that we can quickly zoom in on the correct user level with relatively small stable\
+  updates once the calibration has been achieved.\
+\
+\cb1 \
+\cf5 \'95 
+\f0\b \cf4 Updated Plan
+\f1\b0 \
+\cf5   \uc0\u9492  \cf4 \uc0\u9633  
+\f0\b \cf6 Refactor level tracking to maintain mean and variance (Gaussian posterior) updates
+\f1\b0 \cf4 \
+      
+\f0\b \cf6 instead of fixed learning rate.
+\f1\b0 \cf4 \
+    \uc0\u9633  \cf5 Update UI/debug info to surface variance and ensure terminology matches new model; add\cf4 \
+      \cf5 code comments about future time-based decay.\cf4 \
+    \uc0\u9633  \cf5 Ensure documentation (e.g., plan) reflects future recency weighting idea; verify\cf4 \
+      \cf5 functionality and summarize.\cf4 \
+\
+\cf5 \'95 
+\f2\i I'm updating the exposure data to track mean and variance instead of just logExposure,
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 removing levelLearningRate, and refining updateLevel to use gradient and Hessian
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 derived from a Bernoulli log-likelihood model. This involves careful calculus to compute
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 gradients, Hessians, and posterior updates, as well as clamping variances and means,
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 updating probability calculations, and adjusting the UI and data fields to reflect these
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 changes.
+\f1\i0 \cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  logExposure\cf5  in \cf4 index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +63 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +8 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +8 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +10 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +110 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+\cf5 \'95 
+\f2\i I\'92m making sure recordLevelUpdate includes the new fields and updating the Recent
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 Responses UI to show variance and standard deviation. Adding computed properties to
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 calculate standard deviation and formatting methods will help present this data clearly
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 in the level estimate and recent responses panels, while cleaning up old logExposure
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 references.
+\f1\i0 \cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  logExposure\cf5  in \cf4 index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +11 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +12 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +15 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +13 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: plan.md\cf4 \
+\cf5   \uc0\u9474  \'85 +9 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M plan.md\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  levelLearningRate\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  logExposure\cf5  in \cf4 index.html\
+    \cf6 Search\cf4  varianceBefore\cf5  in \cf4 index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  git status -sb\
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 ## master...origin/master\cf4 \
+    \cf5  M index.html\cf4 \
+    \cf5  M plan.md\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Read\cf4  index.html\
+\
+\cf5 \'95 
+\f2\i I\'92m wrapping up by confirming the use of formatStd and levelStdEstimate in the UI,
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 highlighting the switch to mean/variance updates for faster adaptation, and noting changes
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 in the debug panel and plan documentation. I\'92ll mention no tests were run but recommend
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 future calibration steps and reference key code lines for clarity before crafting the
+\f1\i0 \cf4 \
+  
+\f2\i \cf5 final message.
+\f1\i0 \cf4 \
+\
+\cf5 \uc0\u9472  Worked for 3m 11s \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \cf4 \
+\
+\cf5 \'95 \cf4 Converted the level estimator to a Gaussian posterior so each response updates both\
+  the mean and variance of \cf5 logExposure\cf4 , letting the model move quickly at the start and\
+  stabilize as evidence accumulates (\cf5 index.html:1526-1891\cf4 ). The knowledge panel now shows\
+  lifetime-token mean, \uc0\u963 , rank-based mastery preview, and recent response deltas drawn from\
+  the new statistics (\cf5 index.html:108-189\cf4 ). Documented the follow-up task to add time-based\
+  variance inflation once we wire in wall-clock awareness (\cf5 plan.md:20\cf4 ).\
+\
+  No automated tests available, so I only inspected the UI logic. To verify manually: reload\
+  the app, answer a few cards, and watch the \'93Level Estimate\'94 and \'93Recent Responses\'94 blocks\
+  to confirm the mean/\uc0\u963  settle sensibly.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 Okay, this seems okay, but the fine-tuning still seems a little slow. I suggest a few\
+  ideas: (1) we should jump deeper into the word frequency lists to begin with, so that\
+  good users aren't doing too many easy words before the hard ones begin. Maybe there\
+  should be some kind of calibration phase of N cards before we get to a normal "use"\
+  phase. During the calibration phase, we should be trying to maximize information gain,\
+  (which I think should be closer to the 50% correct cut-off point). (2) The step size\
+  change maybe should also be larger in the beginning. How should we do that? A larger\
+  variance to start that shrinks faster?\
+\
+\cb1 \
+\cf5 \'95 \cf4 Two levers will help a lot:\
+\
+  
+\f0\b 1. Calibration phase focused on information gain.
+\f1\b0 \
+\
+  - Before entering the regular loop, fire off N probe cards chosen to maximize expected\
+    entropy reduction. For each candidate word we already know \cf5 P(know|\uc0\u956 ,\u963 )\cf4 . Pick the\
+    one with posterior \uc0\u8776 0.5 at the current mean (or lowest expected variance after an\
+    observation). That drives you quickly toward the true level rather than walking up from\
+    the easiest words.\
+  - Implementation sketch: keep a calibration counter; while it\'92s >0, scan a handful of\
+    indices around the current 50% band (or sample a batch) and choose the word whose\
+    predicted probability is closest to 0.5. After N cards you flip to the normal selection\
+    logic.\
+\
+  
+\f0\b 2. Bigger initial variance that collapses faster.
+\f1\b0 \
+\
+  - Right now we start with \uc0\u963 \'b2=4 and the curvature update only shrinks it if the evidence is\
+    strong. If you set something like \uc0\u963 \'b2=9 or 16 and add a minimum curvature term (e.g. even\
+    if \cf5 h\cf4  is tiny, subtract an extra \cf5 \uc0\u954 \cf4  so the precision grows a bit each step), the posterior\
+    will tighten more rapidly.\
+  - Another option is to mix in a \'93pseudo-observation\'94 during calibration: each calibration\
+    card could add an extra decay factor (e.g. multiply variance by 0.5 after every probe).\
+    That keeps step sizes large at the start but quickly ramps them down once you\'92ve\
+    gathered a few answers.\
+\
+  These changes can coexist: start with a broad prior, run a short entropy-driven\
+  calibration phase that both zeroes in on the right frequency band and intentionally\
+  slashes \uc0\u963 \'b2, then hand off to the normal request flow with the narrower posterior.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 okay, I don't quite know how to interpret the variance here. What is the spread in terms\
+  of logExposure with a variance of 9? Does that mean 2^9 is the sigma squared range of\
+  total exposure?\
+\
+\cb1 \
+\cf5 \'95 \cf4 Variance is stored in log-space, so it reflects uncertainty in \cf5 logExposure\cf4 , not in the raw\
+  exposure count \cf5 T\cf4 .\
+\
+  - If \cf5 var = 9\cf4 , then the standard deviation in log-space is \cf5 \uc0\u963 _log = \u8730 9 = 3\cf4 .\
+  - That means about 68% of the posterior mass for \cf5 logExposure\cf4  lies within \cf5 \uc0\u956  \'b1 3\cf4 .\
+\
+  When you convert back to linear exposure (because \cf5 T = exp(logExposure)\cf4 ), those \'b13 units\
+  become multiplicative factors of \cf5 e^\'b13 \uc0\u8776  20\cf4 . So the 68% credible interval for \cf5 T\cf4  spans\
+  roughly \cf5 T_mean / 20\cf4  to \cf5 T_mean \'d7 20\cf4 .\
+\
+  In other words, a log-variance of 9 corresponds to being uncertain by about two orders of\
+  magnitude in the token count. A smaller log-variance collapses that range; e.g. var = 1 (\uc0\u963 \
+  \uc0\u8776  1) would give \cf5 e^1 \uc0\u8776  2.7\'d7\cf4  spread instead of 20\'d7.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 Okay, in that case probably starting out with a higher variance (say 16) and having the\
+  calibration phase until the variance is relatively low (say < 2) would speed up the\
+  calibration, no?\
+\
+\cb1 \
+\cf5 \'95 \cf4 Exactly. If you start with \cf5 logExposureVar = 16\cf4 , the standard deviation in log-space is 4,\
+  so the 68% band on actual exposure spans roughly \cf5 T_mean / e^4\cf4  to \cf5 T_mean \'d7 e^4\cf4 \'97about a 50\'d7\
+  range. That lets the posterior move dramatically in the first few updates. If you keep a\
+  calibration loop running until the variance drops below ~2 (\cf5 \uc0\u963  \u8776  1.4\cf4 , which is only a ~4\'d7\
+  spread in linear terms), you\'92ll effectively \'93lock in\'94 the level estimate before switching\
+  to the normal session flow. After the calibration target is hit, the usual per-card\
+  curvature updates can keep shrinking (or gently re-expanding) the variance as new evidence\
+  comes in.\
+\
+\cb3 \
+
+\f0\b \cf2 \'9b 
+\f1\b0 \cf4 ok let's do it\
+\
+\cb1 \
+\cf5 \'95 
+\f0\b \cf4 Updated Plan
+\f1\b0 \
+\cf5   \uc0\u9492  \cf4 \uc0\u9633  
+\f0\b \cf6 Add calibration phase that targets max information gain and stop once log-exposure
+\f1\b0 \cf4 \
+      
+\f0\b \cf6 variance drops below threshold.
+\f1\b0 \cf4 \
+    \uc0\u9633  \cf5 Initialize prior variance to wider value and adjust UI/debug output accordingly.\cf4 \
+    \uc0\u9633  \cf5 Ensure normal flow resumes post-calibration; update documentation if needed and\cf4 \
+      \cf5 summarize.\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  calibration\cf5  in \cf4 index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +14 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +49 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +32 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +18 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +42 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +18 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +6 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+\cf5 \'95\cf4  
+\f0\b Explored
+\f1\b0 \
+\cf5   \uc0\u9492  \cf6 Search\cf4  calibration\cf5  in \cf4 index.html\
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: index.html\cf4 \
+\cf5   \uc0\u9474  \'85 +41 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M index.html\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  apply_patch <<\cf5 'PATCH'\cf4 \
+\cf5   \uc0\u9474  *** Begin Patch\cf4 \
+\cf5   \uc0\u9474  *** Update File: plan.md\cf4 \
+\cf5   \uc0\u9474  \'85 +11 lines\cf4 \
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 Success. Updated the following files:\cf4 \
+    \cf5 M plan.md\cf4 \
+\
+
+\f0\b \cf7 \'95
+\f1\b0 \cf4  
+\f0\b Ran
+\f1\b0  git status -sb\
+\cf5   \uc0\u9492  /Users/scottyoung/.rvm/scripts/rvm:14: operation not permitted: ps\cf4 \
+    \cf5 ## master...origin/master\cf4 \
+    \cf5  M index.html\cf4 \
+    \cf5  M plan.md\cf4 \
+\
+\cf5 \uc0\u9472  Worked for 1m 34s \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \cf4 \
+\
+\cf5 \'95 \cf4 - Added a calibration phase that kicks in while \cf5 logExposureVar > 2\cf4  (and for at most 60\
+    probes) so early cards jump straight to the 50\uc0\u8239 % mastery band before normal play; the\
+    selector now uses \cf5 findIndexClosestToProbability(0.5)\cf4  for those probes (\cf5 index.html:1608-\cf4 \
+    \cf5 2135\cf4 ).\
+  - Broadened the prior (\cf5 logExposureVar = 16\cf4 ) and track calibration status in the debug\
+    panel so you can see when the model has \'93locked in\'94 (\cf5 index.html:1526-1890\cf4 ).\
+  - Logged follow-up tasks for time-based variance decay and richer calibration sampling\
+    (\cf5 plan.md:19-21\cf4 ).\
+\
+  No automated tests available\'97please reload the app, answer a handful of cards, and watch\
+  the Level Estimate panel to confirm the calibration badge clears once \uc0\u963 \'b2 drops below 2.}

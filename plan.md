@@ -13,10 +13,12 @@
 - [ ] Define data schema for words, sentences, and user state snapshots
 - [x] Explore word frequency dataset ingestion strategy (sampled 1k-term corpus wired into UI debug grid)
 - [x] Clean zh_cn_full corpus (Chinese-only filter) and regenerate tapered 1k sample for UI preload
-- [x] Initialize priors from full corpus frequency profile via logistic scaling
+- [x] Transition to exposure-based level estimator with Gaussian posterior (log-exposure mean/variance)
 - [ ] Fold sampled corpus into persistent user model storage
 - [ ] Calibrate priors using frequency data once backend available
 - [ ] Document sentence-level evidence propagation rules
+- [ ] Add wall-clock aware variance inflation so level uncertainty grows during long breaks
+- [ ] Experiment with richer calibration sampling (entropy-driven probes beyond simple 0.5 targeting)
 
 ## Application Logic
 - [x] Stand up local OpenAI proxy for dynamic card generation

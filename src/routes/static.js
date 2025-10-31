@@ -29,8 +29,10 @@ async function handleStaticRequest(req, res, url) {
   if (pathname === '/') {
     pathname = '/index.html';
   }
-  const filePath = path.join(ROOT_DIR, pathname);
-  if (!filePath.startsWith(ROOT_DIR)) {
+  const normalizedPath = path.posix.normalize(pathname).replace(/^\/+/, '');
+  const filePath = path.resolve(ROOT_DIR, normalizedPath);
+  const relativeToRoot = path.relative(ROOT_DIR, filePath);
+  if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
     setCommonHeaders(res);
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Forbidden');
