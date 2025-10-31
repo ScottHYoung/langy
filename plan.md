@@ -14,6 +14,7 @@
 - [x] Explore word frequency dataset ingestion strategy (sampled 1k-term corpus wired into UI debug grid)
 - [x] Clean zh_cn_full corpus (Chinese-only filter) and regenerate tapered 1k sample for UI preload
 - [x] Transition to exposure-based level estimator with Gaussian posterior (log-exposure mean/variance)
+- [x] Implement 20-card calibration pass with bucketed probes and MLE exposure fit
 - [ ] Fold sampled corpus into persistent user model storage
 - [ ] Calibrate priors using frequency data once backend available
 - [ ] Document sentence-level evidence propagation rules

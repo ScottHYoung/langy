@@ -1534,9 +1534,10 @@
           maxRecentLevelUpdates: 12,
           totalResponses: 0,
           calibrationActive: true,
-          calibrationSamples: 0,
-          maxCalibrationSamples: 60,
-          calibrationVarianceThreshold: 2,
+          calibrationResponses: [],
+          calibrationQueue: [],
+          calibrationSamplesTarget: 20,
+          calibrationBuckets: [0.05, 0.15, 0.35, 0.55, 0.75],
           targetSuccessRate: 0.8,
           targetWindowSize: 100,
           responseOptions: ['sentence', 'focus', 'unknown']
@@ -1579,8 +1580,11 @@
         },
         calibrationStatusLabel() {
           if (this.calibrationActive) {
-            const remaining = Math.max(this.maxCalibrationSamples - this.calibrationSamples, 0);
-            return `Calibrating (${remaining})`;
+            const remaining = Math.max(
+              this.calibrationSamplesTarget - this.calibrationResponses.length,
+              0
+            );
+            return `Calibrating (${remaining} left)`;
           }
           return 'Ready';
         },
@@ -1663,7 +1667,8 @@
             this.frequencyProbabilityMap[word] = frequency / this.totalCorpusFrequency;
           });
           this.calibrationActive = true;
-          this.calibrationSamples = 0;
+          this.calibrationResponses = [];
+          this.buildCalibrationQueue();
           if (!this.activeCard) {
             const seedIndex = this.findIndexClosestToProbability(0.5);
             await this.loadNextCard({ targetIndex: seedIndex });
@@ -1672,7 +1677,14 @@
         async loadNextCard({ advance = false, resetIndex = false, targetIndex = null } = {}) {
           if (!this.lexicon.length || this.isLoadingCard) return;
           const maxIndex = this.lexicon.length - 1;
-          if (targetIndex != null) {
+          if (this.calibrationActive) {
+            const calibrationIndex = this.consumeCalibrationIndex();
+            if (calibrationIndex != null) {
+              this.currentIndex = calibrationIndex;
+            } else {
+              this.currentIndex = this.findIndexClosestToProbability(0.5);
+            }
+          } else if (targetIndex != null) {
             const clamped = Math.max(0, Math.min(maxIndex, targetIndex));
             this.currentIndex = clamped;
           } else if (resetIndex) {
@@ -1764,19 +1776,191 @@
           if (!this.responseOptions.includes(type)) return;
           const currentWord = this.currentCard?.focus?.hanzi;
           const isKnown = type === 'sentence' || type === 'focus';
+          const freqProbability = currentWord ? this.frequencyProbabilityMap[currentWord] ?? 0 : 0;
+          if (this.calibrationActive) {
+            if (currentWord && freqProbability > 0) {
+              this.processCalibrationResponse(currentWord, freqProbability, isKnown);
+            }
+            if (this.calibrationActive) {
+              await this.loadNextCard({});
+            } else {
+              const nextIndex = this.selectNextIndex();
+              await this.loadNextCard({ targetIndex: nextIndex });
+            }
+            return;
+          }
           if (currentWord) {
-            this.applyLevelUpdate(currentWord, isKnown);
+            this.applyLevelUpdate(currentWord, freqProbability, isKnown);
           }
           const nextIndex = this.selectNextIndex();
           await this.loadNextCard({ targetIndex: nextIndex });
         },
         async advanceCard() {
           if (!this.lexicon.length) return;
-          const nextIndex = this.selectNextIndex();
-          await this.loadNextCard({ targetIndex: nextIndex });
+          if (this.calibrationActive) {
+            await this.loadNextCard({});
+          } else {
+            const nextIndex = this.selectNextIndex();
+            await this.loadNextCard({ targetIndex: nextIndex });
+          }
         },
-        applyLevelUpdate(word, isKnown) {
-          const freqProbability = this.frequencyProbabilityMap[word] ?? 0;
+        buildCalibrationQueue() {
+          if (!this.lexicon.length) {
+            this.calibrationQueue = [];
+            return;
+          }
+          const maxIndex = this.lexicon.length - 1;
+          const queue = [];
+          const seen = new Set();
+          const buckets = Array.isArray(this.calibrationBuckets) && this.calibrationBuckets.length
+            ? this.calibrationBuckets
+            : [0.05, 0.15, 0.35, 0.55, 0.75];
+          const perBucket = Math.max(1, Math.floor(this.calibrationSamplesTarget / buckets.length));
+          buckets.forEach((percent) => {
+            const center = Math.max(0, Math.min(maxIndex, Math.round(percent * maxIndex)));
+            for (let i = 0; i < perBucket; i += 1) {
+              const offset = i - Math.floor(perBucket / 2);
+              const idx = Math.max(0, Math.min(maxIndex, center + offset));
+              if (!seen.has(idx)) {
+                seen.add(idx);
+                queue.push(idx);
+              }
+            }
+          });
+          const maxAttempts = this.calibrationSamplesTarget * 5;
+          let attempts = 0;
+          while (queue.length < this.calibrationSamplesTarget && attempts < maxAttempts) {
+            const randomIdx = Math.floor(Math.random() * Math.max(1, this.lexicon.length));
+            attempts += 1;
+            if (!seen.has(randomIdx)) {
+              seen.add(randomIdx);
+              queue.push(randomIdx);
+            }
+          }
+          if (queue.length && queue.length < this.calibrationSamplesTarget) {
+            let pointer = 0;
+            while (queue.length < this.calibrationSamplesTarget) {
+              queue.push(queue[pointer % queue.length]);
+              pointer += 1;
+            }
+          }
+          this.calibrationQueue = queue.slice(0, this.calibrationSamplesTarget);
+        },
+        consumeCalibrationIndex() {
+          while (this.calibrationQueue.length) {
+            const idx = this.calibrationQueue.shift();
+            if (Number.isInteger(idx)) {
+              return Math.max(0, Math.min(this.lexicon.length - 1, idx));
+            }
+          }
+          return null;
+        },
+        processCalibrationResponse(word, freqProbability, isKnown) {
+          this.totalResponses += 1;
+          this.calibrationResponses.push({
+            word,
+            freqProbability,
+            outcome: isKnown ? 1 : 0
+          });
+          if (
+            this.calibrationResponses.length >= this.calibrationSamplesTarget ||
+            this.calibrationQueue.length === 0
+          ) {
+            this.finalizeCalibration();
+          }
+        },
+        finalizeCalibration() {
+          if (!this.calibrationResponses.length) {
+            this.calibrationActive = false;
+            return;
+          }
+          const fit = this.fitExposureFromCalibration();
+          if (fit) {
+            const priorMean = this.logExposureMean;
+            this.logExposureMean = fit.mean;
+            this.logExposureVar = fit.variance;
+            this.recordCalibrationSummary({ ...fit, priorMean });
+          }
+          this.calibrationActive = false;
+          this.calibrationQueue = [];
+          this.calibrationResponses = [];
+        },
+        fitExposureFromCalibration() {
+          const responses = this.calibrationResponses;
+          if (!responses.length) return null;
+          const minLog = this.minLogExposure;
+          const maxLog = this.maxLogExposure;
+          const coarseSteps = 400;
+          let bestLog = minLog;
+          let bestLogLik = -Infinity;
+          for (let i = 0; i <= coarseSteps; i += 1) {
+            const candidate = minLog + ((maxLog - minLog) * i) / coarseSteps;
+            const { logLikelihood } = this.evaluateExposureLikelihood(candidate, responses);
+            if (logLikelihood > bestLogLik) {
+              bestLogLik = logLikelihood;
+              bestLog = candidate;
+            }
+          }
+          const window = (maxLog - minLog) / coarseSteps;
+          const lower = Math.max(minLog, bestLog - window);
+          const upper = Math.min(maxLog, bestLog + window);
+          const refineSteps = 60;
+          let refinedBestLog = bestLog;
+          let refinedBestLik = bestLogLik;
+          for (let i = 0; i <= refineSteps; i += 1) {
+            const candidate = lower + ((upper - lower) * i) / refineSteps;
+            const { logLikelihood } = this.evaluateExposureLikelihood(candidate, responses);
+            if (logLikelihood > refinedBestLik) {
+              refinedBestLik = logLikelihood;
+              refinedBestLog = candidate;
+            }
+          }
+          const stats = this.evaluateExposureLikelihood(refinedBestLog, responses);
+          const variance = stats.hessian < 0 ? Math.min(36, Math.max(0.05, -1 / stats.hessian)) : 16;
+          return {
+            mean: refinedBestLog,
+            variance,
+            logLikelihood: refinedBestLik
+          };
+        },
+        evaluateExposureLikelihood(logExposure, responses) {
+          let logLikelihood = 0;
+          let gradient = 0;
+          let hessian = 0;
+          const minProb = 1e-8;
+          const maxProb = 1 - 1e-8;
+          responses.forEach(({ freqProbability, outcome }) => {
+            const ratio =
+              Math.exp(logExposure) * freqProbability / Math.max(this.exposuresForMastery, 1e-3);
+            const mastery = this.clampProbability(1 - Math.exp(-ratio), minProb, maxProb);
+            const s = 1 - mastery;
+            const outcomeClamped = outcome ? 1 : 0;
+            logLikelihood += outcomeClamped ? Math.log(mastery) : Math.log(s);
+            const pPrime = s * ratio;
+            const pSecond = s * ratio * (1 - ratio);
+            gradient += outcomeClamped * (pPrime / mastery) - (1 - outcomeClamped) * (pPrime / s);
+            hessian +=
+              outcomeClamped * (pSecond / mastery - (pPrime ** 2) / (mastery ** 2)) -
+              (1 - outcomeClamped) * (pSecond / s + (pPrime ** 2) / (s ** 2));
+          });
+          return { logLikelihood, gradient, hessian };
+        },
+        recordCalibrationSummary(fit) {
+          const entry = {
+            id: `calibration-${Date.now()}`,
+            word: 'Calibration',
+            correct: true,
+            probability: 1,
+            deltaMean: fit.mean - (fit.priorMean ?? fit.mean),
+            stdAfter: Math.sqrt(Math.max(fit.variance, 0)),
+            timestampLabel: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          this.recentLevelUpdates.unshift(entry);
+          if (this.recentLevelUpdates.length > this.maxRecentLevelUpdates) {
+            this.recentLevelUpdates.length = this.maxRecentLevelUpdates;
+          }
+        },
+        applyLevelUpdate(word, freqProbability, isKnown) {
           if (freqProbability <= 0) return;
           const priorMean = this.logExposureMean;
           const priorVar = this.logExposureVar;
@@ -1788,15 +1972,6 @@
           this.logExposureMean = update.mean;
           this.logExposureVar = update.variance;
           this.totalResponses += 1;
-          if (this.calibrationActive) {
-            this.calibrationSamples += 1;
-            if (
-              this.logExposureVar <= this.calibrationVarianceThreshold ||
-              this.calibrationSamples >= this.maxCalibrationSamples
-            ) {
-              this.calibrationActive = false;
-            }
-          }
           this.recordLevelUpdate({
             word,
             correct: isKnown,
