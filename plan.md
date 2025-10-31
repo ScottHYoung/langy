@@ -21,6 +21,7 @@
 ## Application Logic
 - [x] Stand up local OpenAI proxy for dynamic card generation
 - [x] Add adaptive frequency stepping tied to learner responses
+- [x] Target next-card selection around fixed success probability (binary search)
 - [ ] Select backend framework and API contract for study/session APIs
 - [ ] Prototype sentence generation and tokenization workflow (OpenAI + Jieba)
 - [ ] Add request retry/backoff strategy and caching layer for generation API
