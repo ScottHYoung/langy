@@ -17,6 +17,8 @@
 - [ ] Fold sampled corpus into persistent user model storage
 - [ ] Calibrate priors using frequency data once backend available
 - [ ] Document sentence-level evidence propagation rules
+- [ ] Implement word-level exposure history (timestamped, decaying) once level model stabilizes
+- [ ] Add time-based variance inflation for level posterior to account for long gaps between sessions
 
 ## Application Logic
 - [x] Stand up local OpenAI proxy for dynamic card generation

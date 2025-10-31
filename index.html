@@ -6,6 +6,7 @@
   <title>Langy • Study Card</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jieba-zh@2.6.0/dist/jieba.min.js"></script>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
   <div id="app" class="flex min-h-screen flex-col items-center justify-center gap-10 px-6 py-16 text-center">
@@ -104,51 +105,92 @@
       </button>
     </div>
 
-    <div v-if="debugMode && samplePoints.length" class="w-full max-w-2xl">
+    <div v-if="debugMode" class="w-full max-w-2xl space-y-6">
       <div class="mt-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="mb-4 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
+          <span>Level Estimate</span>
+          <span>{{ totalResponses }} interactions</span>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-left">
+            <div class="text-[11px] uppercase tracking-[0.25em] text-slate-400">Lifetime tokens</div>
+            <div class="mt-1 text-lg font-semibold text-slate-900">
+              {{ formatTokens(levelTokenEstimate) }}
+            </div>
+            <div class="text-[11px] text-slate-500">logₑ T ≈ {{ logExposureMean.toFixed(2) }}</div>
+            <div class="text-[11px] text-slate-500">σ ≈ {{ formatStd(levelStdEstimate) }}</div>
+          </div>
+          <div class="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-left">
+            <div class="text-[11px] uppercase tracking-[0.25em] text-slate-400">Exposure per mastery</div>
+            <div class="mt-1 text-lg font-semibold text-slate-900">
+              {{ exposuresForMastery }} encounters
+            </div>
+            <div class="text-[11px] text-slate-500">Corpus tokens tracked: {{ totalCorpusFrequency.toLocaleString() }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="levelPreview.length" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div class="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
-          <span>Knowledge Curve</span>
-          <span>Prior-adjusted probability</span>
+          <span>Knowledge Preview</span>
+          <span>Window: {{ lexiconSizeLabel }} words</span>
         </div>
-        <svg viewBox="0 0 560 200" class="h-52 w-full">
-          <defs>
-            <linearGradient id="probabilityGradient" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="#22c55e" stop-opacity="0.65"></stop>
-              <stop offset="100%" stop-color="#ef4444" stop-opacity="0.65"></stop>
-            </linearGradient>
-          </defs>
-          <rect x="0" y="0" width="560" height="200" fill="url(#probabilityGradient)" opacity="0.15"></rect>
-          <g class="axis text-[10px] text-slate-400">
-            <line x1="0" y1="200" x2="560" y2="200" stroke="#cbd5f5" stroke-width="1" />
-            <line x1="0" y1="0" x2="0" y2="200" stroke="#cbd5f5" stroke-width="1" />
-            <text x="4" y="12">1.0</text>
-            <text x="4" y="102">0.5</text>
-            <text x="4" y="192">0.0</text>
-          </g>
-          <path
-            v-if="curvePath"
-            :d="curvePath"
-            fill="none"
-            stroke="#1e3a8a"
-            stroke-width="2.5"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-          ></path>
-          <g v-for="(point, idx) in samplePoints" :key="point.index">
-            <circle
-              :cx="(idx / Math.max(samplePoints.length - 1, 1)) * 560"
-              :cy="(1 - point.probability) * 200"
-              r="2.2"
-              fill="#1d4ed8"
-              opacity="0.5"
-            >
-              <title>{{ point.word }} • {{ point.probability.toFixed(2) }}</title>
-            </circle>
-          </g>
-        </svg>
-        <div class="mt-3 text-[10px] text-slate-500">
-          Sampling {{ samplePoints.length }} words across the corpus ({{ lexiconSizeLabel }} total).
+        <table class="w-full table-fixed text-left text-sm text-slate-700">
+          <thead>
+            <tr class="text-xs uppercase tracking-[0.25em] text-slate-400">
+              <th class="w-1/4 pb-2">Rank</th>
+              <th class="w-1/4 pb-2">Word</th>
+              <th class="w-1/2 pb-2 text-right">P(know)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in levelPreview" :key="item.rank" class="border-t border-slate-100">
+              <td class="py-2 text-xs text-slate-500">Top {{ item.rank.toLocaleString() }}</td>
+              <td class="py-2 font-medium text-slate-900">{{ item.word }}</td>
+              <td class="py-2 text-right font-semibold" :class="item.probability >= 0.5 ? 'text-emerald-600' : 'text-amber-600'">
+                {{ formatPercent(item.probability) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-if="recentLevelUpdates.length" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="mb-3 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
+          <span>Recent Responses</span>
+          <span>{{ recentLevelUpdates.length }} tracked</span>
         </div>
+        <ul class="divide-y divide-slate-100">
+          <li
+            v-for="item in recentLevelUpdates.slice(0, 16)"
+            :key="item.id"
+            class="flex items-start justify-between gap-4 py-2"
+          >
+            <div class="space-y-1 text-left">
+              <div class="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+                <span class="font-semibold text-slate-900">{{ item.word }}</span>
+                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] uppercase tracking-[0.25em] text-slate-500">
+                  {{ item.responseType }}
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                logₑ T: {{ item.logExposureBefore.toFixed(2) }} → {{ item.logExposureAfter.toFixed(2) }}
+              </div>
+              <div class="text-[11px] text-slate-500">
+                σ: {{ formatStd(Math.sqrt(Math.max(item.varianceBefore ?? 0, 0))) }} →
+                {{ formatStd(Math.sqrt(Math.max(item.varianceAfter ?? 0, 0))) }}
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-[11px] text-slate-400">
+                {{ formatPercent(item.beforeProb) }} → {{ formatPercent(item.afterProb) }}
+              </div>
+              <div :class="['text-sm font-semibold', item.delta >= 0 ? 'text-emerald-600' : 'text-rose-600']">
+                {{ formatDelta(item.delta) }}
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
@@ -1488,30 +1530,35 @@
           currentIndex: 0,
           lexicon: [],
           frequencyMap: {},
-          normalizedFreqMap: {},
+          frequencyProbabilityMap: {},
           activeCard: null,
-          userModel: {},
           debugMode: true,
           isLoadingCard: false,
           errorMessage: '',
-          abilityMean: -1.1,
-          abilityVar: 9.0,
-          minAbilityVar: 0.01,
-          frequencyWeight: 1.05,
-          freqStats: { mean: 0, std: 1 },
-          sampleCount: 200,
-          betaPriorStrength: 0.5,
-          betaConfidenceRamp: 2,
+          logExposureMean: Math.log(5000),
+          logExposureVar: 4,
+          minLogExposureVar: 1e-3,
+          maxLogExposureVar: 9,
+          minLogExposure: Math.log(10),
+          maxLogExposure: Math.log(1e8),
+          exposuresForMastery: 8,
+          totalCorpusFrequency: 1,
           targetSuccessRate: 0.8,
           targetWindowSize: 100,
-          responseOptions: ['sentence', 'focus', 'unknown']
+          responseOptions: ['sentence', 'focus', 'unknown'],
+          activeSentenceTokens: [],
+          segmenter: null,
+          segmenterReady: false,
+          segmenterPromise: null,
+          maxLexemeLength: 1,
+          recentLevelUpdates: [],
+          maxRecentLevelUpdates: 30,
+          totalResponses: 0
         };
-      },
-      created() {
-        this.userModel = {};
       },
       mounted() {
         this.loadLexicon();
+        this.ensureSegmenter();
       },
       computed: {
         currentCard() {
@@ -1539,40 +1586,32 @@
             }
           ];
         },
-        samplePoints() {
+        lexiconSizeLabel() {
+          return this.lexicon.length.toLocaleString();
+        },
+        levelTokenEstimate() {
+          return Math.exp(this.logExposureMean);
+        },
+        levelStdEstimate() {
+          return Math.sqrt(Math.max(this.logExposureVar, 0));
+        },
+        levelPreview() {
           if (!this.lexicon.length) return [];
-          const count = Math.min(this.sampleCount, this.lexicon.length);
-          if (!count) return [];
-          const step = (this.lexicon.length - 1) / (count - 1 || 1);
-          const points = [];
-          for (let i = 0; i < count; i++) {
-            const idx = Math.round(i * step);
+          const checkpoints = [100, 1000, 5000, 10000, 25000, 50000];
+          const summary = [];
+          checkpoints.forEach((rank) => {
+            const idx = Math.min(rank - 1, this.lexicon.length - 1);
+            if (idx < 0) return;
             const entry = this.lexicon[idx];
-            if (!entry) continue;
+            if (!entry) return;
             const probability = this.wordProbability(entry.word);
-            points.push({
-              index: idx,
+            summary.push({
+              rank,
               word: entry.word,
               probability
             });
-          }
-          return points;
-        },
-        curvePath() {
-          const points = this.samplePoints;
-          if (!points.length) return '';
-          const height = 200;
-          const width = 560;
-          const denominator = Math.max(points.length - 1, 1);
-          const pathParts = points.map((point, idx) => {
-            const x = (idx / denominator) * width;
-            const y = (1 - point.probability) * height;
-            return `${idx === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`;
           });
-          return pathParts.join(' ');
-        },
-        lexiconSizeLabel() {
-          return this.lexicon.length.toLocaleString();
+          return summary;
         }
       },
       methods: {
@@ -1614,21 +1653,23 @@
           if (!entries?.length) return;
           this.lexicon = entries;
           this.frequencyMap = {};
-          this.normalizedFreqMap = {};
-          const logFreqs = this.lexicon.map((entry) => {
-            this.frequencyMap[entry.word] = entry.frequency;
-            return Math.log(entry.frequency || 1);
-          });
-          const count = logFreqs.length;
-          const mean = logFreqs.reduce((sum, value) => sum + value, 0) / count;
-          const variance =
-            logFreqs.reduce((sum, value) => sum + (value - mean) ** 2, 0) / count;
-          const std = Math.sqrt(variance) || 1;
-          this.freqStats = { mean, std };
+          this.frequencyProbabilityMap = {};
+          let totalFrequency = 0;
+          let maxLength = 1;
           this.lexicon.forEach(({ word, frequency }) => {
-            const logFreq = Math.log(frequency || 1);
-            this.normalizedFreqMap[word] = (logFreq - mean) / (std || 1);
+            if (!word) return;
+            this.frequencyMap[word] = frequency;
+            totalFrequency += frequency;
+            if (word.length > maxLength) {
+              maxLength = word.length;
+            }
           });
+          const safeTotal = Math.max(totalFrequency, 1);
+          Object.entries(this.frequencyMap).forEach(([word, frequency]) => {
+            this.frequencyProbabilityMap[word] = frequency / safeTotal;
+          });
+          this.totalCorpusFrequency = safeTotal;
+          this.maxLexemeLength = Math.max(1, maxLength);
           if (!this.activeCard) {
             this.currentIndex = 0;
             await this.loadNextCard({ resetIndex: true });
@@ -1653,9 +1694,9 @@
         },
         async fetchCardForWord(word) {
           if (!word) return;
-          this.ensureWordState(word);
           this.isLoadingCard = true;
           this.errorMessage = '';
+          this.activeSentenceTokens = [];
           try {
             const response = await fetch('/api/generate', {
               method: 'POST',
@@ -1688,9 +1729,12 @@
               throw new Error('Generator returned incomplete data.');
             }
             const meta = focusMetaMap[word] || {};
+            const sentenceText = payload.sentence;
+            const segments = await this.segmentSentence(sentenceText);
+            const knownTokens = this.extractKnownTokens(segments);
             this.activeCard = {
               sentence: {
-                text: payload.sentence,
+                text: sentenceText,
                 focus: word
               },
               sentenceTranslation: payload.sentence_translation,
@@ -1701,11 +1745,19 @@
                 literal: meta.literal || '',
                 definition: payload.definition || meta.definition || '',
                 usage: payload.usage_hint || ''
+              },
+              sentenceTokens: segments,
+              knownTokens,
+              coverage: {
+                known: knownTokens.length,
+                total: segments.length
               }
             };
+            this.activeSentenceTokens = knownTokens;
           } catch (error) {
             this.errorMessage = error.message || 'Unable to load sentence.';
             this.activeCard = null;
+            this.activeSentenceTokens = [];
           } finally {
             this.isLoadingCard = false;
             this.isFlipped = false;
@@ -1729,10 +1781,13 @@
           if (this.isLoadingCard || !this.currentCard) return;
           if (!this.responseOptions.includes(type)) return;
           const currentWord = this.currentCard?.focus?.hanzi;
-          const isCorrect = type === 'sentence' || type === 'focus';
           if (currentWord) {
-            this.updateKnowledge(currentWord, isCorrect);
-            this.updateAbility(currentWord, isCorrect);
+            const focusKnown = type === 'sentence' || type === 'focus';
+            const update = this.updateLevel(currentWord, focusKnown, type);
+            if (update) {
+              this.recordLevelUpdate(update);
+            }
+            this.totalResponses += 1;
           }
           const nextIndex = this.selectNextIndex();
           await this.loadNextCard({ targetIndex: nextIndex });
@@ -1742,66 +1797,238 @@
           const nextIndex = this.selectNextIndex();
           await this.loadNextCard({ targetIndex: nextIndex });
         },
-        ensureWordState(word) {
-          if (!word) return null;
-          let state = this.userModel[word];
-          if (!state) {
-            const prior = this.computePrior(this.frequencyMap[word] || 1);
-            const pseudo = Math.max(this.betaPriorStrength, 1e-3);
-            const alpha = Math.max(1e-3, prior * pseudo);
-            const beta = Math.max(1e-3, (1 - prior) * pseudo);
-            state = { alpha, beta };
-            this.userModel[word] = state;
+        knowledgeProbabilityFromFrequency(freqProbability) {
+          if (!Number.isFinite(freqProbability) || freqProbability <= 0) {
+            return 0;
           }
-          return state;
-        },
-        updateKnowledge(word, isCorrect) {
-          const state = this.ensureWordState(word);
-          if (!state) return;
-          if (isCorrect) {
-            state.alpha += 1;
-          } else {
-            state.beta += 1;
+          const exposures = Math.exp(this.logExposureMean) * freqProbability;
+          const mastery = 1 - Math.exp(-exposures / this.exposuresForMastery);
+          if (!Number.isFinite(mastery)) {
+            return 0;
           }
-        },
-        updateAbility(word, isCorrect) {
-          const normalizedFreq = this.normalizedFreqMap[word] ?? 0;
-          const linear = this.abilityMean + this.frequencyWeight * normalizedFreq;
-          const p = this.logistic(linear);
-          const response = isCorrect ? 1 : 0;
-          const grad = response - p;
-          const hess = p * (1 - p);
-          const priorPrecision = 1 / Math.max(this.minAbilityVar, this.abilityVar);
-          const posteriorVar = 1 / (priorPrecision + hess);
-          const posteriorMean = this.abilityMean + posteriorVar * grad;
-          this.abilityVar = Math.max(this.minAbilityVar, posteriorVar);
-          this.abilityMean = posteriorMean;
+          return Math.min(Math.max(mastery, 0), 1);
         },
         wordProbability(word) {
-          const logisticMean = this.computePrior(this.frequencyMap[word] || 1);
-          const state = this.userModel[word];
-          if (!state) return logisticMean;
-          const total = state.alpha + state.beta;
-          const betaMean = state.alpha / total;
-          const evidence = Math.max(0, total - this.betaPriorStrength);
-          const ramp = Math.max(1, this.betaConfidenceRamp);
-          const weight = Math.min(1, evidence / ramp);
-          return weight * betaMean + (1 - weight) * logisticMean;
+          const freqProbability = this.frequencyProbabilityMap[word];
+          if (!Number.isFinite(freqProbability) || freqProbability <= 0) {
+            return 0;
+          }
+          return this.knowledgeProbabilityFromFrequency(freqProbability);
         },
-        knowledgeColor(probability) {
-          const prob = typeof probability === 'number' ? probability : 0.5;
-          const hue = prob * 120; // 0 -> red, 120 -> green
-          const lightness = 92 - prob * 12;
-          return `hsl(${hue}, 80%, ${lightness}%)`;
+        updateLevel(word, isKnown, responseType) {
+          const freqProbability = this.frequencyProbabilityMap[word];
+          if (!Number.isFinite(freqProbability) || freqProbability <= 0) {
+            return null;
+          }
+          const priorMean = this.logExposureMean;
+          const beforeProb = this.knowledgeProbabilityFromFrequency(freqProbability);
+          const clippedProb = Math.min(Math.max(beforeProb, 1e-6), 1 - 1e-6);
+          const priorVar = Math.min(
+            Math.max(this.logExposureVar, this.minLogExposureVar),
+            this.maxLogExposureVar
+          );
+          const s = Math.exp(priorMean);
+          const exposures = s * freqProbability;
+          if (!Number.isFinite(exposures) || exposures <= 0) {
+            return null;
+          }
+          const beta = freqProbability / this.exposuresForMastery;
+          const expTerm = Math.exp(-beta * s);
+          const dpdx = beta * s * expTerm;
+          const d2pdx2 = dpdx * (1 - beta * s);
+          const y = isKnown ? 1 : 0;
+          const q = y / clippedProb - (1 - y) / (1 - clippedProb);
+          const dqdx =
+            (-y / (clippedProb * clippedProb) -
+              (1 - y) / ((1 - clippedProb) * (1 - clippedProb))) * dpdx;
+          let gradient = dpdx * q;
+          if (!Number.isFinite(gradient)) {
+            gradient = 0;
+          }
+          let h = d2pdx2 * q + dpdx * dqdx;
+          if (!Number.isFinite(h)) {
+            h = -1e-6;
+          }
+          if (h > -1e-6) {
+            h = -1e-6;
+          }
+
+          const priorPrecision = 1 / priorVar;
+          let posteriorPrecision = priorPrecision - h;
+          if (!Number.isFinite(posteriorPrecision) || posteriorPrecision <= 0) {
+            posteriorPrecision = 1 / this.minLogExposureVar;
+          }
+          let posteriorVar = 1 / posteriorPrecision;
+          posteriorVar = Math.min(
+            Math.max(posteriorVar, this.minLogExposureVar),
+            this.maxLogExposureVar
+          );
+          let posteriorMean = priorMean + posteriorVar * gradient;
+          posteriorMean = Math.min(
+            Math.max(posteriorMean, this.minLogExposure),
+            this.maxLogExposure
+          );
+
+          this.logExposureMean = posteriorMean;
+          this.logExposureVar = posteriorVar;
+
+          const afterProb = this.knowledgeProbabilityFromFrequency(freqProbability);
+
+          // Future enhancement: inflate variance based on wall-clock downtime to model forgetting or independent study.
+
+          return {
+            word,
+            responseType,
+            isKnown,
+            beforeProb,
+            afterProb,
+            delta: afterProb - beforeProb,
+            logExposureBefore: priorMean,
+            logExposureAfter: posteriorMean,
+            varianceBefore: priorVar,
+            varianceAfter: posteriorVar,
+            timestamp: Date.now()
+          };
         },
-        logistic(x) {
-          return 1 / (1 + Math.exp(-x));
+        recordLevelUpdate(update) {
+          if (!update) return;
+          const enriched = {
+            ...update,
+            id:
+              update.id ||
+              `${update.word}-${update.responseType}-${update.timestamp}-${Math.random()
+                .toString(16)
+                .slice(2, 8)}`
+          };
+          this.recentLevelUpdates = [enriched, ...this.recentLevelUpdates].slice(
+            0,
+            this.maxRecentLevelUpdates
+          );
         },
-        computePrior(frequency) {
-          const logFreq = Math.log(frequency || 1);
-          const normalized = (logFreq - this.freqStats.mean) / (this.freqStats.std || 1);
-          const score = this.abilityMean + this.frequencyWeight * normalized;
-          return this.logistic(score);
+        async ensureSegmenter() {
+          if (this.segmenterReady && this.segmenter) {
+            return this.segmenter;
+          }
+          if (this.segmenterPromise) {
+            return this.segmenterPromise;
+          }
+          this.segmenterPromise = new Promise((resolve) => {
+            try {
+              const candidate = window.JiebaJS || window.jieba || window.Jieba || null;
+              let instance = null;
+              if (candidate && typeof candidate.cut === 'function') {
+                instance = candidate;
+              } else if (candidate && typeof candidate === 'function') {
+                try {
+                  instance = new candidate();
+                } catch (error) {
+                  console.warn('Unable to instantiate Jieba segmenter.', error);
+                }
+              }
+              if (instance && typeof instance.cut === 'function') {
+                this.segmenter = instance;
+                this.segmenterReady = true;
+                resolve(instance);
+                return;
+              }
+            } catch (error) {
+              console.warn('Failed to initialise Jieba segmenter.', error);
+            }
+            this.segmenterReady = false;
+            resolve(null);
+          });
+          const result = await this.segmenterPromise;
+          this.segmenterPromise = null;
+          return result;
+        },
+        async segmentSentence(text) {
+          if (!text) return [];
+          let segments = [];
+          try {
+            const segmenter = await this.ensureSegmenter();
+            if (segmenter && typeof segmenter.cut === 'function') {
+              const output = segmenter.cut(text, true);
+              if (Array.isArray(output)) {
+                segments = output;
+              }
+            } else if (segmenter && typeof segmenter.segment === 'function') {
+              const output = segmenter.segment(text);
+              if (Array.isArray(output)) {
+                segments = output.map((item) =>
+                  typeof item === 'string'
+                    ? item
+                    : item?.word || item?.token || item?.w || ''
+                );
+              }
+            }
+          } catch (error) {
+            console.warn('Error during Jieba segmentation, falling back to heuristic.', error);
+          }
+          if (!Array.isArray(segments) || !segments.length) {
+            segments = this.naiveSegment(text);
+          }
+          return segments
+            .map((token) =>
+              typeof token === 'string' ? token.trim() : token?.word?.trim() || ''
+            )
+            .filter(Boolean);
+        },
+        extractKnownTokens(tokens) {
+          if (!Array.isArray(tokens)) return [];
+          const seen = new Set();
+          const filtered = [];
+          tokens.forEach((token) => {
+            if (!token) return;
+            const word = token.trim();
+            if (!word || seen.has(word)) return;
+            if (!this.frequencyMap[word]) return;
+            seen.add(word);
+            filtered.push(word);
+          });
+          return filtered;
+        },
+        naiveSegment(text) {
+          if (!text) return [];
+          const result = [];
+          const maxLen = Math.max(1, this.maxLexemeLength || 1);
+          let index = 0;
+          while (index < text.length) {
+            let matched = '';
+            const remaining = text.length - index;
+            const window = Math.min(maxLen, remaining);
+            for (let len = window; len > 0; len--) {
+              const candidate = text.slice(index, index + len);
+              if (this.frequencyMap[candidate]) {
+                matched = candidate;
+                break;
+              }
+            }
+            if (!matched) {
+              matched = text[index];
+            }
+            result.push(matched);
+            index += matched.length;
+          }
+          return result;
+        },
+        formatPercent(value) {
+          if (!Number.isFinite(value)) return '—';
+          return `${(value * 100).toFixed(1)}%`;
+        },
+        formatDelta(value) {
+          if (!Number.isFinite(value)) return '—';
+          const sign = value >= 0 ? '+' : '';
+          return `${sign}${(value * 100).toFixed(1)} pp`;
+        },
+        formatTokens(value) {
+          if (!Number.isFinite(value)) return '—';
+          if (value >= 1e7) return `${(value / 1e6).toFixed(1)}M`;
+          if (value >= 1e5) return `${(value / 1e3).toFixed(1)}k`;
+          return Math.round(value).toLocaleString();
+        },
+        formatStd(value) {
+          if (!Number.isFinite(value)) return '—';
+          return value.toFixed(2);
         },
         selectNextIndex() {
           if (!this.lexicon.length) return this.currentIndex || 0;
@@ -1809,17 +2036,17 @@
           const windowSize = Math.max(20, this.targetWindowSize);
           const maxIndex = this.lexicon.length - 1;
 
-          const logisticAt = (idx) => {
+          const probabilityAt = (idx) => {
             const entry = this.lexicon[idx];
             if (!entry) return target;
-            return this.computePrior(entry.frequency);
+            return this.wordProbability(entry.word);
           };
 
           let low = 0;
           let high = maxIndex;
           while (low < high) {
             const mid = Math.floor((low + high) / 2);
-            const prob = logisticAt(mid);
+            const prob = probabilityAt(mid);
             if (prob > target) {
               low = mid + 1;
             } else {
@@ -1827,27 +2054,26 @@
             }
           }
 
-          let center = Math.min(low, maxIndex);
+          const center = Math.min(low, maxIndex);
           const halfWindow = Math.floor(windowSize / 2);
           let start = Math.max(0, center - halfWindow);
           let end = Math.min(maxIndex, start + windowSize - 1);
           start = Math.max(0, end - windowSize + 1);
 
-          let bestIndex = center;
-          let bestScore = Infinity;
+          const candidates = [];
           for (let idx = start; idx <= end; idx++) {
-            const word = this.lexicon[idx]?.word;
-            if (!word) continue;
-            const prob = this.wordProbability(word);
-            const score = Math.abs(prob - target);
-            const tieBreaker = Math.abs(idx - center) / windowSize;
-            if (score < bestScore || (Math.abs(score - bestScore) < 1e-6 && tieBreaker < Math.abs(bestIndex - center) / windowSize)) {
-              bestScore = score;
-              bestIndex = idx;
-            }
+            const entry = this.lexicon[idx];
+            if (!entry) continue;
+            candidates.push({ idx, word: entry.word });
           }
 
-          return bestIndex;
+          if (!candidates.length) {
+            return Math.min(Math.max(center, 0), maxIndex);
+          }
+
+          const randomIndex = Math.floor(Math.random() * candidates.length);
+          const { idx: chosenIndex } = candidates[randomIndex];
+          return chosenIndex;
         }
       }
     }).mount('#app');
