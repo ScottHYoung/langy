@@ -3,6 +3,7 @@
 ## Interface Build
 - [x] Establish Vue + Tailwind end-user layout with mock session data
 - [x] Add flip gating plus loading/error states for dynamic cards
+- [x] Visualize knowledge distribution with adaptive probability curve
 - [ ] Add responsive refinements for narrow/mobile viewports
 - [ ] Wire real study data (sentences, focus words, queue ordering)
 - [ ] Integrate audio playback hook and pronunciation cues
@@ -12,6 +13,7 @@
 - [ ] Define data schema for words, sentences, and user state snapshots
 - [x] Explore word frequency dataset ingestion strategy (sampled 1k-term corpus wired into UI debug grid)
 - [x] Clean zh_cn_full corpus (Chinese-only filter) and regenerate tapered 1k sample for UI preload
+- [x] Initialize priors from full corpus frequency profile via logistic scaling
 - [ ] Fold sampled corpus into persistent user model storage
 - [ ] Calibrate priors using frequency data once backend available
 - [ ] Document sentence-level evidence propagation rules
