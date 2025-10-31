@@ -1578,7 +1578,7 @@
       methods: {
         async loadLexicon() {
           try {
-            const response = await fetch('corpus_raw/zh_cn_clean.txt');
+            const response = await fetch('corpus/subtlex_word_frequency.txt');
             if (!response.ok) {
               throw new Error(`HTTP ${response.status}`);
             }
