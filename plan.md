@@ -34,3 +34,8 @@
 ## QA & Polish
 - [ ] Add unit/UI smoke tests for card interactions
 - [ ] Document product decisions and onboarding copy
+
+## Long-Term Exploration
+- [ ] Prototype a dual-mode experience: flashcard drills for targeted gaps plus graded reading/listening sessions that highlight low-confidence words inline.
+- [ ] Investigate using comprehension checks on longer passages to update many word probabilities at once, complementing single-word flashes.
+- [ ] Explore TTS/translation overlays for rare words so audio practice can reinforce the exposure model without overwhelming the learner.
