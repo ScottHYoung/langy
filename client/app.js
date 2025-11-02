@@ -26,11 +26,21 @@ export function createLangyApp() {
       this.disposeAudioResources();
     },
     mounted() {
+      this.restorePreferences();
       this.loadLexicon();
     },
     computed: {
       currentCard() {
         return this.activeCard;
+      },
+      isListeningCard() {
+        return this.currentCardMode === 'listening';
+      },
+      studyModeLabel() {
+        return this.studyMode === 'listening' ? 'Listening + Reading' : 'Reading Only';
+      },
+      studyModeToggleLabel() {
+        return this.studyMode === 'listening' ? 'Switch to Reading Only' : 'Switch to Listening + Reading';
       },
       responseButtons() {
         return [
@@ -222,6 +232,12 @@ export function createLangyApp() {
               usage: completion.usage_hint || ''
             }
           };
+          this.assignCardMode();
+          if (this.isListeningCard) {
+            this.ensureAudioReady({ autoplay: true }).catch((error) => {
+              this.audioErrorMessage = error?.message || 'Unable to load audio.';
+            });
+          }
         } catch (error) {
           this.errorMessage = error.message || 'Unable to load sentence.';
           this.activeCard = null;
@@ -296,34 +312,7 @@ export function createLangyApp() {
         return computeWordProbability(this, word, options);
       },
       async requestAudioPlayback() {
-        if (this.isLoadingAudio || this.isLoadingCard) return;
-        const sentenceText = this.currentCard?.sentence?.text;
-        if (!sentenceText) return;
-        this.audioErrorMessage = '';
-        const cached = this.audioBySentence[sentenceText];
-        if (cached?.url) {
-          this.playAudioFromUrl(cached.url);
-          return;
-        }
-        try {
-          this.isLoadingAudio = true;
-          const result = await requestSentenceAudio({ text: sentenceText });
-          if (cached?.url && cached.url !== result.url) {
-            URL.revokeObjectURL(cached.url);
-          }
-          this.audioBySentence[sentenceText] = {
-            url: result.url,
-            voice: result.voice,
-            format: result.format,
-            timestamp: Date.now()
-          };
-          this.currentAudioUrl = result.url;
-          this.playAudioFromUrl(result.url);
-        } catch (error) {
-          this.audioErrorMessage = error.message || 'Unable to load audio.';
-        } finally {
-          this.isLoadingAudio = false;
-        }
+        await this.ensureAudioReady({ autoplay: true, force: false });
       },
       playAudioFromUrl(url) {
         if (!url) return;
@@ -366,6 +355,7 @@ export function createLangyApp() {
         this.stopAudioPlayback({ clearUrl: true });
         this.isLoadingAudio = false;
         this.audioErrorMessage = '';
+        this.currentCardMode = 'reading';
       },
       disposeAudioResources() {
         this.stopAudioPlayback({ clearUrl: true });
@@ -376,6 +366,81 @@ export function createLangyApp() {
         });
         this.audioBySentence = {};
         this.currentAudioUrl = '';
+      },
+      async ensureAudioReady({ autoplay = false, force = false } = {}) {
+        if (this.isLoadingCard) return;
+        if (this.isLoadingAudio) return;
+        const sentenceText = this.currentCard?.sentence?.text;
+        if (!sentenceText) return;
+        this.audioErrorMessage = '';
+        const cached = this.audioBySentence[sentenceText];
+        if (cached?.url && !force) {
+          this.currentAudioUrl = cached.url;
+          if (autoplay) {
+            this.playAudioFromUrl(cached.url);
+          }
+          return;
+        }
+        try {
+          this.isLoadingAudio = true;
+          const result = await requestSentenceAudio({ text: sentenceText });
+          if (cached?.url && cached.url !== result.url) {
+            URL.revokeObjectURL(cached.url);
+          }
+          this.audioBySentence[sentenceText] = {
+            url: result.url,
+            voice: result.voice,
+            format: result.format,
+            timestamp: Date.now()
+          };
+          this.currentAudioUrl = result.url;
+          if (autoplay) {
+            this.playAudioFromUrl(result.url);
+          }
+        } catch (error) {
+          this.audioErrorMessage = error?.message || 'Unable to load audio.';
+        } finally {
+          this.isLoadingAudio = false;
+        }
+      },
+      assignCardMode() {
+        if (!this.currentCard) {
+          this.currentCardMode = 'reading';
+          return;
+        }
+        if (this.studyMode !== 'listening') {
+          this.currentCardMode = 'reading';
+          return;
+        }
+        const chance = Math.min(Math.max(this.listeningCardChance ?? 0.5, 0), 1);
+        this.currentCardMode = Math.random() < chance ? 'listening' : 'reading';
+      },
+      toggleStudyMode() {
+        this.studyMode = this.studyMode === 'listening' ? 'reading' : 'listening';
+        this.persistStudyMode();
+        this.assignCardMode();
+        if (this.isListeningCard) {
+          this.ensureAudioReady({ autoplay: true }).catch((error) => {
+            this.audioErrorMessage = error?.message || 'Unable to load audio.';
+          });
+        }
+      },
+      restorePreferences() {
+        try {
+          const stored = window.localStorage.getItem('langy-study-mode');
+          if (stored === 'listening' || stored === 'reading') {
+            this.studyMode = stored;
+          }
+        } catch (error) {
+          // ignore storage errors
+        }
+      },
+      persistStudyMode() {
+        try {
+          window.localStorage.setItem('langy-study-mode', this.studyMode);
+        } catch (error) {
+          // ignore storage errors
+        }
       },
       selectNextIndex() {
         if (!this.lexicon.length) return this.currentIndex || 0;

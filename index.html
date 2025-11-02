@@ -9,12 +9,25 @@
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
   <div id="app" class="flex min-h-screen flex-col items-center justify-center gap-10 px-6 py-16 text-center">
-    <div class="flex w-full max-w-2xl items-center justify-center">
-      <div
-        class="group relative h-[420px] w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)] sm:h-[460px]"
-        :class="[
-          isFlipped ? 'cursor-default' : 'cursor-pointer',
-          isLoadingCard ? 'pointer-events-none cursor-progress opacity-70' : ''
+    <div class="flex w-full max-w-2xl flex-col items-center gap-4">
+      <div class="flex w-full items-center justify-end">
+        <div class="flex items-center gap-3 rounded-full border border-slate-300 bg-white px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-500 shadow-sm">
+          <span>{{ studyModeLabel }}</span>
+          <button
+            type="button"
+            class="rounded-full border border-slate-300 px-3 py-1 text-[11px] font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-100"
+            @click.stop="toggleStudyMode"
+          >
+            {{ studyModeToggleLabel }}
+          </button>
+        </div>
+      </div>
+      <div class="flex w-full items-center justify-center">
+        <div
+          class="group relative h-[420px] w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)] sm:h-[460px]"
+          :class="[
+            isFlipped ? 'cursor-default' : 'cursor-pointer',
+            isLoadingCard ? 'pointer-events-none cursor-progress opacity-70' : ''
         ]"
         @click="revealCard"
         :aria-busy="isLoadingCard"
@@ -30,6 +43,26 @@
             <p v-else-if="errorMessage" class="max-w-xl text-lg leading-relaxed text-rose-600">
               {{ errorMessage }}
             </p>
+            <div v-else-if="currentCard && isListeningCard" class="flex flex-col items-center gap-4">
+              <p class="text-sm uppercase tracking-[0.4em] text-slate-400">Listen</p>
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                @click.stop="requestAudioPlayback"
+                :disabled="isLoadingAudio || isLoadingCard"
+              >
+                <span
+                  v-if="isLoadingAudio"
+                  class="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"
+                ></span>
+                <span v-else class="inline-flex items-center gap-2">
+                  <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                  Play audio
+                </span>
+              </button>
+              <p class="text-xs text-slate-500">Use your ears—characters reveal after the flip.</p>
+              <p v-if="audioErrorMessage" class="text-xs text-rose-500">{{ audioErrorMessage }}</p>
+            </div>
             <p
               v-else-if="currentCard"
               class="max-w-xl text-3xl leading-relaxed text-slate-900"
@@ -42,7 +75,7 @@
               v-if="currentCard && !isLoadingCard"
               class="text-xs uppercase tracking-[0.35em] text-slate-400"
             >
-              Tap to reveal
+              {{ isListeningCard ? 'Tap to reveal the transcript' : 'Tap to reveal' }}
             </span>
             <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Please wait</span>
           </article>
@@ -66,7 +99,7 @@
                   ></span>
                   <span v-else class="inline-flex items-center gap-1">
                     <span class="inline-block h-3 w-3 rounded-full bg-emerald-400"></span>
-                    Listen
+                    Replay audio
                   </span>
                   <span v-if="isLoadingAudio">Loading…</span>
                 </button>
@@ -107,6 +140,7 @@
             >
             <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Awaiting generation</span>
           </article>
+        </div>
         </div>
       </div>
     </div>
