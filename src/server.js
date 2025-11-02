@@ -3,11 +3,15 @@ const { URL } = require('url');
 
 const { PORT } = require('./config');
 const { setCommonHeaders } = require('./utils/http');
-const { handleApiGenerate } = require('./routes/api');
+const { handleApiGenerate, handleApiGenerateAudio } = require('./routes/api');
 const { handleStaticRequest } = require('./routes/static');
 
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname.startsWith('/api/generate-audio')) {
+    await handleApiGenerateAudio(req, res);
+    return;
+  }
   if (url.pathname.startsWith('/api/generate')) {
     await handleApiGenerate(req, res);
     return;

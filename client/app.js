@@ -10,6 +10,7 @@ import {
 import { highlightFocus as highlightFocusText } from './utils/text.js';
 import { fetchFrequencyCorpus, initializeLexicon } from './services/lexicon.js';
 import { generateCard } from './services/api.js';
+import { requestSentenceAudio } from './services/audio.js';
 import { consumeCalibrationIndex, handleCalibrationResponse } from './services/calibration.js';
 import {
   wordProbability as computeWordProbability,
@@ -20,6 +21,9 @@ export function createLangyApp() {
   return {
     data() {
       return createInitialState();
+    },
+    beforeUnmount() {
+      this.disposeAudioResources();
     },
     mounted() {
       this.loadLexicon();
@@ -192,10 +196,12 @@ export function createLangyApp() {
         }
         const entry = this.lexicon[this.currentIndex];
         if (!entry) return;
+        this.prepareAudioForNewCard();
         await this.fetchCardForWord(entry.word);
       },
       async fetchCardForWord(word) {
         if (!word) return;
+        this.prepareAudioForNewCard();
         this.isLoadingCard = true;
         this.errorMessage = '';
         try {
@@ -227,6 +233,7 @@ export function createLangyApp() {
       async recordResponse(type) {
         if (this.isLoadingCard || !this.currentCard) return;
         if (!this.responseOptions.includes(type)) return;
+        this.stopAudioPlayback({ clearUrl: false });
         const currentWord = this.currentCard?.focus?.hanzi;
         const freqProbability = currentWord ? this.frequencyProbabilityMap[currentWord] ?? 0 : 0;
         const isKnown = type === 'sentence' || type === 'focus';
@@ -272,6 +279,7 @@ export function createLangyApp() {
         if (this.calibrationActive) {
           await this.loadNextCard({});
         } else {
+          this.stopAudioPlayback({ clearUrl: false });
           const nextIndex = this.selectNextIndex();
           await this.loadNextCard({ targetIndex: nextIndex });
         }
@@ -286,6 +294,88 @@ export function createLangyApp() {
       },
       wordProbability(word, options = {}) {
         return computeWordProbability(this, word, options);
+      },
+      async requestAudioPlayback() {
+        if (this.isLoadingAudio || this.isLoadingCard) return;
+        const sentenceText = this.currentCard?.sentence?.text;
+        if (!sentenceText) return;
+        this.audioErrorMessage = '';
+        const cached = this.audioBySentence[sentenceText];
+        if (cached?.url) {
+          this.playAudioFromUrl(cached.url);
+          return;
+        }
+        try {
+          this.isLoadingAudio = true;
+          const result = await requestSentenceAudio({ text: sentenceText });
+          if (cached?.url && cached.url !== result.url) {
+            URL.revokeObjectURL(cached.url);
+          }
+          this.audioBySentence[sentenceText] = {
+            url: result.url,
+            voice: result.voice,
+            format: result.format,
+            timestamp: Date.now()
+          };
+          this.currentAudioUrl = result.url;
+          this.playAudioFromUrl(result.url);
+        } catch (error) {
+          this.audioErrorMessage = error.message || 'Unable to load audio.';
+        } finally {
+          this.isLoadingAudio = false;
+        }
+      },
+      playAudioFromUrl(url) {
+        if (!url) return;
+        this.stopAudioPlayback({ clearUrl: false });
+        try {
+          const audio = new Audio(url);
+          audio.addEventListener('ended', () => {
+            this.stopAudioPlayback({ clearUrl: false });
+          });
+          audio.addEventListener('error', () => {
+            this.audioErrorMessage = 'Audio playback failed.';
+          });
+          this._currentAudioElement = audio;
+          this.currentAudioUrl = url;
+          const playPromise = audio.play();
+          if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch((error) => {
+              this.audioErrorMessage = error?.message || 'Unable to play audio.';
+            });
+          }
+        } catch (error) {
+          this.audioErrorMessage = error?.message || 'Unable to play audio.';
+        }
+      },
+      stopAudioPlayback({ clearUrl = true } = {}) {
+        if (this._currentAudioElement) {
+          try {
+            this._currentAudioElement.pause();
+            this._currentAudioElement.currentTime = 0;
+          } catch (error) {
+            // ignore pause errors
+          }
+        }
+        this._currentAudioElement = null;
+        if (clearUrl) {
+          this.currentAudioUrl = '';
+        }
+      },
+      prepareAudioForNewCard() {
+        this.stopAudioPlayback({ clearUrl: true });
+        this.isLoadingAudio = false;
+        this.audioErrorMessage = '';
+      },
+      disposeAudioResources() {
+        this.stopAudioPlayback({ clearUrl: true });
+        Object.values(this.audioBySentence).forEach((entry) => {
+          if (entry?.url) {
+            URL.revokeObjectURL(entry.url);
+          }
+        });
+        this.audioBySentence = {};
+        this.currentAudioUrl = '';
       },
       selectNextIndex() {
         if (!this.lexicon.length) return this.currentIndex || 0;

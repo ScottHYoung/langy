@@ -53,6 +53,25 @@
             <div v-if="currentCard" class="space-y-4 text-slate-900">
               <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(currentCard.sentence)"></p>
               <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ currentCard.sentenceTranslation }}</p>
+              <div class="flex flex-col items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                  @click.stop="requestAudioPlayback"
+                  :disabled="isLoadingAudio || isLoadingCard"
+                >
+                  <span
+                    v-if="isLoadingAudio"
+                    class="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"
+                  ></span>
+                  <span v-else class="inline-flex items-center gap-1">
+                    <span class="inline-block h-3 w-3 rounded-full bg-emerald-400"></span>
+                    Listen
+                  </span>
+                  <span v-if="isLoadingAudio">Loading…</span>
+                </button>
+                <p v-if="audioErrorMessage" class="text-xs text-rose-500">{{ audioErrorMessage }}</p>
+              </div>
             </div>
             <div v-else class="space-y-2 text-center text-sm text-slate-500">
               <p v-if="isLoadingCard">Hold tight—we’re preparing a new context sentence.</p>

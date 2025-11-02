@@ -66,6 +66,40 @@ async function callOpenAI(word) {
   }
 }
 
+async function callOpenAIAudio({ text, voice = 'alloy', audioFormat = 'mp3', model = 'gpt-4o-mini-tts' }) {
+  if (!text || typeof text !== 'string') {
+    throw new Error('Missing text for audio generation.');
+  }
+  const response = await fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model,
+      voice,
+      input: text,
+      format: audioFormat
+    })
+  });
+
+  if (!response.ok) {
+    let details = '';
+    try {
+      const payload = await response.json();
+      details = JSON.stringify(payload?.error ?? payload);
+    } catch (error) {
+      details = response.statusText;
+    }
+    throw new Error(`OpenAI audio error: ${response.status} ${details}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
 module.exports = {
-  callOpenAI
+  callOpenAI,
+  callOpenAIAudio
 };
