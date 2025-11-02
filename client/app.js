@@ -58,8 +58,13 @@ export function createLangyApp() {
       },
       calibrationStatusLabel() {
         if (this.calibrationActive) {
-          const remaining = Math.max(this.calibrationSamplesTarget - this.calibrationResponses.length, 0);
-          return `Calibrating (${remaining} left)`;
+          const step = (this.calibrationStepCount ?? 0) + 1;
+          const std = this.calibrationPosteriorStdLog10;
+          if (Number.isFinite(std) && std > 0) {
+            const factor = Math.pow(10, std).toFixed(2);
+            return `Calibrating (±${factor}×, step ${step})`;
+          }
+          return `Calibrating (step ${step})`;
         }
         return 'Ready';
       },
@@ -67,6 +72,48 @@ export function createLangyApp() {
         return this.calibrationActive
           ? 'bg-amber-100 text-amber-700 border border-amber-200'
           : 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+      },
+      calibrationProgress() {
+        if (!this.lexicon.length) return null;
+        const total = this.lexicon.length;
+        const clampIndex = (value, fallback) => {
+          if (!Number.isFinite(value)) return fallback;
+          return Math.max(0, Math.min(total - 1, Math.round(value)));
+        };
+        const totalRange = Math.max(total - 1, 1);
+        const medianIndex = clampIndex(this.calibrationMedianIndex, 0);
+        let lowerIndex = clampIndex(this.calibrationCredibleLowerIndex, 0);
+        let upperIndex = clampIndex(this.calibrationCredibleUpperIndex, total - 1);
+        if (lowerIndex > upperIndex) {
+          const swap = lowerIndex;
+          lowerIndex = upperIndex;
+          upperIndex = swap;
+        }
+        const toPercent = (index) => (index / totalRange) * 100;
+        const stdLog10 = this.calibrationPosteriorStdLog10;
+        const lowerPercent = toPercent(lowerIndex);
+        const upperPercent = toPercent(upperIndex);
+        const intervalPercent = Math.min(Math.max(upperPercent - lowerPercent, 0), 100);
+        const intervalWidthPercent = Math.min(intervalPercent, Math.max(100 - lowerPercent, 0));
+        return {
+          active: this.calibrationActive,
+          total,
+          medianIndex,
+          lowerIndex,
+          upperIndex,
+          medianWord: this.lexicon[medianIndex]?.word ?? null,
+          lowerWord: this.lexicon[lowerIndex]?.word ?? null,
+          upperWord: this.lexicon[upperIndex]?.word ?? null,
+          medianPercent: toPercent(medianIndex),
+          lowerPercent,
+          upperPercent,
+          intervalPercent,
+          intervalWidthPercent,
+          stdLog10,
+          spreadFactor: Number.isFinite(stdLog10) ? Math.pow(10, stdLog10) : null,
+          stepCount: this.calibrationStepCount ?? 0,
+          maxSteps: this.calibrationMaxSteps ?? this.calibrationSamplesTarget ?? 12
+        };
       },
       levelPreviewRows() {
         if (!this.lexicon.length) return [];
@@ -126,7 +173,12 @@ export function createLangyApp() {
           if (calibrationIndex != null) {
             this.currentIndex = calibrationIndex;
           } else {
-            this.currentIndex = this.findIndexClosestToProbability(0.5);
+            const fallbackLog = Number.isFinite(this.calibrationPosteriorMedian)
+              ? this.calibrationPosteriorMedian
+              : this.logExposureMean;
+            this.currentIndex = this.findIndexClosestToProbability(0.5, {
+              logExposure: fallbackLog
+            });
           }
         } else if (targetIndex != null) {
           const clamped = Math.max(0, Math.min(maxIndex, targetIndex));
@@ -232,13 +284,16 @@ export function createLangyApp() {
         this.errorMessage = '';
         this.isFlipped = true;
       },
-      wordProbability(word) {
-        return computeWordProbability(this, word);
+      wordProbability(word, options = {}) {
+        return computeWordProbability(this, word, options);
       },
       selectNextIndex() {
         if (!this.lexicon.length) return this.currentIndex || 0;
         if (this.calibrationActive) {
-          return this.findIndexClosestToProbability(0.5);
+          const focusLog = Number.isFinite(this.calibrationPosteriorMedian)
+            ? this.calibrationPosteriorMedian
+            : this.logExposureMean;
+          return this.findIndexClosestToProbability(0.5, { logExposure: focusLog });
         }
         const target = this.targetSuccessRate;
         const center = this.findIndexClosestToProbability(target);
@@ -266,14 +321,14 @@ export function createLangyApp() {
         const pick = topSlice[Math.floor(Math.random() * topSlice.length)] ?? topSlice[0];
         return pick?.idx ?? center;
       },
-      findIndexClosestToProbability(target) {
+      findIndexClosestToProbability(target, options = {}) {
         if (!this.lexicon.length) return 0;
         let low = 0;
         let high = this.lexicon.length - 1;
         while (low <= high) {
           const mid = Math.floor((low + high) / 2);
           const entry = this.lexicon[mid];
-          const probability = entry ? this.wordProbability(entry.word) : 0;
+          const probability = entry ? this.wordProbability(entry.word, options) : 0;
           if (probability > target) {
             low = mid + 1;
           } else {
@@ -287,7 +342,7 @@ export function createLangyApp() {
           const idx = Math.max(0, Math.min(this.lexicon.length - 1, candidate));
           const entry = this.lexicon[idx];
           if (!entry) continue;
-          const probability = this.wordProbability(entry.word);
+          const probability = this.wordProbability(entry.word, options);
           const score = Math.abs(probability - target);
           if (score < bestScore) {
             bestScore = score;
@@ -312,13 +367,17 @@ export function createLangyApp() {
         }
       },
       recordCalibrationSummary(fit, priorMean) {
+        const calibratedStd =
+          typeof fit.stdLog10 === 'number' && Number.isFinite(fit.stdLog10)
+            ? fit.stdLog10
+            : Math.sqrt(Math.max(fit.variance, 0));
         const entry = {
           id: `calibration-${Date.now()}`,
-          word: 'Calibration',
+          word: 'Calibration ✓',
           correct: true,
-          probability: 1,
+          probability: clampProbability(0.5),
           deltaMean: fit.mean - (priorMean ?? fit.mean),
-          stdAfter: Math.sqrt(Math.max(fit.variance, 0)),
+          stdAfter: calibratedStd,
           timestampLabel: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         this.recentLevelUpdates.unshift(entry);

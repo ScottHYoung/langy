@@ -1,9 +1,15 @@
 import { clampProbability } from '../utils/formatters.js';
 
-export function wordProbability(state, word) {
+export function wordProbability(state, word, options = {}) {
   const freqProbability = state.frequencyProbabilityMap[word] ?? 0;
   if (freqProbability <= 0) return 0;
-  return masteryProbability(state.logExposureMean, state.exposuresForMastery, freqProbability);
+  const logExposure =
+    typeof options.logExposure === 'number' ? options.logExposure : state.logExposureMean;
+  const exposuresForMastery =
+    typeof options.exposuresForMastery === 'number'
+      ? options.exposuresForMastery
+      : state.exposuresForMastery;
+  return masteryProbability(logExposure, exposuresForMastery, freqProbability);
 }
 
 export function masteryProbability(logExposureMean, exposuresForMastery, freqProbability) {
