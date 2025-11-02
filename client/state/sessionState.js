@@ -1,6 +1,6 @@
 const DEFAULT_LOG_EXPOSURE = Math.log(5000);
 const MIN_LOG_EXPOSURE = Math.log(10);
-const MAX_LOG_EXPOSURE = Math.log(1e8);
+const MAX_LOG_EXPOSURE = Math.log(1e11);
 
 export function createInitialState() {
   return {
@@ -39,10 +39,11 @@ export function createInitialState() {
     calibrationCredibleLowerIndex: 0,
     calibrationCredibleUpperIndex: 0,
     calibrationLastIndex: null,
+    calibrationProbeCounts: {},
     calibrationStdThreshold: 0.12,
     calibrationMaxSteps: 12,
     calibrationStepCount: 0,
-    calibrationMinFrequencyProbability: 1e-7,
+    calibrationMinFrequencyProbability: 0,
     calibrationHistory: [],
     targetSuccessRate: 0.5,
     targetWindowSize: 100,

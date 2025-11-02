@@ -11,6 +11,7 @@ export function initializeCalibration(state) {
   state.calibrationHistory = [];
   state.calibrationQueue = [];
   state.calibrationLastIndex = null;
+  state.calibrationProbeCounts = {};
   ensurePosteriorInitialized(state);
 }
 
@@ -19,15 +20,35 @@ export function consumeCalibrationIndex(state) {
   if (!Array.isArray(state.calibrationPosterior) || !state.calibrationPosterior.length) {
     ensurePosteriorInitialized(state);
   }
+  const probeCounts = state.calibrationProbeCounts || {};
   const targetLogExposure =
     typeof state.calibrationPosteriorMedian === 'number'
       ? state.calibrationPosteriorMedian
       : state.logExposureMean;
   let candidate = indexForLogExposure(state, targetLogExposure);
-  if (state.calibrationLastIndex != null && candidate === state.calibrationLastIndex) {
-    candidate = nudgeIndex(state, candidate, targetLogExposure);
+
+  let attempts = 0;
+  while (attempts < 3) {
+    const lastSame = state.calibrationLastIndex != null && candidate === state.calibrationLastIndex;
+    const seenCount = probeCounts[candidate] ?? 0;
+    if (!lastSame && seenCount === 0) {
+      break;
+    }
+    const nudged = nudgeIndex(state, candidate, targetLogExposure, probeCounts);
+    if (nudged === candidate) {
+      break;
+    }
+    candidate = nudged;
+    attempts += 1;
+    const newSeen = probeCounts[candidate] ?? 0;
+    if (newSeen === 0) {
+      break;
+    }
   }
+
   state.calibrationLastIndex = candidate;
+  probeCounts[candidate] = (probeCounts[candidate] ?? 0) + 1;
+  state.calibrationProbeCounts = probeCounts;
   return candidate;
 }
 
@@ -188,6 +209,7 @@ function finalizeCalibration(state) {
   state.calibrationActive = false;
   state.calibrationQueue = [];
   state.calibrationLastIndex = null;
+  state.calibrationProbeCounts = {};
   state.calibrationResponses = [];
 }
 
@@ -232,23 +254,76 @@ function indexForLogExposure(state, logExposure) {
   return Math.max(0, Math.min(maxIndex, bestIndex));
 }
 
-function nudgeIndex(state, index, referenceLogExposure) {
+function nudgeIndex(state, index, referenceLogExposure, probeCounts = null) {
   const maxIndex = state.lexicon.length - 1;
   const candidates = [];
   if (index > 0) candidates.push(index - 1);
   if (index < maxIndex) candidates.push(index + 1);
   if (!candidates.length) return index;
 
+  const counts = probeCounts || null;
+  const currentCount = counts ? counts[index] ?? 0 : 0;
+
+  const adjustScore = (score, candidateCount) => {
+    if (!counts) return score;
+    if (candidateCount === 0) return score - 1e-3;
+    if (candidateCount <= currentCount) return score;
+    return score + 0.05 * (candidateCount - currentCount);
+  };
+
+  const baseScore = scoreForIndex(state, index, referenceLogExposure);
   let bestIndex = index;
-  let bestScore = scoreForIndex(state, index, referenceLogExposure);
-  candidates.forEach((candidate) => {
+  let bestScore = adjustScore(baseScore, currentCount);
+  let fallbackIndex = null;
+  let fallbackScore = Number.POSITIVE_INFINITY;
+  const minFreq = Math.max(0, state.calibrationMinFrequencyProbability || 0);
+  const maxOffset = Math.min(maxIndex, Math.max(25, Math.ceil(state.lexicon.length * 0.01)));
+
+  const considerCandidate = (candidate) => {
+    if (candidate < 0 || candidate > maxIndex) return;
+    const entry = state.lexicon[candidate];
+    if (!entry) return;
+    const freqProbability = state.frequencyProbabilityMap[entry.word] ?? 0;
+    if (freqProbability <= 0) return;
     const score = scoreForIndex(state, candidate, referenceLogExposure);
-    if (score < bestScore - 1e-6) {
-      bestScore = score;
-      bestIndex = candidate;
+    const candidateCount = counts ? counts[candidate] ?? 0 : 0;
+    const adjustedScore = adjustScore(score, candidateCount);
+    if (freqProbability >= minFreq) {
+      if (
+        adjustedScore < bestScore - 1e-6 ||
+        (candidate !== index && Math.abs(adjustedScore - bestScore) <= 1e-6)
+      ) {
+        bestScore = adjustedScore;
+        bestIndex = candidate;
+      }
     }
-  });
-  return bestIndex;
+    if (fallbackIndex == null || adjustedScore < fallbackScore) {
+      fallbackIndex = candidate;
+      fallbackScore = adjustedScore;
+    }
+  };
+
+  // First check immediate neighbours
+  candidates.forEach(considerCandidate);
+
+  if (bestIndex !== index) return bestIndex;
+
+  for (let offset = 2; offset <= maxOffset; offset += 1) {
+    considerCandidate(index - offset);
+    if (bestIndex !== index) break;
+    considerCandidate(index + offset);
+    if (bestIndex !== index) break;
+  }
+
+  if (bestIndex !== index) {
+    return bestIndex;
+  }
+
+  if (fallbackIndex != null) {
+    return fallbackIndex;
+  }
+
+  return index;
 }
 
 function scoreForIndex(state, index, logExposure) {
