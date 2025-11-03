@@ -175,13 +175,16 @@ export function createLangyApp() {
         this.loadUserProfile(username);
         this.isAuthenticated = true;
         this.appMode = 'study';
-        await this.loadLexicon();
-        if (!this.calibrationComplete) {
-          this.startCalibrationFlow({ resetPosterior: true });
-        } else {
+
+        if (this.calibrationComplete) {
+          await this.loadLexicon();
           this.calibrationActive = false;
           await this.maybeInitStudy();
+        } else {
+          this.calibrationActive = false;
+          this.calibrationStatusMessage = '';
         }
+
         this.persistUserProfile();
       },
       logout() {
@@ -243,10 +246,14 @@ export function createLangyApp() {
         this.persistUserProfile();
       },
       async restartCalibration() {
-        await this.loadLexicon();
-        this.startCalibrationFlow({ resetPosterior: false });
+        await this.startCalibrationFlow({ resetPosterior: false });
       },
-      startCalibrationFlow({ resetPosterior = false } = {}) {
+      async startCalibrationFlow({ resetPosterior = false } = {}) {
+        if (!this.lexiconLoaded) {
+          await this.loadLexicon();
+        }
+        if (!this.lexicon.length) return;
+
         initializeCalibration(this);
         this.calibrationActive = true;
         this.calibrationComplete = false;
@@ -262,7 +269,17 @@ export function createLangyApp() {
           this.logExposureVar = 16;
         }
         this.persistUserProfile();
-        this.maybeInitStudy();
+        await this.loadNextCard({ resetIndex: true });
+      },
+      async continueCalibration() {
+        if (!this.calibrationActive) {
+          await this.startCalibrationFlow({ resetPosterior: false });
+          return;
+        }
+        if (!this.lexiconLoaded) {
+          await this.loadLexicon();
+        }
+        await this.loadNextCard({});
       },
       loadUserProfile(username) {
         if (!username) return;
@@ -276,7 +293,7 @@ export function createLangyApp() {
           }
           if (typeof data.calibrationComplete === 'boolean') {
             this.calibrationComplete = data.calibrationComplete;
-            this.calibrationActive = !data.calibrationComplete;
+            this.calibrationActive = false;
           }
           if (typeof data.logExposureMean === 'number' && Number.isFinite(data.logExposureMean)) {
             this.logExposureMean = data.logExposureMean;
