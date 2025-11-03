@@ -162,8 +162,11 @@ async function handleApiReadAnalyze(req, res) {
             : 0
       };
     })
-    .filter(Boolean)
-    .slice(0, 24);
+    .filter(Boolean);
+
+  if (sanitizedTargets.length > 120) {
+    sanitizedTargets.length = 120;
+  }
 
   if (!sanitizedTargets.length) {
     setCommonHeaders(res);

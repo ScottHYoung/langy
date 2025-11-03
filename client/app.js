@@ -317,53 +317,38 @@ export function createLangyApp() {
         const normalized = Math.max(0, Math.min(1, this.readingMinProbability || 0));
         return Math.round(normalized * 100);
       },
-      readingGlossEntries() {
-        if (!this.readingHighlightedSegments.length) return [];
-        const seenKeys = new Set();
-        const entries = [];
-        this.readingHighlightedSegments.forEach((segment) => {
-          const key = segment.glossKey;
-          if (!key || seenKeys.has(key)) {
-            return;
-          }
-          seenKeys.add(key);
-          const gloss = this.readingGlossesByKey?.[key] || null;
-          entries.push({
-            key,
-            word: segment.text,
-            pinyin: gloss?.pinyin || '',
-            gloss: gloss?.gloss || '',
-            note: gloss?.note || '',
-            probability: segment.probability
-          });
-        });
-        return entries;
-      },
       readingWordCount() {
         if (!this.readingSegmentsAvailable) return 0;
         return this.readingSegments.filter((segment) => segment.isWord).length;
       },
-      readingSegmentsBySentence() {
+      readingParagraphs() {
         if (!this.readingSegmentsAvailable) return [];
-        const groups = new Map();
+        const paragraphs = [];
+        let current = [];
+        let paragraphIndex = 0;
         this.readingSegments.forEach((segment) => {
-          const index = typeof segment.sentenceIndex === 'number' ? segment.sentenceIndex : 0;
-          if (!groups.has(index)) {
-            groups.set(index, []);
+          if (segment.isNewline) {
+            if (current.length) {
+              paragraphs.push({
+                id: `paragraph-${paragraphIndex}`,
+                index: paragraphIndex,
+                segments: current
+              });
+              paragraphIndex += 1;
+              current = [];
+            }
+            return;
           }
-          groups.get(index).push(segment);
+          current.push(segment);
         });
-        const contexts = new Map();
-        this.readingSentenceContexts.forEach((sentence) => {
-          contexts.set(sentence.index, sentence.text || '');
-        });
-        return Array.from(groups.entries())
-          .map(([index, segments]) => ({
-            index,
-            text: contexts.get(index) || '',
-            segments
-          }))
-          .sort((a, b) => a.index - b.index);
+        if (current.length) {
+          paragraphs.push({
+            id: `paragraph-${paragraphIndex}`,
+            index: paragraphIndex,
+            segments: current
+          });
+        }
+        return paragraphs;
       }
     },
     methods: {
@@ -412,38 +397,13 @@ export function createLangyApp() {
           });
           this.readingGlossesByKey = placeholderMap;
 
-          if (!prepared.targets.length) {
-            return;
-          }
-
-          this.readingGlossLoading = true;
-          try {
-            const glosses = await requestReadGlosses({
-              text: rawText,
-              targets: prepared.targets
-            });
-            const merged = { ...this.readingGlossesByKey };
-            glosses.forEach((entry) => {
-              merged[entry.key] = {
-                word: entry.word,
-                pinyin: entry.pinyin,
-                gloss: entry.gloss,
-                note: entry.note
-              };
-            });
-            this.readingGlossesByKey = merged;
-          } catch (error) {
-            this.readingErrorMessage = error?.message || 'Unable to fetch glosses.';
-          } finally {
-            this.readingGlossLoading = false;
+          if (prepared.targets.length) {
+            await this.fetchGlossesForTargets(prepared.targets, rawText);
           }
         } catch (error) {
           this.readingErrorMessage = error?.message || 'Unable to analyze text.';
         } finally {
           this.readingProcessing = false;
-          if (this.readingGlossLoading) {
-            this.readingGlossLoading = false;
-          }
         }
       },
       prepareReadingSegments({ segments = [], sentences = [] } = {}) {
@@ -535,7 +495,7 @@ export function createLangyApp() {
           this.readingSegments = [...targetSegments];
         }
       },
-      handleReadingThresholdChange(value) {
+      async handleReadingThresholdChange(value) {
         let nextValue = value;
         if (value && value.target) {
           nextValue = value.target.value;
@@ -545,9 +505,7 @@ export function createLangyApp() {
         const clamped = Math.max(0.05, Math.min(0.95, parsed));
         this.readingMinProbability = clamped;
         this.updateReadingHighlights();
-        this.fetchMissingReadingGlosses().catch(() => {
-          // errors handled in fetchMissingReadingGlosses
-        });
+        await this.fetchMissingReadingGlosses();
       },
       readingGlossForSegment(segment) {
         if (!segment || !segment.glossKey) return null;
@@ -563,21 +521,60 @@ export function createLangyApp() {
         this.readingErrorMessage = '';
         this.readingLastAnalyzedAt = null;
       },
+      async fetchGlossesForTargets(targets = [], sourceText = '') {
+        if (!Array.isArray(targets) || !targets.length) return;
+        const text = typeof sourceText === 'string' ? sourceText : '';
+        const existing = this.readingGlossesByKey || {};
+        const pending = targets.filter((target) => {
+          if (!target || !target.key) return false;
+          const entry = existing[target.key];
+          return !entry || !entry.gloss;
+        });
+        if (!pending.length) return;
+        const MAX_BATCH = 16;
+        this.readingGlossLoading = true;
+        try {
+          for (let index = 0; index < pending.length; index += MAX_BATCH) {
+            const batch = pending.slice(index, index + MAX_BATCH);
+            const glosses = await requestReadGlosses({
+              text,
+              targets: batch
+            });
+            if (!Array.isArray(glosses) || !glosses.length) {
+              continue;
+            }
+            const merged = { ...this.readingGlossesByKey };
+            glosses.forEach((entry) => {
+              merged[entry.key] = {
+                word: entry.word,
+                pinyin: entry.pinyin,
+                gloss: entry.gloss,
+                note: entry.note
+              };
+            });
+            this.readingGlossesByKey = merged;
+          }
+        } catch (error) {
+          this.readingErrorMessage = error?.message || 'Unable to fetch glosses.';
+        } finally {
+          this.readingGlossLoading = false;
+        }
+      },
       async fetchMissingReadingGlosses() {
         if (!this.readingSegmentsAvailable) return;
         const highlighted = this.readingHighlightedSegments;
         if (!highlighted.length) return;
-        const existingMap = this.readingGlossesByKey || {};
         const sentenceMap = new Map();
         this.readingSentenceContexts.forEach((sentence) => {
           sentenceMap.set(sentence.index, sentence.text || '');
         });
         const targets = [];
         const requested = new Set();
+        const glossMap = this.readingGlossesByKey || {};
         highlighted.forEach((segment) => {
           if (!segment || !segment.glossKey) return;
           if (requested.has(segment.glossKey)) return;
-          const existing = existingMap[segment.glossKey];
+          const existing = glossMap[segment.glossKey];
           if (existing && existing.gloss) {
             requested.add(segment.glossKey);
             return;
@@ -593,27 +590,10 @@ export function createLangyApp() {
           });
         });
         if (!targets.length) return;
-        this.readingGlossLoading = true;
-        try {
-          const glosses = await requestReadGlosses({
-            text: this.readingAnalyzedText || this.readingDraftText || '',
-            targets
-          });
-          const merged = { ...existingMap };
-          glosses.forEach((entry) => {
-            merged[entry.key] = {
-              word: entry.word,
-              pinyin: entry.pinyin,
-              gloss: entry.gloss,
-              note: entry.note
-            };
-          });
-          this.readingGlossesByKey = merged;
-        } catch (error) {
-          this.readingErrorMessage = error?.message || 'Unable to fetch glosses.';
-        } finally {
-          this.readingGlossLoading = false;
-        }
+        await this.fetchGlossesForTargets(
+          targets,
+          this.readingAnalyzedText || this.readingDraftText || ''
+        );
       },
       async returnToModeMenu() {
         if (!this.appMode) return;

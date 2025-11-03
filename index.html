@@ -261,7 +261,7 @@
                   <span class="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-transparent"></span>
                   <p>Analyzing text…</p>
                 </div>
-                <div v-else-if="readingSegmentsAvailable" class="space-y-5">
+                <div v-else-if="readingSegmentsAvailable" class="space-y-6">
                   <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
                     <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
                       {{ readingHighlightedSegments.length }} flagged
@@ -270,81 +270,61 @@
                       Threshold {{ readingThresholdPercent }}%
                     </span>
                   </div>
-                  <div class="space-y-4 text-slate-900">
+                  <div class="space-y-6">
                     <div
-                      v-for="sentence in readingSegmentsBySentence"
-                      :key="sentence.index"
-                      class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm"
+                      v-for="paragraph in readingParagraphs"
+                      :key="paragraph.id"
+                      class="text-[22px] leading-[2] text-slate-900"
                     >
-                      <div class="text-[11px] uppercase tracking-[0.35em] text-slate-400">
-                        Sentence {{ sentence.index + 1 }}
-                      </div>
-                      <div class="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-3 text-[22px] leading-[42px]">
-                        <template v-for="segment in sentence.segments" :key="segment.id">
-                          <span v-if="segment.isNewline" class="basis-full h-0"></span>
+                      <template v-for="segment in paragraph.segments" :key="segment.id">
+                        <span
+                          v-if="segment.isWord"
+                          class="group relative inline-flex align-baseline px-[0.1em]"
+                          :tabindex="segment.highlight ? 0 : null"
+                        >
                           <span
-                            v-else-if="segment.isSpace"
-                            class="whitespace-pre text-base leading-8 text-slate-400"
-                          >{{ segment.text }}</span>
-                          <span v-else-if="segment.isPunctuation" class="text-xl text-slate-500">{{ segment.text }}</span>
-                          <span v-else-if="segment.isWord" class="inline-flex flex-col items-center">
+                            v-if="segment.highlight"
+                            class="pointer-events-none absolute bottom-full left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white shadow-xl group-focus-visible:flex group-hover:flex"
+                          >
                             <span
-                              v-if="segment.highlight"
-                              class="mb-1 flex flex-col items-center text-[11px] leading-tight text-amber-700"
+                              v-if="readingGlossForSegment(segment)?.pinyin"
+                              class="whitespace-nowrap font-semibold text-slate-100"
                             >
-                              <span v-if="readingGlossForSegment(segment)?.pinyin" class="font-medium text-slate-600">
-                                {{ readingGlossForSegment(segment).pinyin }}
-                              </span>
-                              <span v-if="readingGlossForSegment(segment)?.gloss" class="text-slate-700">
-                                {{ readingGlossForSegment(segment).gloss }}
-                              </span>
-                              <span v-else class="italic text-slate-400">
-                                {{ readingGlossLoading ? 'Loading…' : '—' }}
-                              </span>
+                              {{ readingGlossForSegment(segment).pinyin }}
                             </span>
                             <span
-                              :class="[
-                                'px-2 py-0.5',
-                                segment.highlight
-                                  ? 'rounded-md bg-amber-100 font-semibold text-amber-900 shadow-sm'
-                                  : 'text-slate-900'
-                              ]"
+                              v-if="readingGlossForSegment(segment)?.gloss"
+                              class="whitespace-nowrap text-slate-100"
                             >
-                              {{ segment.text }}
+                              {{ readingGlossForSegment(segment).gloss }}
+                            </span>
+                            <span
+                              v-else
+                              class="whitespace-nowrap italic text-slate-400"
+                            >
+                              {{ readingGlossLoading ? 'Loading…' : '—' }}
+                            </span>
+                            <span
+                              v-if="readingGlossForSegment(segment)?.note"
+                              class="whitespace-nowrap text-[11px] font-normal text-slate-300"
+                            >
+                              {{ readingGlossForSegment(segment).note }}
                             </span>
                           </span>
-                          <span v-else class="text-xl text-slate-900">{{ segment.text }}</span>
-                        </template>
-                      </div>
+                          <span
+                            :class="segment.highlight
+                              ? 'rounded-md bg-amber-100 px-1 font-semibold text-amber-900 shadow-sm transition group-hover:bg-amber-200'
+                              : ''"
+                          >
+                            {{ segment.text }}
+                          </span>
+                        </span>
+                        <span v-else-if="segment.isSpace" class="whitespace-pre-wrap">{{ segment.text }}</span>
+                        <span v-else>{{ segment.text }}</span>
+                      </template>
                     </div>
                   </div>
-                  <div
-                    v-if="readingGlossEntries.length"
-                    class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-inner"
-                  >
-                    <div class="text-xs uppercase tracking-[0.3em] text-slate-400">Glossed words</div>
-                    <ul class="mt-2 space-y-3">
-                      <li
-                        v-for="entry in readingGlossEntries"
-                        :key="entry.key"
-                        class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm"
-                      >
-                        <div class="flex items-baseline justify-between">
-                          <span class="text-base font-semibold text-slate-900">{{ entry.word }}</span>
-                          <span class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
-                            {{ formatPercent(entry.probability) }}
-                          </span>
-                        </div>
-                        <p v-if="entry.pinyin" class="text-xs text-slate-500">{{ entry.pinyin }}</p>
-                        <p v-if="entry.gloss" class="text-sm text-slate-700">{{ entry.gloss }}</p>
-                        <p v-else class="text-xs italic text-slate-400">
-                          {{ readingGlossLoading ? 'Fetching gloss…' : 'Translation unavailable.' }}
-                        </p>
-                        <p v-if="entry.note" class="text-xs text-slate-400">{{ entry.note }}</p>
-                      </li>
-                    </ul>
-                  </div>
-                  <p v-else class="text-sm text-slate-500">
+                  <p v-if="!readingHighlightedSegments.length" class="text-sm text-slate-500">
                     Every word is above the current threshold—raise sensitivity to surface more glosses.
                   </p>
                 </div>
