@@ -1,10 +1,34 @@
 import { masteryProbability } from './levelEstimator.js';
+import { ensureLevelProfile, setLevelProfileStats } from '../utils/profile.js';
 
 const LOG_EPS = 1e-12;
 const DEFAULT_LOWER_QUANTILE = 0.16;
 const DEFAULT_UPPER_QUANTILE = 0.84;
 
-export function initializeCalibration(state) {
+export function initializeCalibration(state, options = {}) {
+  const mode = options.mode || state.activeCalibrationMode || state.activeLevelMode || 'reading';
+  state.activeCalibrationMode = mode;
+  const profile = ensureLevelProfile(state, mode);
+  if (!options.preserveExposureState) {
+    const seedMean =
+      typeof options.seedMean === 'number' && Number.isFinite(options.seedMean)
+        ? options.seedMean
+        : profile?.logExposureMean;
+    const seedVar =
+      typeof options.seedVar === 'number' && Number.isFinite(options.seedVar)
+        ? options.seedVar
+        : profile?.logExposureVar;
+    if (typeof seedMean === 'number' && Number.isFinite(seedMean)) {
+      state.logExposureMean = seedMean;
+    }
+    if (typeof seedVar === 'number' && Number.isFinite(seedVar)) {
+      state.logExposureVar = seedVar;
+    }
+  }
+  setLevelProfileStats(state, mode, {
+    mean: state.logExposureMean,
+    variance: state.logExposureVar
+  });
   state.calibrationActive = true;
   state.calibrationResponses = [];
   state.calibrationStepCount = 0;
@@ -185,8 +209,15 @@ function updatePosteriorStats(state) {
   state.calibrationCredibleLowerIndex = indexForLogExposure(state, lower);
   state.calibrationCredibleUpperIndex = indexForLogExposure(state, upper);
 
-  state.logExposureMean = state.calibrationPosteriorMean;
-  state.logExposureVar = state.calibrationPosteriorVar;
+  const mode = state.activeCalibrationMode || state.activeLevelMode || 'reading';
+  setLevelProfileStats(state, mode, {
+    mean: state.calibrationPosteriorMean,
+    variance: state.calibrationPosteriorVar
+  });
+  if (mode === state.activeLevelMode) {
+    state.logExposureMean = state.calibrationPosteriorMean;
+    state.logExposureVar = state.calibrationPosteriorVar;
+  }
 }
 
 function shouldStopCalibration(state) {

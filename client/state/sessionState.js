@@ -1,4 +1,9 @@
-const DEFAULT_LOG_EXPOSURE = Math.log(5000);
+import {
+  DEFAULT_LOG_EXPOSURE,
+  DEFAULT_LOG_VARIANCE,
+  createProfileTemplate
+} from '../utils/profile.js';
+
 const MIN_LOG_EXPOSURE = Math.log(10);
 const MAX_LOG_EXPOSURE = Math.log(1e11);
 
@@ -20,8 +25,9 @@ export function createInitialState() {
     studyMode: 'reading',
     listeningCardChance: 0.5,
     currentCardMode: 'reading',
-    appMode: 'study',
-    availableAppModes: ['read', 'listen', 'study'],
+    activeLevelMode: 'reading',
+    activeCalibrationMode: null,
+    appMode: null,
     isAuthenticated: false,
     calibrationComplete: false,
     lexiconLoaded: false,
@@ -35,8 +41,16 @@ export function createInitialState() {
       username: '',
       apiKey: ''
     },
+    calibrationProfiles: {
+      reading: createProfileTemplate(),
+      listening: createProfileTemplate()
+    },
+    calibrationStatusByMode: {
+      reading: '',
+      listening: ''
+    },
     logExposureMean: DEFAULT_LOG_EXPOSURE,
-    logExposureVar: 16,
+    logExposureVar: DEFAULT_LOG_VARIANCE,
     minLogExposure: MIN_LOG_EXPOSURE,
     maxLogExposure: MAX_LOG_EXPOSURE,
     exposuresForMastery: 8,
@@ -54,7 +68,7 @@ export function createInitialState() {
     calibrationLogPosterior: [],
     calibrationPosterior: [],
     calibrationPosteriorMean: DEFAULT_LOG_EXPOSURE,
-    calibrationPosteriorVar: 16,
+    calibrationPosteriorVar: DEFAULT_LOG_VARIANCE,
     calibrationPosteriorMedian: DEFAULT_LOG_EXPOSURE,
     calibrationPosteriorStdLog10: Number.POSITIVE_INFINITY,
     calibrationMedianIndex: 0,
@@ -68,6 +82,7 @@ export function createInitialState() {
     calibrationStepCount: 0,
     calibrationMinFrequencyProbability: 0,
     calibrationHistory: [],
+    pendingCalibrationModes: [],
     targetSuccessRate: 0.5,
     targetWindowSize: 100,
     responseOptions: ['sentence', 'focus', 'unknown']

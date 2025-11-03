@@ -1,10 +1,19 @@
 import { clampProbability } from '../utils/formatters.js';
+import {
+  ensureLevelProfile,
+  getLevelProfile,
+  setLevelProfileStats
+} from '../utils/profile.js';
 
 export function wordProbability(state, word, options = {}) {
   const freqProbability = state.frequencyProbabilityMap[word] ?? 0;
   if (freqProbability <= 0) return 0;
+  const mode = options.mode || options.profileMode || state.activeLevelMode || 'reading';
+  const profile = getLevelProfile(state, mode);
   const logExposure =
-    typeof options.logExposure === 'number' ? options.logExposure : state.logExposureMean;
+    typeof options.logExposure === 'number'
+      ? options.logExposure
+      : profile?.logExposureMean ?? state.logExposureMean;
   const exposuresForMastery =
     typeof options.exposuresForMastery === 'number'
       ? options.exposuresForMastery
@@ -19,13 +28,21 @@ export function masteryProbability(logExposureMean, exposuresForMastery, freqPro
   return clampProbability(mastery);
 }
 
-export function applyLevelUpdate(state, word, freqProbability, isKnown) {
-  const priorMean = state.logExposureMean;
-  const priorVar = state.logExposureVar;
-  const priorProbability = wordProbability(state, word);
-  const { mean, variance } = updateLevelPosterior(state, freqProbability, isKnown ? 1 : 0);
-  state.logExposureMean = mean;
-  state.logExposureVar = variance;
+export function applyLevelUpdate(state, word, freqProbability, isKnown, options = {}) {
+  const mode = options.mode || state.activeLevelMode || 'reading';
+  const profile = ensureLevelProfile(state, mode);
+  const priorMean = profile?.logExposureMean ?? state.logExposureMean;
+  const priorVar = profile?.logExposureVar ?? state.logExposureVar;
+  const priorProbability = masteryProbability(priorMean, state.exposuresForMastery, freqProbability);
+  const { mean, variance } = updateLevelPosterior(state, freqProbability, isKnown ? 1 : 0, {
+    priorMean,
+    priorVar
+  });
+  setLevelProfileStats(state, mode, { mean, variance });
+  if (mode === state.activeLevelMode) {
+    state.logExposureMean = mean;
+    state.logExposureVar = variance;
+  }
   return {
     priorMean,
     priorVar,
@@ -35,11 +52,19 @@ export function applyLevelUpdate(state, word, freqProbability, isKnown) {
   };
 }
 
-export function updateLevelPosterior(state, freqProbability, outcome) {
+export function updateLevelPosterior(state, freqProbability, outcome, options = {}) {
   const minProb = 1e-6;
   const maxProb = 1 - 1e-6;
-  const priorMean = state.logExposureMean;
-  const priorVar = Math.max(state.logExposureVar, 1e-4);
+  const priorMean =
+    typeof options.priorMean === 'number' && Number.isFinite(options.priorMean)
+      ? options.priorMean
+      : state.logExposureMean;
+  const priorVar = Math.max(
+    typeof options.priorVar === 'number' && Number.isFinite(options.priorVar)
+      ? options.priorVar
+      : state.logExposureVar,
+    1e-4
+  );
   const exposures = Math.exp(priorMean) * freqProbability;
   const ratio = exposures / Math.max(state.exposuresForMastery, 1e-3);
   const mastery = clampProbability(1 - Math.exp(-ratio), minProb, maxProb);

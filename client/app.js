@@ -16,6 +16,17 @@ import {
   wordProbability as computeWordProbability,
   applyLevelUpdate
 } from './services/levelEstimator.js';
+import {
+  ensureLevelProfile,
+  getLevelProfile,
+  markProfileCalibrated,
+  isLevelProfileCalibrated,
+  setLevelProfileStats,
+  clearProfileCalibration,
+  createProfileTemplate,
+  DEFAULT_LOG_EXPOSURE,
+  DEFAULT_LOG_VARIANCE
+} from './utils/profile.js';
 
 export function createLangyApp() {
   return {
@@ -35,6 +46,71 @@ export function createLangyApp() {
       isListeningCard() {
         return this.currentCardMode === 'listening';
       },
+      readingProfile() {
+        return getLevelProfile(this, 'reading');
+      },
+      listeningProfile() {
+        return getLevelProfile(this, 'listening');
+      },
+      isReadingCalibrated() {
+        return isLevelProfileCalibrated(this, 'reading');
+      },
+      isListeningCalibrated() {
+        return isLevelProfileCalibrated(this, 'listening');
+      },
+      showListeningPrompt() {
+        return (
+          this.appMode === 'listen' ||
+          this.isListeningCard ||
+          (this.calibrationActive && this.activeCalibrationMode === 'listening')
+        );
+      },
+      currentModeTitle() {
+        const titles = {
+          read: 'Reading',
+          listen: 'Listening',
+          study: 'Study'
+        };
+        return titles[this.appMode] || '';
+      },
+      modeEntries() {
+        const readingReady = this.isReadingCalibrated;
+        const listeningReady = this.isListeningCalibrated;
+        const studyReady = this.isStudyCalibrated;
+        return [
+          {
+            id: 'read',
+            label: 'Read',
+            ready: readingReady,
+            description: 'Transcript-first probes to check recognition and expand your comfort zone.',
+            calibrationCopy: readingReady
+              ? 'Jump straight in with tailored sentences.'
+              : 'We’ll run a quick reading calibration before you start.'
+          },
+          {
+            id: 'listen',
+            label: 'Listen',
+            ready: listeningReady && readingReady,
+            description: 'Audio-first cards to tune your ear and reinforce sound-to-meaning links.',
+            calibrationCopy: listeningReady
+              ? 'Audio drills are ready to go.'
+              : readingReady
+              ? 'We’ll calibrate listening before you begin.'
+              : 'Reading calibration runs first, then listening.'
+          },
+          {
+            id: 'study',
+            label: 'Study',
+            ready: studyReady,
+            description: 'Blends reading and listening with adaptive spacing for long-term retention.',
+            calibrationCopy: studyReady
+              ? 'You’re synced—continue where you left off.'
+              : this.studyMode === 'listening'
+              ? 'Reading calibrates first, then listening to unlock mixed drills.'
+              : 'We’ll calibrate reading, then optional listening when you add audio.'
+          }
+        ];
+      },
       studyModeLabel() {
         return this.studyMode === 'listening' ? 'Listening + Reading' : 'Reading Only';
       },
@@ -42,7 +118,72 @@ export function createLangyApp() {
         return this.studyMode === 'listening' ? 'Switch to Reading Only' : 'Switch to Listening + Reading';
       },
       isStudyReady() {
-        return this.isAuthenticated && this.calibrationComplete && this.appMode === 'study';
+        if (!this.isAuthenticated || this.calibrationActive || this.appMode !== 'study') {
+          return false;
+        }
+        if (!this.isReadingCalibrated) return false;
+        if (this.studyMode === 'listening' && !this.isListeningCalibrated) {
+          return false;
+        }
+        return true;
+      },
+      isStudyCalibrated() {
+        if (!this.isReadingCalibrated) return false;
+        if (this.studyMode === 'listening' && !this.isListeningCalibrated) {
+          return false;
+        }
+        return true;
+      },
+      isModeReady() {
+        if (!this.appMode) return false;
+        if (this.calibrationActive) return false;
+        if (this.appMode === 'read') {
+          return this.isReadingCalibrated;
+        }
+        if (this.appMode === 'listen') {
+          return this.isListeningCalibrated && this.isReadingCalibrated;
+        }
+        return this.isStudyReady;
+      },
+      calibrationRequiredForCurrentMode() {
+        if (!this.appMode) return false;
+        if (!this.isAuthenticated) return false;
+        if (this.calibrationActive) return true;
+        const required = this.requiredCalibrationModesForMode(this.appMode);
+        return required.length > 0;
+      },
+      nextCalibrationModeLabel() {
+        if (this.calibrationActive && this.activeCalibrationMode) {
+          return this.activeCalibrationMode;
+        }
+        const required = this.requiredCalibrationModesForMode(this.appMode);
+        if (required.length) return required[0];
+        return this.primaryCalibrationMode;
+      },
+      nextCalibrationModeTitle() {
+        const labels = {
+          reading: 'Reading',
+          listening: 'Listening'
+        };
+        return labels[this.nextCalibrationModeLabel] || 'Reading';
+      },
+      primaryCalibrationMode() {
+        if (this.calibrationActive && this.activeCalibrationMode) {
+          return this.activeCalibrationMode;
+        }
+        if (this.appMode === 'listen') return 'listening';
+        if (this.appMode === 'read') return 'reading';
+        if (this.appMode === 'study' && this.studyMode === 'listening') {
+          return this.isListeningCalibrated ? 'listening' : 'reading';
+        }
+        return 'reading';
+      },
+      primaryCalibrationTitle() {
+        const labels = {
+          reading: 'Reading',
+          listening: 'Listening'
+        };
+        return labels[this.primaryCalibrationMode] || 'Reading';
       },
       responseButtons() {
         return [
@@ -160,6 +301,190 @@ export function createLangyApp() {
       }
     },
     methods: {
+      selectMode(mode) {
+        if (!mode) return;
+        this.setAppMode(mode);
+      },
+      async returnToModeMenu() {
+        if (!this.appMode) return;
+        if (this.calibrationActive) {
+          this.calibrationActive = false;
+        }
+        this.pendingCalibrationModes = [];
+        this.activeCalibrationMode = null;
+        this.calibrationQueue = [];
+        this.calibrationResponses = [];
+        this.calibrationHistory = [];
+        this.calibrationProbeCounts = {};
+        this.stopAudioPlayback({ clearUrl: true });
+        this.activeCard = null;
+        this.currentCardMode = 'reading';
+        this.activeLevelMode = 'reading';
+        this.appMode = null;
+        this.isFlipped = false;
+        this.currentIndex = 0;
+        this.calibrationStatusMessage = '';
+        this.persistUserProfile();
+      },
+      refreshCalibrationCompleteness() {
+        const readingReady = isLevelProfileCalibrated(this, 'reading');
+        const listeningReady = isLevelProfileCalibrated(this, 'listening');
+        const needsListening = this.studyMode === 'listening';
+        this.calibrationComplete = readingReady && (!needsListening || listeningReady);
+        this.syncCalibrationStatusMessage();
+      },
+      requiredCalibrationModesForMode(mode) {
+        if (!mode) return [];
+        if (mode === 'read') {
+          return this.isReadingCalibrated ? [] : ['reading'];
+        }
+        if (mode === 'listen') {
+          const required = [];
+          if (!this.isReadingCalibrated) {
+            required.push('reading');
+          }
+          if (!this.isListeningCalibrated) {
+            required.push('listening');
+          }
+          return required;
+        }
+        if (mode === 'study') {
+          const required = [];
+          if (!this.isReadingCalibrated) {
+            required.push('reading');
+          }
+          if (this.studyMode === 'listening' && !this.isListeningCalibrated) {
+            required.push('listening');
+          }
+          return required;
+        }
+        return [];
+      },
+      calibrationStatusForMode(mode) {
+        if (!mode) return '';
+        return this.calibrationStatusByMode?.[mode] || '';
+      },
+      getCalibrationSeedForMode(mode) {
+        if (!mode) {
+          return {
+            seedMean: this.logExposureMean ?? DEFAULT_LOG_EXPOSURE,
+            seedVar: this.logExposureVar ?? DEFAULT_LOG_VARIANCE
+          };
+        }
+        const profile = getLevelProfile(this, mode);
+        let seedMean = profile?.logExposureMean ?? DEFAULT_LOG_EXPOSURE;
+        let seedVar = profile?.logExposureVar ?? DEFAULT_LOG_VARIANCE;
+        if (!profile?.calibrated) {
+          const counterpart = mode === 'reading' ? 'listening' : 'reading';
+          const counterpartProfile = getLevelProfile(this, counterpart);
+          if (counterpartProfile?.calibrated) {
+            seedMean = counterpartProfile.logExposureMean;
+            seedVar = counterpartProfile.logExposureVar;
+          }
+        }
+        return { seedMean, seedVar };
+      },
+      async beginCalibrationSequence(modes = [], options = {}) {
+        const targets = Array.isArray(modes) ? modes.filter(Boolean) : [];
+        const activeMode = this.calibrationActive ? this.activeCalibrationMode : null;
+        const queue = activeMode ? targets.filter((mode) => mode !== activeMode) : [...targets];
+        this.pendingCalibrationModes = queue;
+        if (activeMode) {
+          return;
+        }
+        if (!queue.length) {
+          this.activeCalibrationMode = null;
+          this.calibrationActive = false;
+          await this.handleCalibrationReadyState();
+          return;
+        }
+        await this.beginNextPendingCalibration(options);
+      },
+      async beginNextPendingCalibration(options = {}) {
+        if (!Array.isArray(this.pendingCalibrationModes) || !this.pendingCalibrationModes.length) {
+          this.activeCalibrationMode = null;
+          this.calibrationActive = false;
+          await this.handleCalibrationReadyState();
+          return;
+        }
+        if (this.calibrationActive) {
+          return;
+        }
+        const nextMode = this.pendingCalibrationModes.shift();
+        const { seedMean, seedVar } = this.getCalibrationSeedForMode(nextMode);
+        await this.startCalibrationFlow({
+          resetPosterior: Boolean(options.resetPosterior),
+          mode: nextMode,
+          seedMean,
+          seedVar
+        });
+      },
+      async handleCalibrationReadyState() {
+        this.refreshCalibrationCompleteness();
+        if (!this.isAuthenticated || this.calibrationActive || !this.appMode) {
+          return;
+        }
+        if (!this.lexiconLoaded) {
+          await this.loadLexicon();
+        }
+        if (!this.lexicon.length) return;
+        if (this.appMode === 'study') {
+          await this.maybeInitStudy();
+          return;
+        }
+        if (this.appMode === 'read') {
+          this.activeLevelMode = 'reading';
+        } else if (this.appMode === 'listen') {
+          this.activeLevelMode = 'listening';
+        }
+        await this.loadNextCard({ resetIndex: true });
+      },
+      syncCalibrationStatusMessage() {
+        if (this.calibrationActive) {
+          this.calibrationStatusMessage = '';
+          return;
+        }
+        const mode = this.primaryCalibrationMode;
+        this.calibrationStatusMessage = this.calibrationStatusForMode(mode);
+      },
+      async finalizeCalibrationMode({ mode = null, fit = null, skip = false } = {}) {
+        const fallbackMode = this.activeCalibrationMode || this.activeLevelMode || 'reading';
+        const targetMode = mode || fallbackMode;
+        if (!targetMode) return;
+        const profile = ensureLevelProfile(this, targetMode);
+        if (fit) {
+          setLevelProfileStats(this, targetMode, {
+            mean: fit.mean,
+            variance: fit.variance
+          });
+        } else if (!skip) {
+          setLevelProfileStats(this, targetMode, {
+            mean: this.logExposureMean ?? profile.logExposureMean,
+            variance: this.logExposureVar ?? profile.logExposureVar
+          });
+        }
+        const resolvedProfile = getLevelProfile(this, targetMode);
+        const tokensEstimate = Math.exp(resolvedProfile.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
+        const message = skip
+          ? 'Calibration marked complete.'
+          : `Calibration complete. Estimated lifetime tokens ≈ ${this.formatTokens(tokensEstimate)}.`;
+        markProfileCalibrated(this, targetMode, message);
+        if (!this.calibrationStatusByMode) {
+          this.calibrationStatusByMode = {};
+        }
+        this.calibrationStatusByMode[targetMode] = message;
+        this.calibrationStatusMessage = message;
+        this.calibrationActive = false;
+        this.activeCalibrationMode = null;
+        this.calibrationResponses = [];
+        this.calibrationHistory = [];
+        this.calibrationProbeCounts = {};
+        this.calibrationQueue = [];
+        this.calibrationStepCount = 0;
+        this.refreshCalibrationCompleteness();
+        this.persistUserProfile();
+        await this.beginNextPendingCalibration();
+      },
       async submitLogin() {
         if (this.isAuthenticated) return;
         const { username, password } = this.loginForm;
@@ -173,18 +498,19 @@ export function createLangyApp() {
           apiKey: ''
         };
         this.loadUserProfile(username);
+        this.refreshCalibrationCompleteness();
         this.isAuthenticated = true;
-        this.appMode = 'study';
-
-        if (this.calibrationComplete) {
-          await this.loadLexicon();
-          this.calibrationActive = false;
-          await this.maybeInitStudy();
-        } else {
-          this.calibrationActive = false;
-          this.calibrationStatusMessage = '';
-        }
-
+        this.calibrationActive = false;
+        this.activeCalibrationMode = null;
+        this.pendingCalibrationModes = [];
+        this.activeCard = null;
+        this.isFlipped = false;
+        this.currentIndex = 0;
+        this.currentCardMode = 'reading';
+        this.activeLevelMode = 'reading';
+        this.calibrationStatusMessage = '';
+        this.appMode = null;
+        this.stopAudioPlayback({ clearUrl: true });
         this.persistUserProfile();
       },
       logout() {
@@ -201,9 +527,11 @@ export function createLangyApp() {
         this.frequencyProbabilityMap = {};
         this.activeCard = null;
         this.currentIndex = 0;
-        this.appMode = 'study';
+        this.appMode = null;
         this.studyMode = 'reading';
         this.currentCardMode = 'reading';
+        this.activeLevelMode = 'reading';
+        this.activeCalibrationMode = null;
         this.loginForm = {
           username: 'test-user',
           password: 'langy-demo',
@@ -225,38 +553,72 @@ export function createLangyApp() {
         this.calibrationPosterior = [];
         this.calibrationStepCount = 0;
         this.calibrationStatusMessage = '';
+        this.calibrationProfiles = {
+          reading: createProfileTemplate(),
+          listening: createProfileTemplate()
+        };
+        this.calibrationStatusByMode = {
+          reading: '',
+          listening: ''
+        };
+        this.logExposureMean = DEFAULT_LOG_EXPOSURE;
+        this.logExposureVar = DEFAULT_LOG_VARIANCE;
+        this.pendingCalibrationModes = [];
         try {
           window.localStorage.removeItem('langy-study-mode');
         } catch (error) {
           // ignore storage errors
         }
       },
-      completeCalibration() {
-        this.calibrationComplete = true;
-        this.calibrationActive = false;
-        this.calibrationResponses = [];
-        this.calibrationQueue = [];
-        this.calibrationHistory = [];
-        this.calibrationProbeCounts = {};
-        this.appMode = 'study';
-        this.maybeInitStudy();
-        this.calibrationStatusMessage = `Calibration complete. Estimated lifetime tokens ≈ ${this.formatTokens(
-          Math.exp(this.logExposureMean)
-        )}.`;
-        this.persistUserProfile();
+      async completeCalibration() {
+        await this.finalizeCalibrationMode({ skip: true });
       },
       async restartCalibration() {
-        await this.startCalibrationFlow({ resetPosterior: false });
+        const mode = this.activeCalibrationMode || this.primaryCalibrationMode || 'reading';
+        await this.startCalibrationFlow({ resetPosterior: false, mode });
       },
-      async startCalibrationFlow({ resetPosterior = false } = {}) {
+      async startCalibrationFlow({
+        resetPosterior = false,
+        mode = null,
+        seedMean,
+        seedVar
+      } = {}) {
         if (!this.lexiconLoaded) {
           await this.loadLexicon();
         }
         if (!this.lexicon.length) return;
 
-        initializeCalibration(this);
+        const targetMode = mode || this.activeCalibrationMode || this.activeLevelMode || 'reading';
+        const seeds = this.getCalibrationSeedForMode(targetMode);
+        const effectiveMean =
+          resetPosterior && typeof DEFAULT_LOG_EXPOSURE === 'number'
+            ? DEFAULT_LOG_EXPOSURE
+            : typeof seedMean === 'number' && Number.isFinite(seedMean)
+              ? seedMean
+              : seeds.seedMean;
+        const effectiveVar =
+          resetPosterior && typeof DEFAULT_LOG_VARIANCE === 'number'
+            ? DEFAULT_LOG_VARIANCE
+            : typeof seedVar === 'number' && Number.isFinite(seedVar)
+              ? seedVar
+              : seeds.seedVar;
+
+        this.activeCalibrationMode = targetMode;
+        this.activeLevelMode = targetMode;
+        clearProfileCalibration(this, targetMode);
+        if (this.calibrationStatusByMode) {
+          this.calibrationStatusByMode[targetMode] = '';
+        }
+        setLevelProfileStats(this, targetMode, {
+          mean: effectiveMean,
+          variance: effectiveVar
+        });
+        initializeCalibration(this, {
+          mode: targetMode,
+          seedMean: effectiveMean,
+          seedVar: effectiveVar
+        });
         this.calibrationActive = true;
-        this.calibrationComplete = false;
         this.calibrationStepCount = 0;
         this.calibrationStatusMessage = '';
         this.calibrationResponses = [];
@@ -264,16 +626,14 @@ export function createLangyApp() {
         this.calibrationProbeCounts = {};
         this.activeCard = null;
         this.isFlipped = false;
-        if (resetPosterior) {
-          this.logExposureMean = Math.log(5000);
-          this.logExposureVar = 16;
-        }
+        this.refreshCalibrationCompleteness();
         this.persistUserProfile();
         await this.loadNextCard({ resetIndex: true });
       },
       async continueCalibration() {
         if (!this.calibrationActive) {
-          await this.startCalibrationFlow({ resetPosterior: false });
+          const mode = this.activeCalibrationMode || this.activeLevelMode || 'reading';
+          await this.startCalibrationFlow({ resetPosterior: false, mode });
           return;
         }
         if (!this.lexiconLoaded) {
@@ -291,19 +651,66 @@ export function createLangyApp() {
             this.studyMode = data.studyMode;
             this.persistStudyMode();
           }
-          if (typeof data.calibrationComplete === 'boolean') {
-            this.calibrationComplete = data.calibrationComplete;
-            this.calibrationActive = false;
+          this.calibrationActive = false;
+          this.activeCalibrationMode = null;
+          const profiles = data.calibrationProfiles && typeof data.calibrationProfiles === 'object'
+            ? data.calibrationProfiles
+            : null;
+          if (profiles) {
+            ['reading', 'listening'].forEach((mode) => {
+              const stored = profiles[mode];
+              if (!stored || typeof stored !== 'object') return;
+              const profile = ensureLevelProfile(this, mode);
+              if (typeof stored.logExposureMean === 'number' && Number.isFinite(stored.logExposureMean)) {
+                profile.logExposureMean = stored.logExposureMean;
+              }
+              if (typeof stored.logExposureVar === 'number' && Number.isFinite(stored.logExposureVar)) {
+                profile.logExposureVar = stored.logExposureVar;
+              }
+              profile.calibrated = Boolean(stored.calibrated);
+              profile.calibrationStatusMessage =
+                typeof stored.calibrationStatusMessage === 'string'
+                  ? stored.calibrationStatusMessage
+                  : profile.calibrationStatusMessage || '';
+              profile.lastCalibratedAt =
+                typeof stored.lastCalibratedAt === 'number' ? stored.lastCalibratedAt : profile.lastCalibratedAt;
+            });
+          } else {
+            const readingProfile = ensureLevelProfile(this, 'reading');
+            if (typeof data.logExposureMean === 'number' && Number.isFinite(data.logExposureMean)) {
+              readingProfile.logExposureMean = data.logExposureMean;
+            }
+            if (typeof data.logExposureVar === 'number' && Number.isFinite(data.logExposureVar)) {
+              readingProfile.logExposureVar = data.logExposureVar;
+            }
+            readingProfile.calibrated = Boolean(data.calibrationComplete);
+            if (typeof data.calibrationStatusMessage === 'string') {
+              readingProfile.calibrationStatusMessage = data.calibrationStatusMessage;
+            }
           }
-          if (typeof data.logExposureMean === 'number' && Number.isFinite(data.logExposureMean)) {
-            this.logExposureMean = data.logExposureMean;
+          if (data.calibrationStatusByMode && typeof data.calibrationStatusByMode === 'object') {
+            this.calibrationStatusByMode = {
+              reading: data.calibrationStatusByMode.reading || '',
+              listening: data.calibrationStatusByMode.listening || ''
+            };
+          } else {
+            this.calibrationStatusByMode = {
+              reading: getLevelProfile(this, 'reading').calibrationStatusMessage || '',
+              listening: getLevelProfile(this, 'listening').calibrationStatusMessage || ''
+            };
           }
-          if (typeof data.logExposureVar === 'number' && Number.isFinite(data.logExposureVar)) {
-            this.logExposureVar = data.logExposureVar;
+          if (typeof data.activeLevelMode === 'string' && (data.activeLevelMode === 'reading' || data.activeLevelMode === 'listening')) {
+            this.activeLevelMode = data.activeLevelMode;
+          } else {
+            this.activeLevelMode = 'reading';
           }
-          if (typeof data.calibrationStatusMessage === 'string') {
-            this.calibrationStatusMessage = data.calibrationStatusMessage;
+          if (typeof data.listeningCardChance === 'number' && Number.isFinite(data.listeningCardChance)) {
+            this.listeningCardChance = Math.min(Math.max(data.listeningCardChance, 0), 1);
           }
+          const activeProfile = getLevelProfile(this, this.activeLevelMode);
+          this.logExposureMean = activeProfile.logExposureMean ?? DEFAULT_LOG_EXPOSURE;
+          this.logExposureVar = activeProfile.logExposureVar ?? DEFAULT_LOG_VARIANCE;
+          this.refreshCalibrationCompleteness();
         } catch (error) {
           console.warn('Unable to load stored profile:', error);
         }
@@ -311,12 +718,32 @@ export function createLangyApp() {
       persistUserProfile() {
         const username = this.userProfile?.username;
         if (!username) return;
+        const serializeProfile = (mode) => {
+          const profile = ensureLevelProfile(this, mode);
+          return {
+            logExposureMean: profile?.logExposureMean ?? DEFAULT_LOG_EXPOSURE,
+            logExposureVar: profile?.logExposureVar ?? DEFAULT_LOG_VARIANCE,
+            calibrated: Boolean(profile?.calibrated),
+            calibrationStatusMessage: profile?.calibrationStatusMessage || '',
+            lastCalibratedAt: profile?.lastCalibratedAt ?? null
+          };
+        };
         const payload = {
           studyMode: this.studyMode,
           calibrationComplete: this.calibrationComplete,
           logExposureMean: this.logExposureMean,
           logExposureVar: this.logExposureVar,
-          calibrationStatusMessage: this.calibrationStatusMessage,
+          appMode: this.appMode,
+          activeLevelMode: this.activeLevelMode,
+          calibrationProfiles: {
+            reading: serializeProfile('reading'),
+            listening: serializeProfile('listening')
+          },
+          calibrationStatusByMode: {
+            reading: this.calibrationStatusByMode?.reading || '',
+            listening: this.calibrationStatusByMode?.listening || ''
+          },
+          listeningCardChance: this.listeningCardChance,
           updatedAt: Date.now()
         };
         try {
@@ -325,11 +752,32 @@ export function createLangyApp() {
           console.warn('Unable to persist profile:', error);
         }
       },
-      setAppMode(mode) {
-        if (!this.availableAppModes.includes(mode)) return;
-        this.appMode = mode;
-        if (mode === 'study') {
-          this.maybeInitStudy();
+      async setAppMode(mode) {
+        if (mode == null) {
+          await this.returnToModeMenu();
+          return;
+        }
+        if (!['read', 'listen', 'study'].includes(mode)) return;
+        const modeChanged = this.appMode !== mode;
+        if (modeChanged) {
+          this.stopAudioPlayback({ clearUrl: true });
+          this.appMode = mode;
+          this.activeCard = null;
+          this.isFlipped = false;
+          this.currentIndex = 0;
+          if (mode === 'read') {
+            this.currentCardMode = 'reading';
+            this.activeLevelMode = 'reading';
+          } else if (mode === 'listen') {
+            this.currentCardMode = 'listening';
+            this.activeLevelMode = 'listening';
+          }
+        }
+        const required = this.requiredCalibrationModesForMode(mode);
+        if (required.length) {
+          await this.beginCalibrationSequence(required);
+        } else {
+          await this.handleCalibrationReadyState();
         }
         this.persistUserProfile();
       },
@@ -356,9 +804,9 @@ export function createLangyApp() {
           if (entries.length) {
             initializeLexicon(this, entries);
             this.lexiconLoaded = true;
-            if (this.calibrationComplete) {
-              this.calibrationActive = false;
-            }
+            this.calibrationActive = false;
+            this.activeCalibrationMode = null;
+            this.refreshCalibrationCompleteness();
             return;
           }
         } catch (error) {
@@ -373,9 +821,9 @@ export function createLangyApp() {
           }));
           initializeLexicon(this, fallbackEntries);
           this.lexiconLoaded = true;
-          if (this.calibrationComplete) {
-            this.calibrationActive = false;
-          }
+          this.calibrationActive = false;
+          this.activeCalibrationMode = null;
+          this.refreshCalibrationCompleteness();
         }
       },
       async loadNextCard({ advance = false, resetIndex = false, targetIndex = null } = {}) {
@@ -462,20 +910,23 @@ export function createLangyApp() {
             });
             if (result && result.fit) {
               this.recordCalibrationSummary(result.fit, result.priorMean);
+              await this.finalizeCalibrationMode({ fit: result.fit });
+              return;
             }
           }
           if (this.calibrationActive) {
             await this.loadNextCard({});
-          } else {
-            const nextIndex = this.selectNextIndex();
-            await this.loadNextCard({ targetIndex: nextIndex });
           }
           return;
         }
 
+        const modeForUpdate = this.isListeningCard ? 'listening' : 'reading';
+        this.activeLevelMode = modeForUpdate;
         if (currentWord && freqProbability > 0) {
           this.totalResponses += 1;
-          const update = applyLevelUpdate(this, currentWord, freqProbability, isKnown);
+          const update = applyLevelUpdate(this, currentWord, freqProbability, isKnown, {
+            mode: modeForUpdate
+          });
           this.recordLevelUpdate({
             word: currentWord,
             correct: isKnown,
@@ -486,7 +937,7 @@ export function createLangyApp() {
             posteriorVar: update.posteriorVar
           });
         }
-        const nextIndex = this.selectNextIndex();
+        const nextIndex = this.selectNextIndex({ mode: modeForUpdate });
         await this.loadNextCard({ targetIndex: nextIndex });
       },
       async advanceCard() {
@@ -495,7 +946,8 @@ export function createLangyApp() {
           await this.loadNextCard({});
         } else {
           this.stopAudioPlayback({ clearUrl: false });
-          const nextIndex = this.selectNextIndex();
+          const nextMode = this.isListeningCard ? 'listening' : 'reading';
+          const nextIndex = this.selectNextIndex({ mode: nextMode });
           await this.loadNextCard({ targetIndex: nextIndex });
         }
       },
@@ -605,25 +1057,50 @@ export function createLangyApp() {
       assignCardMode() {
         if (!this.currentCard) {
           this.currentCardMode = 'reading';
+          this.activeLevelMode = 'reading';
+          return;
+        }
+        if (!this.appMode) {
+          this.currentCardMode = 'reading';
+          this.activeLevelMode = 'reading';
+          return;
+        }
+        if (this.calibrationActive && this.activeCalibrationMode === 'listening') {
+          this.currentCardMode = 'listening';
+          this.activeLevelMode = 'listening';
+          return;
+        }
+        if (this.appMode === 'listen') {
+          this.currentCardMode = 'listening';
+          this.activeLevelMode = 'listening';
           return;
         }
         if (this.appMode !== 'study' || this.studyMode !== 'listening') {
           this.currentCardMode = 'reading';
+          this.activeLevelMode = 'reading';
           return;
         }
         const chance = Math.min(Math.max(this.listeningCardChance ?? 0.5, 0), 1);
         this.currentCardMode = Math.random() < chance ? 'listening' : 'reading';
+        this.activeLevelMode = this.currentCardMode;
       },
-      toggleStudyMode() {
+      async toggleStudyMode() {
+        if (this.appMode !== 'study') return;
         this.studyMode = this.studyMode === 'listening' ? 'reading' : 'listening';
         this.persistStudyMode();
-        this.persistUserProfile();
-        this.assignCardMode();
-        if (this.isListeningCard) {
-          this.ensureAudioReady({ autoplay: true }).catch((error) => {
-            this.audioErrorMessage = error?.message || 'Unable to load audio.';
-          });
+        this.refreshCalibrationCompleteness();
+        const requires = this.requiredCalibrationModesForMode('study');
+        if (this.appMode === 'study' && requires.length) {
+          await this.beginCalibrationSequence(requires);
+        } else {
+          this.assignCardMode();
+          if (this.isListeningCard) {
+            this.ensureAudioReady({ autoplay: true }).catch((error) => {
+              this.audioErrorMessage = error?.message || 'Unable to load audio.';
+            });
+          }
         }
+        this.persistUserProfile();
       },
       restorePreferences() {
         try {
@@ -642,7 +1119,7 @@ export function createLangyApp() {
           // ignore storage errors
         }
       },
-      selectNextIndex() {
+      selectNextIndex(options = {}) {
         if (!this.lexicon.length) return this.currentIndex || 0;
         if (this.calibrationActive) {
           const focusLog = Number.isFinite(this.calibrationPosteriorMedian)
@@ -651,7 +1128,7 @@ export function createLangyApp() {
           return this.findIndexClosestToProbability(0.5, { logExposure: focusLog });
         }
         const target = this.targetSuccessRate;
-        const center = this.findIndexClosestToProbability(target);
+        const center = this.findIndexClosestToProbability(target, options);
         const windowSize = Math.max(20, this.targetWindowSize);
         const maxIndex = this.lexicon.length - 1;
         const halfWindow = Math.floor(windowSize / 2);
@@ -662,7 +1139,7 @@ export function createLangyApp() {
         for (let idx = start; idx <= end; idx++) {
           const entry = this.lexicon[idx];
           if (!entry) continue;
-          const probability = this.wordProbability(entry.word);
+          const probability = this.wordProbability(entry.word, options);
           candidates.push({
             idx,
             score: Math.abs(probability - target)
@@ -739,10 +1216,6 @@ export function createLangyApp() {
         if (this.recentLevelUpdates.length > this.maxRecentLevelUpdates) {
           this.recentLevelUpdates.length = this.maxRecentLevelUpdates;
         }
-        this.calibrationComplete = true;
-        this.calibrationActive = false;
-        this.calibrationStatusMessage = `Calibration complete. Estimated lifetime tokens ≈ ${this.formatTokens(Math.exp(this.logExposureMean))}.`;
-        this.persistUserProfile();
       }
     }
   };
