@@ -396,6 +396,13 @@ export function createLangyApp() {
             placeholderMap[key] = this.readingGlossesByKey?.[key] || null;
           });
           this.readingGlossesByKey = placeholderMap;
+          this.readingGlossStats = {
+            totalTargets: prepared.targets.length,
+            resolvedTargets: 0,
+            pendingTargets: prepared.targets.length,
+            requestCount: 0,
+            lastBatchSize: 0
+          };
 
           if (prepared.targets.length) {
             await this.fetchGlossesForTargets(prepared.targets, rawText);
@@ -505,6 +512,20 @@ export function createLangyApp() {
         const clamped = Math.max(0.05, Math.min(0.95, parsed));
         this.readingMinProbability = clamped;
         this.updateReadingHighlights();
+        const highlightedCount = this.readingHighlightedSegments.length;
+        this.readingGlossStats = {
+          totalTargets: highlightedCount,
+          resolvedTargets: Math.min(
+            highlightedCount,
+            this.readingGlossStats.resolvedTargets || 0
+          ),
+          pendingTargets: Math.max(
+            0,
+            highlightedCount - (this.readingGlossStats.resolvedTargets || 0)
+          ),
+          requestCount: this.readingGlossStats.requestCount || 0,
+          lastBatchSize: this.readingGlossStats.lastBatchSize || 0
+        };
         await this.fetchMissingReadingGlosses();
       },
       readingGlossForSegment(segment) {
@@ -520,6 +541,13 @@ export function createLangyApp() {
         this.readingGlossLoading = false;
         this.readingErrorMessage = '';
         this.readingLastAnalyzedAt = null;
+        this.readingGlossStats = {
+          totalTargets: 0,
+          resolvedTargets: 0,
+          pendingTargets: 0,
+          requestCount: 0,
+          lastBatchSize: 0
+        };
       },
       async fetchGlossesForTargets(targets = [], sourceText = '') {
         if (!Array.isArray(targets) || !targets.length) return;
@@ -532,19 +560,21 @@ export function createLangyApp() {
         });
         if (!pending.length) return;
         const MAX_BATCH = 16;
+        const attemptCounts = new Map();
+        const queue = pending.map((target) => ({ target, attempt: 0 }));
+        const totalTargets = this.readingGlossStats.totalTargets || pending.length;
         this.readingGlossLoading = true;
         try {
-          for (let index = 0; index < pending.length; index += MAX_BATCH) {
-            const batch = pending.slice(index, index + MAX_BATCH);
+          while (queue.length) {
+            const batchItems = queue.splice(0, MAX_BATCH);
+            const batchTargets = batchItems.map((item) => item.target);
             const glosses = await requestReadGlosses({
               text,
-              targets: batch
+              targets: batchTargets
             });
-            if (!Array.isArray(glosses) || !glosses.length) {
-              continue;
-            }
+            const responses = Array.isArray(glosses) ? glosses : [];
             const merged = { ...this.readingGlossesByKey };
-            glosses.forEach((entry) => {
+            responses.forEach((entry) => {
               merged[entry.key] = {
                 word: entry.word,
                 pinyin: entry.pinyin,
@@ -553,6 +583,32 @@ export function createLangyApp() {
               };
             });
             this.readingGlossesByKey = merged;
+
+            const unresolved = batchItems.filter(({ target }) => {
+              const entry = this.readingGlossesByKey[target.key];
+              return !entry || !entry.gloss;
+            });
+            unresolved.forEach((item) => {
+              const prev = attemptCounts.get(item.target.key) ?? 0;
+              attemptCounts.set(item.target.key, prev + 1);
+            });
+            const retriable = unresolved.filter((item) => attemptCounts.get(item.target.key) < 3);
+            if (retriable.length) {
+              queue.push(...retriable.map((item) => ({ target: item.target, attempt: item.attempt + 1 })));
+            }
+
+            const resolvedCount = batchItems.length - unresolved.length;
+            const newResolvedTotal = Math.min(
+              totalTargets,
+              (this.readingGlossStats.resolvedTargets || 0) + resolvedCount
+            );
+            this.readingGlossStats = {
+              totalTargets,
+              resolvedTargets: newResolvedTotal,
+              pendingTargets: queue.length,
+              requestCount: (this.readingGlossStats.requestCount || 0) + 1,
+              lastBatchSize: batchItems.length
+            };
           }
         } catch (error) {
           this.readingErrorMessage = error?.message || 'Unable to fetch glosses.';

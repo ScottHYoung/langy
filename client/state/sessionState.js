@@ -51,6 +51,13 @@ export function createInitialState() {
     readingErrorMessage: '',
     readingMinProbability: 0.5,
     readingLastAnalyzedAt: null,
+    readingGlossStats: {
+      totalTargets: 0,
+      resolvedTargets: 0,
+      pendingTargets: 0,
+      requestCount: 0,
+      lastBatchSize: 0
+    },
     calibrationProfiles: {
       reading: createProfileTemplate(),
       listening: createProfileTemplate()
