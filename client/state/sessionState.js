@@ -20,6 +20,21 @@ export function createInitialState() {
     studyMode: 'reading',
     listeningCardChance: 0.5,
     currentCardMode: 'reading',
+    appMode: 'study',
+    availableAppModes: ['read', 'listen', 'study'],
+    isAuthenticated: false,
+    calibrationComplete: false,
+    lexiconLoaded: false,
+    loginForm: {
+      username: '',
+      password: '',
+      apiKey: '',
+      error: ''
+    },
+    userProfile: {
+      username: '',
+      apiKey: ''
+    },
     logExposureMean: DEFAULT_LOG_EXPOSURE,
     logExposureVar: 16,
     minLogExposure: MIN_LOG_EXPOSURE,
@@ -29,7 +44,7 @@ export function createInitialState() {
     recentLevelUpdates: [],
     maxRecentLevelUpdates: 12,
     totalResponses: 0,
-    calibrationActive: true,
+    calibrationActive: false,
     calibrationResponses: [],
     calibrationQueue: [],
     calibrationSamplesTarget: 12,

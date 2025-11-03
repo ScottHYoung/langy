@@ -3,93 +3,162 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Langy • Study Card</title>
+  <title>Langy • Study Experience</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
 <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
   <div id="app" class="flex min-h-screen flex-col items-center justify-center gap-10 px-6 py-16 text-center">
-    <div class="flex w-full max-w-2xl flex-col items-center gap-4">
-      <div class="flex w-full items-center justify-end">
-        <div class="flex items-center gap-3 rounded-full border border-slate-300 bg-white px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-500 shadow-sm">
-          <span>{{ studyModeLabel }}</span>
+    <!-- Login View -->
+    <div v-if="!isAuthenticated" class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
+      <h1 class="text-2xl font-semibold text-slate-900">Welcome to Langy</h1>
+      <p class="mt-2 text-sm text-slate-500">
+        Sign in with your study credentials to pick up where you left off.
+      </p>
+      <form class="mt-8 space-y-4 text-left" @submit.prevent="submitLogin">
+        <div>
+          <label class="text-xs uppercase tracking-[0.25em] text-slate-400">Username</label>
+          <input
+            v-model="loginForm.username"
+            type="text"
+            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            autocomplete="username"
+          />
+        </div>
+        <div>
+          <label class="text-xs uppercase tracking-[0.25em] text-slate-400">Password</label>
+          <input
+            v-model="loginForm.password"
+            type="password"
+            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            autocomplete="current-password"
+          />
+        </div>
+        <div>
+          <label class="text-xs uppercase tracking-[0.25em] text-slate-400">OpenAI API Key</label>
+          <input
+            v-model="loginForm.apiKey"
+            type="password"
+            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            autocomplete="off"
+          />
+        </div>
+        <p v-if="loginForm.error" class="text-sm text-rose-500">{{ loginForm.error }}</p>
+        <button
+          type="submit"
+          class="w-full rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
+        >
+          Sign in & continue
+        </button>
+      </form>
+    </div>
+
+    <!-- Calibration Placeholder View -->
+    <div v-else-if="!calibrationComplete" class="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-10 text-left shadow-lg">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-semibold text-slate-900">Calibration Needed</h2>
+        <button
+          type="button"
+          class="rounded-full border border-slate-300 px-4 py-1 text-xs uppercase tracking-[0.25em] text-slate-500 hover:bg-slate-100"
+          @click="logout"
+        >
+          Logout
+        </button>
+      </div>
+      <p class="mt-4 text-sm leading-relaxed text-slate-600">
+        We’ll tailor future study cards once we understand your listening and reading comprehension across longer passages.
+        The full calibration flow is coming soon; for now you can mark calibration complete to explore the prototype.
+      </p>
+      <div class="mt-6 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          class="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
+          @click="completeCalibration"
+        >
+          Mark calibration complete
+        </button>
+        <button
+          type="button"
+          class="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
+          disabled
+        >
+          Listening assessment (coming soon)
+        </button>
+        <button
+          type="button"
+          class="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
+          disabled
+        >
+          Reading assessment (coming soon)
+        </button>
+      </div>
+    </div>
+
+    <!-- Authenticated Modes -->
+    <div v-else class="flex w-full max-w-5xl flex-col gap-8">
+      <div class="flex flex-wrap items-center justify-between gap-4 text-left">
+        <div>
+          <h2 class="text-2xl font-semibold text-slate-900">Hi {{ userProfile.username || 'there' }}!</h2>
+          <p class="text-sm text-slate-500">Choose your focus for this session.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            v-for="mode in availableAppModes"
+            :key="mode"
+            type="button"
+            class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition"
+            :class="appMode === mode ? 'border-emerald-500 bg-emerald-100 text-emerald-700' : 'border-slate-300 bg-white text-slate-500 hover:border-slate-400 hover:bg-slate-100'"
+            @click="setAppMode(mode)"
+          >
+            {{ mode === 'read' ? 'Read' : mode === 'listen' ? 'Listen' : 'Study' }}
+          </button>
+          <div class="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs uppercase tracking-[0.25em] text-slate-500">
+            <span>{{ studyModeLabel }}</span>
+            <button
+              type="button"
+              class="rounded-full border border-slate-300 px-2 py-0.5 text-[10px] font-semibold text-slate-500 transition hover:border-slate-400 hover:bg-slate-100"
+              @click.stop="toggleStudyMode"
+            >
+              {{ studyModeToggleLabel }}
+            </button>
+          </div>
           <button
             type="button"
-            class="rounded-full border border-slate-300 px-3 py-1 text-[11px] font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-100"
-            @click.stop="toggleStudyMode"
+            class="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 hover:bg-slate-100"
+            @click="logout"
           >
-            {{ studyModeToggleLabel }}
+            Logout
           </button>
         </div>
       </div>
-      <div class="flex w-full items-center justify-center">
+
+      <!-- Study Mode -->
+      <div v-if="appMode === 'study'" class="flex w-full flex-col items-center gap-6">
         <div
-          class="group relative h-[420px] w-full max-w-2xl rounded-3xl border border-slate-200 bg-white shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)] sm:h-[460px]"
+          class="group relative h-[420px] w-full max-w-2xl rounded-3xl border border-slate-200 bg-white text-center shadow-[0_18px_45px_-25px_rgba(15,23,42,0.35)] transition duration-500 hover:shadow-[0_24px_55px_-20px_rgba(15,23,42,0.45)] sm:h-[460px]"
           :class="[
             isFlipped ? 'cursor-default' : 'cursor-pointer',
-            isLoadingCard ? 'pointer-events-none cursor-progress opacity-70' : ''
-        ]"
-        @click="revealCard"
-        :aria-busy="isLoadingCard"
-      >
-        <div class="relative h-full transition-transform duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
-          <article
-            class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 text-center"
-            :class="isFlipped ? 'invisible pointer-events-none' : ''"
-          >
-            <p v-if="isLoadingCard" class="max-w-xl text-2xl leading-relaxed text-slate-500">
-              Generating a fresh sentence…
-            </p>
-            <p v-else-if="errorMessage" class="max-w-xl text-lg leading-relaxed text-rose-600">
-              {{ errorMessage }}
-            </p>
-            <div v-else-if="currentCard && isListeningCard" class="flex flex-col items-center gap-4">
-              <p class="text-sm uppercase tracking-[0.4em] text-slate-400">Listen</p>
-              <button
-                type="button"
-                class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
-                @click.stop="requestAudioPlayback"
-                :disabled="isLoadingAudio || isLoadingCard"
-              >
-                <span
-                  v-if="isLoadingAudio"
-                  class="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"
-                ></span>
-                <span v-else class="inline-flex items-center gap-2">
-                  <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
-                  Play audio
-                </span>
-              </button>
-              <p class="text-xs text-slate-500">Use your ears—characters reveal after the flip.</p>
-              <p v-if="audioErrorMessage" class="text-xs text-rose-500">{{ audioErrorMessage }}</p>
-            </div>
-            <p
-              v-else-if="currentCard"
-              class="max-w-xl text-3xl leading-relaxed text-slate-900"
-              v-html="highlightFocus(currentCard.sentence)"
-            ></p>
-            <p v-else class="max-w-xl text-2xl leading-relaxed text-slate-500">
-              Preparing the next card…
-            </p>
-            <span
-              v-if="currentCard && !isLoadingCard"
-              class="text-xs uppercase tracking-[0.35em] text-slate-400"
+            isLoadingCard || !isStudyReady ? 'pointer-events-none cursor-progress opacity-70' : ''
+          ]"
+          @click="revealCard"
+          :aria-busy="isLoadingCard"
+        >
+          <div class="relative h-full transition-transform duration-500" :class="isFlipped ? 'rotate-y-180' : ''">
+            <article
+              class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 text-center"
+              :class="isFlipped ? 'invisible pointer-events-none' : ''"
             >
-              {{ isListeningCard ? 'Tap to reveal the transcript' : 'Tap to reveal' }}
-            </span>
-            <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Please wait</span>
-          </article>
-          <article
-            class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 rotate-y-180 text-center"
-            :class="isFlipped ? '' : 'invisible pointer-events-none'"
-          >
-            <div v-if="currentCard" class="space-y-4 text-slate-900">
-              <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(currentCard.sentence)"></p>
-              <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ currentCard.sentenceTranslation }}</p>
-              <div class="flex flex-col items-center gap-2 pt-2">
+              <p v-if="isLoadingCard || !isStudyReady" class="max-w-xl text-2xl leading-relaxed text-slate-500">
+                {{ isStudyReady ? 'Generating a fresh sentence…' : 'Preparing study mode…' }}
+              </p>
+              <p v-else-if="errorMessage" class="max-w-xl text-lg leading-relaxed text-rose-600">
+                {{ errorMessage }}
+              </p>
+              <div v-else-if="currentCard && isListeningCard" class="flex flex-col items-center gap-4">
+                <p class="text-sm uppercase tracking-[0.4em] text-slate-400">Listen</p>
                 <button
                   type="button"
-                  class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                  class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
                   @click.stop="requestAudioPlayback"
                   :disabled="isLoadingAudio || isLoadingCard"
                 >
@@ -97,186 +166,246 @@
                     v-if="isLoadingAudio"
                     class="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"
                   ></span>
-                  <span v-else class="inline-flex items-center gap-1">
-                    <span class="inline-block h-3 w-3 rounded-full bg-emerald-400"></span>
-                    Replay audio
+                  <span v-else class="inline-flex items-center gap-2">
+                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+                    Play audio
                   </span>
-                  <span v-if="isLoadingAudio">Loading…</span>
                 </button>
+                <p class="text-xs text-slate-500">Use your ears—characters reveal after the flip.</p>
                 <p v-if="audioErrorMessage" class="text-xs text-rose-500">{{ audioErrorMessage }}</p>
               </div>
-            </div>
-            <div v-else class="space-y-2 text-center text-sm text-slate-500">
-              <p v-if="isLoadingCard">Hold tight—we’re preparing a new context sentence.</p>
-              <p v-else-if="errorMessage">{{ errorMessage }}</p>
-              <p v-else>Flip once a card is ready.</p>
-            </div>
-            <div v-if="currentCard" class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
-              <div class="flex flex-wrap items-center gap-4">
-                <span class="text-4xl font-semibold text-amber-500">{{ currentCard.focus.hanzi }}</span>
-                <div>
-                  <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin || '—' }}</p>
-                  <p class="text-sm text-slate-500">{{ currentCard.wordTranslation || '—' }}</p>
-                  <p class="text-xs uppercase tracking-[0.2em] text-slate-400">
-                    {{ currentCard.focus.literal || '—' }}
+              <p
+                v-else-if="currentCard"
+                class="max-w-xl text-3xl leading-relaxed text-slate-900"
+                v-html="highlightFocus(currentCard.sentence)"
+              ></p>
+              <p v-else class="max-w-xl text-2xl leading-relaxed text-slate-500">
+                Preparing the next card…
+              </p>
+              <span
+                v-if="currentCard && !isLoadingCard"
+                class="text-xs uppercase tracking-[0.35em] text-slate-400"
+              >
+                {{ isListeningCard ? 'Tap to reveal the transcript' : 'Tap to reveal' }}
+              </span>
+              <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Please wait</span>
+            </article>
+            <article
+              class="card-face absolute inset-0 flex h-full flex-col items-center justify-center gap-6 px-12 rotate-y-180 text-center"
+              :class="isFlipped ? '' : 'invisible pointer-events-none'"
+            >
+              <div v-if="currentCard" class="space-y-4 text-slate-900">
+                <p class="max-w-xl text-2xl leading-relaxed" v-html="highlightFocus(currentCard.sentence)"></p>
+                <p class="max-w-xl text-xl leading-relaxed text-slate-700">{{ currentCard.sentenceTranslation }}</p>
+                <div class="flex flex-col items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-70"
+                    @click.stop="requestAudioPlayback"
+                    :disabled="isLoadingAudio || isLoadingCard"
+                  >
+                    <span
+                      v-if="isLoadingAudio"
+                      class="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"
+                    ></span>
+                    <span v-else class="inline-flex items-center gap-1">
+                      <span class="inline-block h-3 w-3 rounded-full bg-emerald-400"></span>
+                      Replay audio
+                    </span>
+                    <span v-if="isLoadingAudio">Loading…</span>
+                  </button>
+                  <p v-if="audioErrorMessage" class="text-xs text-rose-500">{{ audioErrorMessage }}</p>
+                </div>
+              </div>
+              <div v-else class="space-y-2 text-center text-sm text-slate-500">
+                <p v-if="isLoadingCard">Hold tight—we’re preparing a new context sentence.</p>
+                <p v-else-if="errorMessage">{{ errorMessage }}</p>
+                <p v-else>Flip once a card is ready.</p>
+              </div>
+              <div v-if="currentCard" class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
+                <div class="flex flex-wrap items-center gap-4">
+                  <span class="text-4xl font-semibold text-amber-500">{{ currentCard.focus.hanzi }}</span>
+                  <div>
+                    <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin || '—' }}</p>
+                    <p class="text-sm text-slate-500">{{ currentCard.wordTranslation || '—' }}</p>
+                    <p class="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      {{ currentCard.focus.literal || '—' }}
+                    </p>
+                  </div>
+                </div>
+                <p class="mt-4 text-sm leading-relaxed text-slate-700">
+                  {{ currentCard.focus.definition || '—' }}
+                </p>
+                <p v-if="currentCard.focus.usage" class="mt-2 text-xs italic text-slate-500">
+                  {{ currentCard.focus.usage }}
+                </p>
+              </div>
+              <div
+                v-else
+                class="w-full max-w-xl rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm"
+              >
+                Context details will appear once a sentence loads.
+              </div>
+              <span v-if="currentCard" class="text-xs uppercase tracking-[0.35em] text-slate-400"
+                >Choose your response</span
+              >
+              <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Awaiting generation</span>
+            </article>
+          </div>
+        </div>
+
+        <div v-if="isFlipped && currentCard && !isLoadingCard" class="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
+          <button
+            v-for="button in responseButtons"
+            :key="button.type"
+            type="button"
+            :class="button.classes"
+            @click.stop="recordResponse(button.type)"
+          >
+            {{ button.label }}
+          </button>
+        </div>
+
+        <div v-if="debugMode" class="w-full max-w-2xl">
+          <div class="mt-10 grid gap-4 lg:grid-cols-2">
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div class="mb-4 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
+                <span>Level Estimate</span>
+                <span
+                  class="rounded-full px-3 py-1 text-[11px] font-semibold"
+                  :class="calibrationBadgeClasses"
+                >
+                  {{ calibrationStatusLabel }}
+                </span>
+              </div>
+              <div class="space-y-3 text-left text-sm text-slate-600">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Lifetime tokens (μ)</span>
+                  <span class="font-semibold text-slate-900">{{ formatTokens(levelTokensMean) }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Log-space σ</span>
+                  <span>{{ formatStd(levelStdLog) }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Mastery exposures</span>
+                  <span>{{ exposuresForMastery }}</span>
+                </div>
+                <div v-if="levelPreviewRows.length" class="pt-2">
+                  <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Knowledge preview</div>
+                  <ul class="mt-2 space-y-2">
+                    <li
+                      v-for="row in levelPreviewRows"
+                      :key="row.label"
+                      class="flex items-center justify-between text-sm text-slate-600"
+                    >
+                      <span class="font-medium text-slate-700">{{ row.label }} • {{ row.word }}</span>
+                      <span class="tabular-nums">{{ formatPercent(row.probability) }}</span>
+                    </li>
+                  </ul>
+                </div>
+                <div v-else class="text-xs text-slate-400">Awaiting corpus load…</div>
+                <div
+                  v-if="calibrationProgress"
+                  class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600"
+                >
+                  <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                    <span>Calibration search</span>
+                    <span class="font-semibold text-slate-500">
+                      Probes {{ calibrationProgress.stepCount }} / {{ calibrationProgress.maxSteps }}
+                    </span>
+                  </div>
+                  <div class="relative mt-3 h-2 rounded-full bg-slate-200">
+                    <div
+                      class="absolute inset-y-0 rounded-full bg-emerald-200/70"
+                      :style="{
+                        left: calibrationProgress.lowerPercent + '%',
+                        width: Math.max(calibrationProgress.intervalWidthPercent, 0.5) + '%'
+                      }"
+                    ></div>
+                    <div
+                      class="absolute inset-y-0 w-[2px] rounded-full bg-emerald-600"
+                      :style="{ left: calibrationProgress.medianPercent + '%' }"
+                    ></div>
+                  </div>
+                  <div class="mt-3 flex items-start justify-between text-[11px] text-slate-500">
+                    <div>
+                      <p class="font-semibold text-slate-600">Lower</p>
+                      <p>#{{ calibrationProgress.lowerIndex + 1 }} • {{ calibrationProgress.lowerWord || '—' }}</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="font-semibold text-slate-600">Median</p>
+                      <p>#{{ calibrationProgress.medianIndex + 1 }} • {{ calibrationProgress.medianWord || '—' }}</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-semibold text-slate-600">Upper</p>
+                      <p>#{{ calibrationProgress.upperIndex + 1 }} • {{ calibrationProgress.upperWord || '—' }}</p>
+                    </div>
+                  </div>
+                  <p class="mt-3 text-[11px] text-slate-500">
+                    <span v-if="calibrationProgress.spreadFactor">
+                      Posterior spread ≈ ×{{ calibrationProgress.spreadFactor.toFixed(2) }}
+                    </span>
+                    <span v-else>Posterior spread updating…</span>
                   </p>
                 </div>
               </div>
-              <p class="mt-4 text-sm leading-relaxed text-slate-700">
-                {{ currentCard.focus.definition || '—' }}
-              </p>
-              <p v-if="currentCard.focus.usage" class="mt-2 text-xs italic text-slate-500">
-                {{ currentCard.focus.usage }}
-              </p>
-            </div>
-            <div
-              v-else
-              class="w-full max-w-xl rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm"
-            >
-              Context details will appear once a sentence loads.
-            </div>
-            <span v-if="currentCard" class="text-xs uppercase tracking-[0.35em] text-slate-400"
-              >Choose your response</span
-            >
-            <span v-else class="text-xs uppercase tracking-[0.35em] text-slate-300">Awaiting generation</span>
-          </article>
-        </div>
-        </div>
-      </div>
-    </div>
+            </section>
 
-    <div v-if="isFlipped && currentCard && !isLoadingCard" class="grid w-full max-w-2xl gap-4 sm:grid-cols-3">
-      <button
-        v-for="button in responseButtons"
-        :key="button.type"
-        type="button"
-        :class="button.classes"
-        @click.stop="recordResponse(button.type)"
-      >
-        {{ button.label }}
-      </button>
-    </div>
-
-    <div v-if="debugMode" class="w-full max-w-2xl">
-      <div class="mt-10 grid gap-4 lg:grid-cols-2">
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="mb-4 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
-            <span>Level Estimate</span>
-            <span
-              class="rounded-full px-3 py-1 text-[11px] font-semibold"
-              :class="calibrationBadgeClasses"
-            >
-              {{ calibrationStatusLabel }}
-            </span>
-          </div>
-          <div class="space-y-3 text-left text-sm text-slate-600">
-            <div class="flex items-center justify-between">
-              <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Lifetime tokens (μ)</span>
-              <span class="font-semibold text-slate-900">{{ formatTokens(levelTokensMean) }}</span>
-            </div>
-            <div class="flex items-center justify-between text-xs text-slate-500">
-              <span>Log-space σ</span>
-              <span>{{ formatStd(levelStdLog) }}</span>
-            </div>
-            <div class="flex items-center justify-between text-xs text-slate-500">
-              <span>Mastery exposures</span>
-              <span>{{ exposuresForMastery }}</span>
-            </div>
-            <div v-if="levelPreviewRows.length" class="pt-2">
-              <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Knowledge preview</div>
-              <ul class="mt-2 space-y-2">
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div class="mb-4 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
+                <span>Recent Responses</span>
+                <span class="font-semibold text-slate-500">Total {{ totalResponses }}</span>
+              </div>
+              <ul class="space-y-3">
                 <li
-                  v-for="row in levelPreviewRows"
-                  :key="row.label"
-                  class="flex items-center justify-between text-sm text-slate-600"
+                  v-for="update in recentLevelUpdates"
+                  :key="update.id"
+                  class="rounded-xl border border-slate-200 px-3 py-2"
                 >
-                  <span class="font-medium text-slate-700">{{ row.label }} • {{ row.word }}</span>
-                  <span class="tabular-nums">{{ formatPercent(row.probability) }}</span>
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="font-medium text-slate-800">{{ update.word }}</span>
+                    <span
+                      :class="update.correct ? 'text-emerald-600' : 'text-rose-500'"
+                      class="font-semibold uppercase tracking-[0.2em] text-xs"
+                    >
+                      {{ update.correct ? 'Known' : 'Unknown' }}
+                    </span>
+                  </div>
+                  <div class="mt-1 flex items-center justify-between text-xs text-slate-500">
+                    <span>P={{ formatPercent(update.probability) }}</span>
+                    <span>Δμ={{ formatDelta(update.deltaMean) }}</span>
+                    <span>σ={{ formatStd(update.stdAfter) }}</span>
+                  </div>
+                  <div class="mt-1 text-[10px] uppercase tracking-[0.2em] text-slate-400">
+                    {{ update.timestampLabel }}
+                  </div>
+                </li>
+                <li v-if="!recentLevelUpdates.length" class="rounded-xl border border-dashed border-slate-200 px-3 py-6 text-center text-xs text-slate-400">
+                  Interact with a few cards to populate this log.
                 </li>
               </ul>
-            </div>
-            <div v-else class="text-xs text-slate-400">Awaiting corpus load…</div>
-            <div
-              v-if="calibrationProgress"
-              class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600"
-            >
-              <div class="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-slate-400">
-                <span>Calibration search</span>
-                <span class="font-semibold text-slate-500">
-                  Probes {{ calibrationProgress.stepCount }} / {{ calibrationProgress.maxSteps }}
-                </span>
-              </div>
-              <div class="relative mt-3 h-2 rounded-full bg-slate-200">
-                <div
-                  class="absolute inset-y-0 rounded-full bg-emerald-200/70"
-                  :style="{
-                    left: calibrationProgress.lowerPercent + '%',
-                    width: Math.max(calibrationProgress.intervalWidthPercent, 0.5) + '%'
-                  }"
-                ></div>
-                <div
-                  class="absolute inset-y-0 w-[2px] rounded-full bg-emerald-600"
-                  :style="{ left: calibrationProgress.medianPercent + '%' }"
-                ></div>
-              </div>
-              <div class="mt-3 flex items-start justify-between text-[11px] text-slate-500">
-                <div>
-                  <p class="font-semibold text-slate-600">Lower</p>
-                  <p>#{{ calibrationProgress.lowerIndex + 1 }} • {{ calibrationProgress.lowerWord || '—' }}</p>
-                </div>
-                <div class="text-center">
-                  <p class="font-semibold text-slate-600">Median</p>
-                  <p>#{{ calibrationProgress.medianIndex + 1 }} • {{ calibrationProgress.medianWord || '—' }}</p>
-                </div>
-                <div class="text-right">
-                  <p class="font-semibold text-slate-600">Upper</p>
-                  <p>#{{ calibrationProgress.upperIndex + 1 }} • {{ calibrationProgress.upperWord || '—' }}</p>
-                </div>
-              </div>
-              <p class="mt-3 text-[11px] text-slate-500">
-                <span v-if="calibrationProgress.spreadFactor">
-                  Posterior spread ≈ ×{{ calibrationProgress.spreadFactor.toFixed(2) }}
-                </span>
-                <span v-else>Posterior spread updating…</span>
-              </p>
-            </div>
+            </section>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="mb-4 flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
-            <span>Recent Responses</span>
-            <span class="font-semibold text-slate-500">Total {{ totalResponses }}</span>
-          </div>
-          <ul class="space-y-3">
-            <li
-              v-for="update in recentLevelUpdates"
-              :key="update.id"
-              class="rounded-xl border border-slate-200 px-3 py-2"
-            >
-              <div class="flex items-center justify-between text-sm">
-                <span class="font-medium text-slate-800">{{ update.word }}</span>
-                <span
-                  :class="update.correct ? 'text-emerald-600' : 'text-rose-500'"
-                  class="font-semibold uppercase tracking-[0.2em] text-xs"
-                >
-                  {{ update.correct ? 'Known' : 'Unknown' }}
-                </span>
-              </div>
-              <div class="mt-1 flex items-center justify-between text-xs text-slate-500">
-                <span>P={{ formatPercent(update.probability) }}</span>
-                <span>Δμ={{ formatDelta(update.deltaMean) }}</span>
-                <span>σ={{ formatStd(update.stdAfter) }}</span>
-              </div>
-              <div class="mt-1 text-[10px] uppercase tracking-[0.2em] text-slate-400">
-                {{ update.timestampLabel }}
-              </div>
-            </li>
-            <li v-if="!recentLevelUpdates.length" class="rounded-xl border border-dashed border-slate-200 px-3 py-6 text-center text-xs text-slate-400">
-              Interact with a few cards to populate this log.
-            </li>
-          </ul>
-        </section>
+      <!-- Reading Placeholder -->
+      <div v-else-if="appMode === 'read'" class="w-full rounded-3xl border border-slate-200 bg-white p-12 text-left shadow-lg">
+        <h3 class="text-xl font-semibold text-slate-900">Reading mode (coming soon)</h3>
+        <p class="mt-4 text-sm text-slate-600">
+          You’ll be able to tackle graded passages that surface the words you’re least confident with. We’ll adapt the
+          passages to your estimated level and feed the results back into the knowledge model.
+        </p>
+      </div>
+
+      <!-- Listening Placeholder -->
+      <div v-else-if="appMode === 'listen'" class="w-full rounded-3xl border border-slate-200 bg-white p-12 text-left shadow-lg">
+        <h3 class="text-xl font-semibold text-slate-900">Listening mode (coming soon)</h3>
+        <p class="mt-4 text-sm text-slate-600">
+          Soon you’ll hear short dialogues and audio snippets, then rate how confident you felt. We’ll log comprehension
+          and surface follow-up drills for any words that trip you up.
+        </p>
       </div>
     </div>
   </div>
@@ -299,6 +428,5 @@
   </style>
 
   <script type="module" src="./client/main.js"></script>
-
 </body>
 </html>

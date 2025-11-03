@@ -27,7 +27,6 @@ export function createLangyApp() {
     },
     mounted() {
       this.restorePreferences();
-      this.loadLexicon();
     },
     computed: {
       currentCard() {
@@ -41,6 +40,9 @@ export function createLangyApp() {
       },
       studyModeToggleLabel() {
         return this.studyMode === 'listening' ? 'Switch to Reading Only' : 'Switch to Listening + Reading';
+      },
+      isStudyReady() {
+        return this.isAuthenticated && this.calibrationComplete && this.appMode === 'study';
       },
       responseButtons() {
         return [
@@ -153,15 +155,107 @@ export function createLangyApp() {
       }
     },
     methods: {
+      submitLogin() {
+        if (this.isAuthenticated) return;
+        const { username, password, apiKey } = this.loginForm;
+        if (!username || !password || !apiKey) {
+          this.loginForm.error = 'Enter username, password, and API key to continue.';
+          return;
+        }
+        this.loginForm.error = '';
+        this.userProfile = {
+          username,
+          apiKey
+        };
+        this.isAuthenticated = true;
+        this.appMode = 'study';
+        if (!this.calibrationComplete) {
+          this.calibrationActive = false;
+        }
+      },
+      logout() {
+        this.disposeAudioResources();
+        this.isAuthenticated = false;
+        this.calibrationComplete = false;
+        this.calibrationActive = false;
+        this.lexiconLoaded = false;
+        this.lexicon = [];
+        this.frequencyMap = {};
+        this.frequencyProbabilityMap = {};
+        this.activeCard = null;
+        this.currentIndex = 0;
+        this.appMode = 'study';
+        this.studyMode = 'reading';
+        this.currentCardMode = 'reading';
+        this.loginForm = {
+          username: '',
+          password: '',
+          apiKey: '',
+          error: ''
+        };
+        this.userProfile = {
+          username: '',
+          apiKey: ''
+        };
+        this.isFlipped = false;
+        this.totalResponses = 0;
+        this.calibrationResponses = [];
+        this.calibrationQueue = [];
+        this.calibrationHistory = [];
+        this.calibrationProbeCounts = {};
+        this.calibrationLogGrid = [];
+        this.calibrationLogPosterior = [];
+        this.calibrationPosterior = [];
+        this.calibrationStepCount = 0;
+        try {
+          window.localStorage.removeItem('langy-study-mode');
+        } catch (error) {
+          // ignore storage errors
+        }
+      },
+      completeCalibration() {
+        this.calibrationComplete = true;
+        this.calibrationActive = false;
+        this.calibrationResponses = [];
+        this.calibrationQueue = [];
+        this.calibrationHistory = [];
+        this.calibrationProbeCounts = {};
+        this.appMode = 'study';
+        this.maybeInitStudy();
+      },
+      setAppMode(mode) {
+        if (!this.availableAppModes.includes(mode)) return;
+        this.appMode = mode;
+        if (mode === 'study') {
+          this.maybeInitStudy();
+        }
+      },
+      async maybeInitStudy() {
+        if (!this.isStudyReady) return;
+        if (!this.lexiconLoaded) {
+          await this.loadLexicon();
+        }
+        if (!this.lexicon.length) return;
+        if (!this.activeCard) {
+          await this.loadNextCard({ resetIndex: true });
+        }
+      },
       formatPercent,
       formatDelta,
       formatTokens,
       formatStd,
       async loadLexicon() {
+        if (this.lexiconLoaded) {
+          return;
+        }
         try {
           const entries = await fetchFrequencyCorpus();
           if (entries.length) {
             initializeLexicon(this, entries);
+            this.lexiconLoaded = true;
+            if (this.calibrationComplete) {
+              this.calibrationActive = false;
+            }
             await this.loadNextCard({});
             return;
           }
@@ -176,6 +270,10 @@ export function createLangyApp() {
             frequency: 1
           }));
           initializeLexicon(this, fallbackEntries);
+          this.lexiconLoaded = true;
+          if (this.calibrationComplete) {
+            this.calibrationActive = false;
+          }
           await this.loadNextCard({});
         }
       },
@@ -408,7 +506,7 @@ export function createLangyApp() {
           this.currentCardMode = 'reading';
           return;
         }
-        if (this.studyMode !== 'listening') {
+        if (this.appMode !== 'study' || this.studyMode !== 'listening') {
           this.currentCardMode = 'reading';
           return;
         }
