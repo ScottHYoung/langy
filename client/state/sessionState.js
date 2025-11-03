@@ -62,6 +62,7 @@ export function createInitialState() {
     calibrationCredibleUpperIndex: 0,
     calibrationLastIndex: null,
     calibrationProbeCounts: {},
+    calibrationStatusMessage: '',
     calibrationStdThreshold: 0.12,
     calibrationMaxSteps: 12,
     calibrationStepCount: 0,

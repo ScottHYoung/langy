@@ -11,7 +11,7 @@ import { highlightFocus as highlightFocusText } from './utils/text.js';
 import { fetchFrequencyCorpus, initializeLexicon } from './services/lexicon.js';
 import { generateCard } from './services/api.js';
 import { requestSentenceAudio } from './services/audio.js';
-import { consumeCalibrationIndex, handleCalibrationResponse } from './services/calibration.js';
+import { initializeCalibration, consumeCalibrationIndex, handleCalibrationResponse } from './services/calibration.js';
 import {
   wordProbability as computeWordProbability,
   applyLevelUpdate
@@ -128,7 +128,12 @@ export function createLangyApp() {
           stdLog10,
           spreadFactor: Number.isFinite(stdLog10) ? Math.pow(10, stdLog10) : null,
           stepCount: this.calibrationStepCount ?? 0,
-          maxSteps: this.calibrationMaxSteps ?? this.calibrationSamplesTarget ?? 12
+          maxSteps: this.calibrationMaxSteps ?? this.calibrationSamplesTarget ?? 12,
+          stepPercent: Math.min(
+            100,
+            ((this.calibrationStepCount ?? 0) /
+              Math.max(1, this.calibrationMaxSteps ?? this.calibrationSamplesTarget ?? 12)) * 100
+          )
         };
       },
       levelPreviewRows() {
@@ -155,7 +160,7 @@ export function createLangyApp() {
       }
     },
     methods: {
-      submitLogin() {
+      async submitLogin() {
         if (this.isAuthenticated) return;
         const { username, password } = this.loginForm;
         if (!username || !password) {
@@ -167,13 +172,22 @@ export function createLangyApp() {
           username,
           apiKey: ''
         };
+        this.loadUserProfile(username);
         this.isAuthenticated = true;
         this.appMode = 'study';
+        await this.loadLexicon();
         if (!this.calibrationComplete) {
+          this.startCalibrationFlow({ resetPosterior: true });
+        } else {
           this.calibrationActive = false;
+          await this.maybeInitStudy();
         }
+        this.persistUserProfile();
       },
       logout() {
+        if (this.userProfile?.username) {
+          this.persistUserProfile();
+        }
         this.disposeAudioResources();
         this.isAuthenticated = false;
         this.calibrationComplete = false;
@@ -207,6 +221,7 @@ export function createLangyApp() {
         this.calibrationLogPosterior = [];
         this.calibrationPosterior = [];
         this.calibrationStepCount = 0;
+        this.calibrationStatusMessage = '';
         try {
           window.localStorage.removeItem('langy-study-mode');
         } catch (error) {
@@ -222,6 +237,76 @@ export function createLangyApp() {
         this.calibrationProbeCounts = {};
         this.appMode = 'study';
         this.maybeInitStudy();
+        this.calibrationStatusMessage = `Calibration complete. Estimated lifetime tokens ≈ ${this.formatTokens(
+          Math.exp(this.logExposureMean)
+        )}.`;
+        this.persistUserProfile();
+      },
+      async restartCalibration() {
+        await this.loadLexicon();
+        this.startCalibrationFlow({ resetPosterior: false });
+      },
+      startCalibrationFlow({ resetPosterior = false } = {}) {
+        initializeCalibration(this);
+        this.calibrationActive = true;
+        this.calibrationComplete = false;
+        this.calibrationStepCount = 0;
+        this.calibrationStatusMessage = '';
+        this.calibrationResponses = [];
+        this.calibrationHistory = [];
+        this.calibrationProbeCounts = {};
+        this.activeCard = null;
+        this.isFlipped = false;
+        if (resetPosterior) {
+          this.logExposureMean = Math.log(5000);
+          this.logExposureVar = 16;
+        }
+        this.persistUserProfile();
+        this.maybeInitStudy();
+      },
+      loadUserProfile(username) {
+        if (!username) return;
+        try {
+          const raw = window.localStorage.getItem(`langy-profile:${username}`);
+          if (!raw) return;
+          const data = JSON.parse(raw);
+          if (typeof data.studyMode === 'string') {
+            this.studyMode = data.studyMode;
+            this.persistStudyMode();
+          }
+          if (typeof data.calibrationComplete === 'boolean') {
+            this.calibrationComplete = data.calibrationComplete;
+            this.calibrationActive = !data.calibrationComplete;
+          }
+          if (typeof data.logExposureMean === 'number' && Number.isFinite(data.logExposureMean)) {
+            this.logExposureMean = data.logExposureMean;
+          }
+          if (typeof data.logExposureVar === 'number' && Number.isFinite(data.logExposureVar)) {
+            this.logExposureVar = data.logExposureVar;
+          }
+          if (typeof data.calibrationStatusMessage === 'string') {
+            this.calibrationStatusMessage = data.calibrationStatusMessage;
+          }
+        } catch (error) {
+          console.warn('Unable to load stored profile:', error);
+        }
+      },
+      persistUserProfile() {
+        const username = this.userProfile?.username;
+        if (!username) return;
+        const payload = {
+          studyMode: this.studyMode,
+          calibrationComplete: this.calibrationComplete,
+          logExposureMean: this.logExposureMean,
+          logExposureVar: this.logExposureVar,
+          calibrationStatusMessage: this.calibrationStatusMessage,
+          updatedAt: Date.now()
+        };
+        try {
+          window.localStorage.setItem(`langy-profile:${username}`, JSON.stringify(payload));
+        } catch (error) {
+          console.warn('Unable to persist profile:', error);
+        }
       },
       setAppMode(mode) {
         if (!this.availableAppModes.includes(mode)) return;
@@ -229,6 +314,7 @@ export function createLangyApp() {
         if (mode === 'study') {
           this.maybeInitStudy();
         }
+        this.persistUserProfile();
       },
       async maybeInitStudy() {
         if (!this.isStudyReady) return;
@@ -256,7 +342,6 @@ export function createLangyApp() {
             if (this.calibrationComplete) {
               this.calibrationActive = false;
             }
-            await this.loadNextCard({});
             return;
           }
         } catch (error) {
@@ -274,7 +359,6 @@ export function createLangyApp() {
           if (this.calibrationComplete) {
             this.calibrationActive = false;
           }
-          await this.loadNextCard({});
         }
       },
       async loadNextCard({ advance = false, resetIndex = false, targetIndex = null } = {}) {
@@ -516,6 +600,7 @@ export function createLangyApp() {
       toggleStudyMode() {
         this.studyMode = this.studyMode === 'listening' ? 'reading' : 'listening';
         this.persistStudyMode();
+        this.persistUserProfile();
         this.assignCardMode();
         if (this.isListeningCard) {
           this.ensureAudioReady({ autoplay: true }).catch((error) => {
@@ -637,6 +722,10 @@ export function createLangyApp() {
         if (this.recentLevelUpdates.length > this.maxRecentLevelUpdates) {
           this.recentLevelUpdates.length = this.maxRecentLevelUpdates;
         }
+        this.calibrationComplete = true;
+        this.calibrationActive = false;
+        this.calibrationStatusMessage = `Calibration complete. Estimated lifetime tokens ≈ ${this.formatTokens(Math.exp(this.logExposureMean))}.`;
+        this.persistUserProfile();
       }
     }
   };
