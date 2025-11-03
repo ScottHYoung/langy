@@ -41,8 +41,6 @@ export function createInitialState() {
       username: '',
       apiKey: ''
     },
-    readingDraftText: '',
-    readingAnalyzedText: '',
     readingSegments: [],
     readingSentenceContexts: [],
     readingGlossesByKey: {},
@@ -51,12 +49,26 @@ export function createInitialState() {
     readingErrorMessage: '',
     readingMinProbability: 0.5,
     readingLastAnalyzedAt: null,
+    readingAnalyzedText: '',
     readingGlossStats: {
       totalTargets: 0,
       resolvedTargets: 0,
       pendingTargets: 0,
       requestCount: 0,
       lastBatchSize: 0
+    },
+    readingGeneration: {
+      topic: '',
+      difficultyTarget: 0.92,
+      paragraphCount: 3,
+      lifetimeTokensEstimate: 0,
+      isGenerating: false,
+      attempts: 0,
+      maxAttempts: 3,
+      passageText: '',
+      passageStats: null,
+      difficultyHistory: [],
+      debugSteps: []
     },
     calibrationProfiles: {
       reading: createProfileTemplate(),

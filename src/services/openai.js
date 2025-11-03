@@ -207,7 +207,8 @@ async function callOpenAIAudio({ text, voice = 'alloy', audioFormat = 'mp3', mod
 module.exports = {
   callOpenAI,
   callOpenAIAudio,
-  callOpenAIReadGlosses
+  callOpenAIReadGlosses,
+  callOpenAIReadPassage
 };
 
 async function callOpenAIReadGlosses({ text, targets }) {
@@ -379,6 +380,186 @@ async function callOpenAIReadGlosses({ text, targets }) {
       success: false,
       error: error?.message || 'Unknown error',
       targetsRequested: targets.length
+    });
+    throw error;
+  }
+}
+
+function describeImmersion(tokens) {
+  if (!Number.isFinite(tokens) || tokens <= 0) {
+    return { label: 'beginner', summary: 'Just started reading short graded materials.', months: 0 };
+  }
+  const months = Math.round(tokens / 60000);
+  if (tokens > 3_000_000) {
+    return { label: 'advanced', summary: 'Several years of immersion in native content.', months };
+  }
+  if (tokens > 1_000_000) {
+    return { label: 'upper-intermediate', summary: 'Roughly a year of daily reading.', months };
+  }
+  if (tokens > 300_000) {
+    return { label: 'intermediate', summary: 'Can handle common topics with support.', months };
+  }
+  if (tokens > 120_000) {
+    return { label: 'high-beginner', summary: 'Comfortable with everyday topics at slow pace.', months };
+  }
+  return { label: 'beginner', summary: 'Just started reading short graded materials.', months };
+}
+
+function describeDifficulty(target, easeAdjustment = 0) {
+  const adjusted = Math.min(0.99, Math.max(0.72, target + easeAdjustment * 0.03));
+  if (adjusted >= 0.95) {
+    return { label: 'very comfortable', instructions: 'Keep almost all vocabulary within the learner’s mastery zone.', target: adjusted };
+  }
+  if (adjusted >= 0.9) {
+    return { label: 'comfortable', instructions: 'Use mostly known words with a few stretch terms sprinkled in.', target: adjusted };
+  }
+  if (adjusted >= 0.85) {
+    return { label: 'challenging', instructions: 'Mix familiar vocabulary with occasional low-frequency terms for growth.', target: adjusted };
+  }
+  return { label: 'intensive', instructions: 'Introduce several new terms but provide strong context.', target: adjusted };
+}
+
+async function callOpenAIReadPassage({
+  topic,
+  lifetimeTokens,
+  difficultyTarget,
+  paragraphCount = 2,
+  easeAdjustment = 0,
+  previousPassage = null
+}) {
+  const immersion = describeImmersion(lifetimeTokens);
+  const difficulty = describeDifficulty(difficultyTarget, easeAdjustment);
+  const safeParagraphCount = Math.min(4, Math.max(2, paragraphCount | 0));
+  const topicLine = topic ? `Focus on: ${topic}.` : 'Use a neutral, everyday topic.';
+  const revisionNote = previousPassage
+    ? 'The prior attempt was too difficult; simplify low-frequency vocabulary while preserving the overall idea.'
+    : 'Write fresh content; avoid overusing rare words.';
+
+  const systemPrompt = [
+    'You craft short graded Mandarin reading passages.',
+    `Learner profile: ${immersion.summary} (${immersion.label}).`,
+    `Target comprehension: ${Math.round(difficulty.target * 100)}% known words (${difficulty.label}).`,
+    'Use natural Mandarin, avoid mixing in pinyin or English glosses.',
+    'Prefer everyday, high-frequency expressions; only a handful of rarer words may appear, and they must be well-supported by context.',
+    revisionNote
+  ].join(' ');
+
+  const userPrompt = [
+    topicLine,
+    `Write ${safeParagraphCount} paragraphs (2-4 sentences each).`,
+    'Return JSON describing the passage.',
+    'Output schema: {"title": "...", "paragraphs": ["...", "..."], "summary_en": "..."}'
+  ].join('\n');
+
+  const payloadBody = {
+    model: MODEL,
+    temperature: 0.6,
+    response_format: {
+      type: 'json_schema',
+      json_schema: {
+        name: 'graded_passage',
+        schema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string', minLength: 2, maxLength: 80 },
+            paragraphs: {
+              type: 'array',
+              minItems: 2,
+              maxItems: 4,
+              items: { type: 'string', minLength: 12, maxLength: 500 }
+            },
+            summary_en: { type: 'string', minLength: 10, maxLength: 200 }
+          },
+          required: ['paragraphs'],
+          additionalProperties: false
+        },
+        strict: true
+      }
+    },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+      previousPassage
+        ? { role: 'assistant', content: JSON.stringify({ previous_passage: previousPassage }).slice(0, 1500) }
+        : null
+    ].filter(Boolean)
+  };
+
+  const requestPayload = JSON.stringify(payloadBody);
+  const requestBytes = bytesFor(requestPayload);
+  const startedAt = Date.now();
+  let responseBytes = 0;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OPENAI_API_KEY}`
+      },
+      body: requestPayload
+    });
+
+    const payload = await response.json();
+    responseBytes = bytesFor(JSON.stringify(payload));
+    if (!response.ok) {
+      const details = payload?.error ?? payload;
+      throw new Error(
+        `OpenAI graded passage error: ${response.status} ${response.statusText} ${JSON.stringify(details)}`
+      );
+    }
+
+    const content = payload?.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('OpenAI passage response missing content');
+    }
+
+    const parsed = JSON.parse(content);
+    const paragraphs = Array.isArray(parsed?.paragraphs) ? parsed.paragraphs : [];
+    const text = paragraphs.join('\n\n').trim();
+    const latencyMs = Date.now() - startedAt;
+    const inputTokens = estimateTokensFromChars(requestPayload.length);
+    const outputTokens = estimateTokensFromChars(JSON.stringify(parsed).length);
+    logApiUsage({
+      type: 'chat.completions',
+      mode: 'read-passage',
+      model: MODEL,
+      latencyMs,
+      requestBytes,
+      responseBytes,
+      inputTokens,
+      outputTokens,
+      estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, outputTokens),
+      success: true,
+      difficultyTarget: difficultyTarget,
+      adjustedDifficulty: difficulty.target,
+      topic: topic || '',
+      paragraphCount: paragraphs.length
+    });
+    return {
+      title: parsed?.title || '',
+      summary_en: parsed?.summary_en || '',
+      paragraphs,
+      text,
+      adjustedDifficulty: difficulty.target
+    };
+  } catch (error) {
+    const latencyMs = Date.now() - startedAt;
+    const inputTokens = estimateTokensFromChars(requestPayload.length);
+    logApiUsage({
+      type: 'chat.completions',
+      mode: 'read-passage',
+      model: MODEL,
+      latencyMs,
+      requestBytes,
+      responseBytes,
+      inputTokens,
+      outputTokens: 0,
+      estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, 0),
+      success: false,
+      error: error?.message || 'Unknown error',
+      topic: topic || '',
+      paragraphCount: safeParagraphCount
     });
     throw error;
   }

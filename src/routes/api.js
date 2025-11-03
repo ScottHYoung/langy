@@ -1,5 +1,10 @@
 const { setCommonHeaders, readJsonBody } = require('../utils/http');
-const { callOpenAI, callOpenAIAudio, callOpenAIReadGlosses } = require('../services/openai');
+const {
+  callOpenAI,
+  callOpenAIAudio,
+  callOpenAIReadGlosses,
+  callOpenAIReadPassage
+} = require('../services/openai');
 
 async function handleApiGenerate(req, res) {
   if (req.method === 'OPTIONS') {
@@ -59,7 +64,8 @@ async function handleApiGenerate(req, res) {
 module.exports = {
   handleApiGenerate,
   handleApiGenerateAudio,
-  handleApiReadAnalyze
+  handleApiReadAnalyze,
+  handleApiReadGenerate
 };
 
 async function handleApiGenerateAudio(req, res) {
@@ -195,6 +201,73 @@ async function handleApiReadAnalyze(req, res) {
     res.end(JSON.stringify(payload));
   } catch (error) {
     console.error('OpenAI read gloss request failed:', error);
+    setCommonHeaders(res);
+    res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ error: error.message }));
+  }
+}
+
+async function handleApiReadGenerate(req, res) {
+  if (req.method === 'OPTIONS') {
+    setCommonHeaders(res);
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    setCommonHeaders(res);
+    res.writeHead(405, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ error: 'Method not allowed' }));
+    return;
+  }
+
+  let body;
+  try {
+    body = await readJsonBody(req);
+  } catch (error) {
+    setCommonHeaders(res);
+    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ error: error.message }));
+    return;
+  }
+
+  const topic = typeof body.topic === 'string' ? body.topic.trim() : '';
+  const lifetimeTokens =
+    typeof body.lifetimeTokens === 'number' && Number.isFinite(body.lifetimeTokens)
+      ? body.lifetimeTokens
+      : 0;
+  const difficultyTarget =
+    typeof body.difficultyTarget === 'number' && Number.isFinite(body.difficultyTarget)
+      ? body.difficultyTarget
+      : 0.9;
+  const paragraphCount =
+    typeof body.paragraphCount === 'number' && Number.isFinite(body.paragraphCount)
+      ? body.paragraphCount
+      : 2;
+  const easeAdjustment =
+    typeof body.easeAdjustment === 'number' && Number.isFinite(body.easeAdjustment)
+      ? body.easeAdjustment
+      : 0;
+  const previousPassage =
+    typeof body.previousPassage === 'string' && body.previousPassage.trim()
+      ? body.previousPassage.trim()
+      : null;
+
+  try {
+    const result = await callOpenAIReadPassage({
+      topic,
+      lifetimeTokens,
+      difficultyTarget,
+      paragraphCount,
+      easeAdjustment,
+      previousPassage
+    });
+    setCommonHeaders(res);
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(result));
+  } catch (error) {
+    console.error('OpenAI read passage request failed:', error);
     setCommonHeaders(res);
     res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({ error: error.message }));

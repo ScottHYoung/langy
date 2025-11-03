@@ -3,11 +3,20 @@ const { URL } = require('url');
 
 const { PORT } = require('./config');
 const { setCommonHeaders } = require('./utils/http');
-const { handleApiGenerate, handleApiGenerateAudio, handleApiReadAnalyze } = require('./routes/api');
+const {
+  handleApiGenerate,
+  handleApiGenerateAudio,
+  handleApiReadAnalyze,
+  handleApiReadGenerate
+} = require('./routes/api');
 const { handleStaticRequest } = require('./routes/static');
 
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname.startsWith('/api/read/generate')) {
+    await handleApiReadGenerate(req, res);
+    return;
+  }
   if (url.pathname.startsWith('/api/read/analyze')) {
     await handleApiReadAnalyze(req, res);
     return;

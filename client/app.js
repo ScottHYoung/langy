@@ -10,7 +10,7 @@ import {
 import { highlightFocus as highlightFocusText } from './utils/text.js';
 import { segmentChineseText } from './utils/segmentation.js';
 import { fetchFrequencyCorpus, initializeLexicon } from './services/lexicon.js';
-import { generateCard, requestReadGlosses } from './services/api.js';
+import { generateCard, requestReadGlosses, requestReadingPassage } from './services/api.js';
 import { requestSentenceAudio } from './services/audio.js';
 import { initializeCalibration, consumeCalibrationIndex, handleCalibrationResponse } from './services/calibration.js';
 import {
@@ -349,6 +349,17 @@ export function createLangyApp() {
           });
         }
         return paragraphs;
+      },
+      readingPassageAvailable() {
+        return Boolean(this.readingGeneration?.passageText);
+      },
+      readingDifficultyTargetPercent() {
+        return Math.round((this.readingGeneration?.difficultyTarget || 0.92) * 100);
+      },
+      readingDebugSteps() {
+        return Array.isArray(this.readingGeneration?.debugSteps)
+          ? this.readingGeneration.debugSteps
+          : [];
       }
     },
     methods: {
@@ -366,52 +377,227 @@ export function createLangyApp() {
         });
         return result;
       },
-      async analyzeReadingInput() {
-        const rawText =
-          typeof this.readingDraftText === 'string' ? this.readingDraftText.trim() : '';
-        if (!rawText) {
-          this.readingErrorMessage = 'Paste some Mandarin text to analyze.';
+      async generateReadingPassage(options = {}) {
+        if (this.readingGeneration.isGenerating) {
           return;
         }
         this.readingProcessing = true;
-        this.readingGlossLoading = false;
         this.readingErrorMessage = '';
+        this.resetReadingAnalysis();
         try {
           if (!this.lexiconLoaded) {
             await this.loadLexicon();
           }
-          const { segments, sentences } = this.segmentReadText(rawText);
-          const prepared = this.prepareReadingSegments({
-            segments,
-            sentences
-          });
-          this.readingSegments = prepared.segments;
-          this.updateReadingHighlights();
-          this.readingSentenceContexts = sentences;
-          this.readingAnalyzedText = rawText;
-          this.readingLastAnalyzedAt = Date.now();
+          const lifetimeTokens = Math.exp(this.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
+          const topic =
+            typeof options.topic === 'string' && options.topic.trim()
+              ? options.topic.trim()
+              : this.readingGeneration.topic;
+          const difficultyTarget =
+            typeof options.difficulty === 'number'
+              ? options.difficulty
+              : this.readingGeneration.difficultyTarget;
+          const paragraphCount =
+            typeof options.paragraphCount === 'number'
+              ? options.paragraphCount
+              : this.readingGeneration.paragraphCount;
 
-          const placeholderMap = {};
-          prepared.targetKeys.forEach((key) => {
-            placeholderMap[key] = this.readingGlossesByKey?.[key] || null;
+          Object.assign(this.readingGeneration, {
+            topic,
+            difficultyTarget,
+            paragraphCount,
+            lifetimeTokensEstimate: lifetimeTokens,
+            isGenerating: true,
+            attempts: 0,
+            passageText: '',
+            passageStats: null,
+            difficultyHistory: [],
+            debugSteps: []
           });
-          this.readingGlossesByKey = placeholderMap;
+
+          await this.runReadingPassageAttempt({
+            topic,
+            difficultyTarget,
+            paragraphCount,
+            lifetimeTokens,
+            easeAdjustment: 0,
+            attempt: 1,
+            previousPassage: null
+          });
+        } catch (error) {
+          this.readingErrorMessage = error?.message || 'Unable to generate passage.';
+        } finally {
+          this.readingProcessing = false;
+          this.readingGeneration.isGenerating = false;
+        }
+      },
+      async runReadingPassageAttempt({
+        topic,
+        difficultyTarget,
+        paragraphCount,
+        lifetimeTokens,
+        easeAdjustment,
+        attempt,
+        previousPassage
+      }) {
+        const maxAttempts = this.readingGeneration.maxAttempts || 3;
+        if (attempt > maxAttempts) {
+          this.recordReadingDebugStep({
+            label: 'Attempts exhausted',
+            details: 'Reached maximum retries without meeting difficulty target.',
+            intent: 'abort'
+          });
+          return;
+        }
+
+        this.recordReadingDebugStep({
+          label: `Generating attempt ${attempt}`,
+          details: `Topic="${topic || 'general'}", target=${Math.round(difficultyTarget * 100)}%, adjustment=${easeAdjustment.toFixed(
+            2
+          )}`,
+          intent: 'request'
+        });
+
+        let result;
+        try {
+          result = await requestReadingPassage({
+            topic,
+            lifetimeTokens,
+            difficultyTarget,
+            paragraphCount,
+            easeAdjustment,
+            previousPassage
+          });
+        } catch (error) {
+          this.recordReadingDebugStep({
+            label: 'Generation failed',
+            details: error?.message || 'API error',
+            intent: 'error'
+          });
+          throw error;
+        }
+
+        this.recordReadingDebugStep({
+          label: 'Draft received',
+          details: `Paragraphs=${result.paragraphs.length}, adjusted target=${Math.round(
+            (result.adjustedDifficulty || difficultyTarget) * 100
+          )}%`,
+          intent: 'response'
+        });
+
+        const evaluation = this.evaluateReadingPassage(result.text);
+        Object.assign(this.readingGeneration, {
+          passageText: result.text,
+          passageStats: evaluation,
+          attempts: attempt
+        });
+
+        this.readingGeneration.difficultyHistory = [
+          ...(this.readingGeneration.difficultyHistory || []),
+          {
+            attempt,
+            avgProbability: evaluation.avgProbability,
+            target: difficultyTarget
+          }
+        ];
+
+        const tolerance = 0.03;
+        if (Math.abs(evaluation.avgProbability - difficultyTarget) <= tolerance) {
+          this.recordReadingDebugStep({
+            label: 'Difficulty matched',
+            details: `Avg ${Math.round(evaluation.avgProbability * 100)}% vs target ${Math.round(
+              difficultyTarget * 100
+            )}%`,
+            intent: 'success'
+          });
+          const highlightedTargets = this.readingHighlightedSegments.length;
           this.readingGlossStats = {
-            totalTargets: prepared.targets.length,
+            totalTargets: highlightedTargets,
             resolvedTargets: 0,
-            pendingTargets: prepared.targets.length,
+            pendingTargets: highlightedTargets,
             requestCount: 0,
             lastBatchSize: 0
           };
-
-          if (prepared.targets.length) {
-            await this.fetchGlossesForTargets(prepared.targets, rawText);
-          }
-        } catch (error) {
-          this.readingErrorMessage = error?.message || 'Unable to analyze text.';
-        } finally {
-          this.readingProcessing = false;
+          await this.fetchMissingReadingGlosses();
+          return;
         }
+
+        const needEasier = evaluation.avgProbability < difficultyTarget - tolerance;
+        const adjustment = needEasier ? easeAdjustment + 1 : easeAdjustment - 1;
+        const nextAttempt = attempt + 1;
+        this.recordReadingDebugStep({
+          label: needEasier ? 'Too challenging' : 'Too easy',
+          details: `Avg ${Math.round(evaluation.avgProbability * 100)}%`,
+          intent: 'retry'
+        });
+        await this.runReadingPassageAttempt({
+          topic,
+          difficultyTarget,
+          paragraphCount,
+          lifetimeTokens,
+          easeAdjustment: adjustment,
+          attempt: nextAttempt,
+          previousPassage: result.text
+        });
+      },
+      evaluateReadingPassage(text) {
+        if (typeof text !== 'string' || !text.trim()) {
+          return {
+            avgProbability: 0,
+            wordCount: 0,
+            flaggedCount: 0,
+            hardest: []
+          };
+        }
+        const { segments, sentences } = this.segmentReadText(text);
+        const prepared = this.prepareReadingSegments({
+          segments,
+          sentences
+        });
+        this.readingSegments = prepared.segments;
+        this.readingSentenceContexts = sentences;
+        const placeholderMap = {};
+        prepared.targetKeys.forEach((key) => {
+          placeholderMap[key] = this.readingGlossesByKey?.[key] || null;
+        });
+        this.readingGlossesByKey = placeholderMap;
+        this.updateReadingHighlights();
+        this.readingAnalyzedText = text;
+        this.readingLastAnalyzedAt = Date.now();
+
+        const wordSegments = prepared.segments.filter((segment) => segment.isWord);
+        const totalProbability = wordSegments.reduce(
+          (sum, segment) => sum + (segment.probability || 0),
+          0
+        );
+        const avgProbability = wordSegments.length
+          ? totalProbability / wordSegments.length
+          : 0;
+        const hardest = [...wordSegments]
+          .sort((a, b) => (a.probability || 0) - (b.probability || 0))
+          .slice(0, 8)
+          .map((segment) => ({
+            word: segment.text,
+            probability: segment.probability || 0,
+            sentenceIndex: segment.sentenceIndex
+          }));
+
+        return {
+          avgProbability,
+          wordCount: wordSegments.length,
+          flaggedCount: this.readingHighlightedSegments.length,
+          hardest
+        };
+      },
+      recordReadingDebugStep(entry) {
+        const record = {
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          ...entry
+        };
+        const steps = Array.isArray(this.readingGeneration.debugSteps)
+          ? [...this.readingGeneration.debugSteps, record]
+          : [record];
+        this.readingGeneration.debugSteps = steps.slice(-20);
       },
       prepareReadingSegments({ segments = [], sentences = [] } = {}) {
         if (!Array.isArray(segments) || !segments.length) {
@@ -646,10 +832,7 @@ export function createLangyApp() {
           });
         });
         if (!targets.length) return;
-        await this.fetchGlossesForTargets(
-          targets,
-          this.readingAnalyzedText || this.readingDraftText || ''
-        );
+        await this.fetchGlossesForTargets(targets, this.readingAnalyzedText || '');
       },
       async returnToModeMenu() {
         if (!this.appMode) return;
@@ -874,7 +1057,6 @@ export function createLangyApp() {
         this.lexicon = [];
         this.frequencyMap = {};
         this.resetReadingAnalysis();
-        this.readingDraftText = '';
         this.frequencyProbabilityMap = {};
         this.activeCard = null;
         this.currentIndex = 0;

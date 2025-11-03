@@ -182,83 +182,88 @@
           >
             <section class="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 text-left shadow-lg">
               <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-slate-900">Paste a passage</h3>
-                <span class="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-500">
-                  Read mode beta
+                <h3 class="text-lg font-semibold text-slate-900">Generate a passage</h3>
+                <span class="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-600">
+                  BETA
                 </span>
               </div>
-              <p class="text-sm text-slate-500">
-                Paste Mandarin text you want to read. We’ll highlight words that fall below your current reading confidence.
-              </p>
-              <textarea
-                v-model="readingDraftText"
-                class="min-h-[200px] w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm leading-relaxed text-slate-900 shadow-inner focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
-                placeholder="粘贴你想阅读的中文段落…"
-                :disabled="readingProcessing"
-              ></textarea>
+              <label class="text-xs uppercase tracking-[0.25em] text-slate-400">Topic or hook</label>
+              <input
+                v-model.trim="readingGeneration.topic"
+                type="text"
+                class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 shadow-inner focus:border-emerald-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                placeholder="例如：环城骑行的一天"
+              />
               <div>
-                <label class="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400">
-                  <span>Flag threshold</span>
-                  <span class="text-sm font-semibold text-slate-700">{{ readingThresholdPercent }}%</span>
+                <label class="flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
+                  <span>Difficulty target</span>
+                  <span class="text-sm font-semibold text-slate-700">{{ readingDifficultyTargetPercent }}% known</span>
                 </label>
                 <input
+                  v-model.number="readingGeneration.difficultyTarget"
                   type="range"
-                  min="0.1"
-                  max="0.9"
-                  step="0.05"
-                  :value="readingMinProbability"
+                  min="0.8"
+                  max="0.98"
+                  step="0.01"
                   class="mt-2 w-full accent-emerald-500"
-                  @input="handleReadingThresholdChange"
-                  :disabled="readingProcessing && !readingSegmentsAvailable"
                 />
                 <p class="mt-1 text-xs text-slate-500">
-                  Words with an estimated comprehension probability below this level will get contextual glosses.
+                  Slide toward 98% for easy comfort or down to 80% for intensive reading.
                 </p>
+              </div>
+              <div>
+                <label class="text-xs uppercase tracking-[0.25em] text-slate-400">Paragraphs</label>
+                <select
+                  v-model.number="readingGeneration.paragraphCount"
+                  class="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-800 focus:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                >
+                  <option :value="2">2 paragraphs</option>
+                  <option :value="3">3 paragraphs</option>
+                  <option :value="4">4 paragraphs</option>
+                </select>
               </div>
               <div class="flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   class="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
-                  @click="analyzeReadingInput"
-                  :disabled="readingProcessing || !readingDraftText.trim()"
+                  @click="generateReadingPassage()"
+                  :disabled="readingProcessing"
                 >
                   <span
                     v-if="readingProcessing"
                     class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-emerald-200 border-t-transparent"
                   ></span>
-                  Analyze text
+                  {{ readingProcessing ? 'Generating…' : 'Generate passage' }}
                 </button>
                 <button
                   type="button"
                   class="inline-flex items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
                   @click="resetReadingAnalysis"
-                  :disabled="readingProcessing || !readingSegmentsAvailable"
+                  :disabled="readingProcessing"
                 >
-                  Clear results
+                  Reset
                 </button>
               </div>
+              <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                <p v-if="readingGeneration.passageStats">
+                  Avg known: <span class="font-semibold text-slate-900">{{ formatPercent(readingGeneration.passageStats.avgProbability) }}</span>
+                  • Target {{ readingDifficultyTargetPercent }}%
+                </p>
+                <p v-else>
+                  Ready to craft a passage tuned to your reading level.
+                </p>
+              </div>
               <p v-if="readingErrorMessage" class="text-sm text-rose-600">{{ readingErrorMessage }}</p>
-              <p v-else-if="readingSegmentsAvailable" class="text-xs text-slate-500">
-                Flagged {{ readingHighlightedSegments.length }} of {{ readingWordCount }} words at {{ readingThresholdPercent }}% confidence.
-              </p>
-              <p
-                v-if="readingSegmentsAvailable && (readingGlossStats.requestCount || readingGlossLoading)"
-                class="text-[11px] uppercase tracking-[0.25em] text-slate-400"
-              >
-                Gloss batches {{ readingGlossStats.requestCount }}
-                <span v-if="readingGlossStats.lastBatchSize"> • last {{ readingGlossStats.lastBatchSize }}</span>
-                <span v-if="readingGlossStats.pendingTargets"> • pending {{ readingGlossStats.pendingTargets }}</span>
-              </p>
             </section>
 
             <section class="relative rounded-3xl border border-slate-200 bg-white p-6 text-left shadow-lg">
               <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-slate-900">Graded text</h3>
+                <h3 class="text-lg font-semibold text-slate-900">Generated text</h3>
                 <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.35em] text-slate-400">
-                  <span v-if="readingProcessing">Analyzing…</span>
-                  <span v-else-if="readingGlossLoading">Fetching glosses…</span>
-                  <span v-else-if="readingSegmentsAvailable">Ready</span>
-                  <span v-else>Awaiting input</span>
+                  <span v-if="readingProcessing">Generating…</span>
+                  <span v-else-if="readingGlossLoading">Annotating…</span>
+                  <span v-else-if="readingPassageAvailable">Ready</span>
+                  <span v-else>Awaiting request</span>
                 </div>
               </div>
               <div class="mt-4 min-h-[220px] rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
@@ -275,8 +280,22 @@
                       {{ readingHighlightedSegments.length }} flagged
                     </span>
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
-                      Threshold {{ readingThresholdPercent }}%
+                      {{ formatPercent(readingGeneration.passageStats?.avgProbability || 0) }} avg known
                     </span>
+                  </div>
+                  <div>
+                    <label class="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-slate-400">
+                      <span>Highlight words below {{ readingThresholdPercent }}%</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="0.95"
+                      step="0.05"
+                      :value="readingMinProbability"
+                      class="mt-1 w-full accent-emerald-500"
+                      @input="handleReadingThresholdChange"
+                    />
                   </div>
                   <div class="space-y-6">
                     <div
@@ -349,6 +368,33 @@
                   <p>Paste Chinese text on the left to grade it against your reading model.</p>
                 </div>
               </div>
+            </section>
+
+            <section class="lg:col-span-2 rounded-3xl border border-dashed border-slate-200 bg-white p-5 text-left shadow-sm">
+              <div class="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-400">
+                <span>Generation debug</span>
+                <span v-if="readingGeneration.attempts" class="font-semibold text-slate-500">
+                  Attempts {{ readingGeneration.attempts }} / {{ readingGeneration.maxAttempts }}
+                </span>
+              </div>
+              <ul class="mt-4 space-y-2 text-sm text-slate-600">
+                <li
+                  v-for="step in readingDebugSteps"
+                  :key="step.timestamp + step.label + step.details"
+                  class="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2"
+                >
+                  <div class="flex items-center justify-between text-xs uppercase tracking-[0.25em] text-slate-400">
+                    <span>{{ step.timestamp }}</span>
+                    <span :class="step.intent === 'error' ? 'text-rose-500' : step.intent === 'success' ? 'text-emerald-600' : 'text-slate-400'">
+                      {{ step.label }}
+                    </span>
+                  </div>
+                  <p class="mt-1 text-sm text-slate-700">{{ step.details }}</p>
+                </li>
+                <li v-if="!readingDebugSteps.length" class="rounded-2xl border border-dashed border-slate-200 px-3 py-6 text-center text-xs uppercase tracking-[0.3em] text-slate-400">
+                  No logs yet—generate a passage to see the decision trail.
+                </li>
+              </ul>
             </section>
           </div>
           <div

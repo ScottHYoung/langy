@@ -66,3 +66,39 @@ export async function requestReadGlosses({ text = '', targets = [] } = {}) {
 
   return payload.glosses;
 }
+
+export async function requestReadingPassage(options = {}) {
+  const response = await fetch('/api/read/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      topic: options.topic || '',
+      lifetimeTokens: options.lifetimeTokens || 0,
+      difficultyTarget: options.difficultyTarget || 0.9,
+      paragraphCount: options.paragraphCount || 2,
+      easeAdjustment: options.easeAdjustment || 0,
+      previousPassage: options.previousPassage || ''
+    })
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch (error) {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      (payload && payload.error) || `Reading passage request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  if (!payload || !Array.isArray(payload.paragraphs) || !payload.text) {
+    throw new Error('Reading passage response missing data.');
+  }
+
+  return payload;
+}
