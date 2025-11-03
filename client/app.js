@@ -157,15 +157,15 @@ export function createLangyApp() {
     methods: {
       submitLogin() {
         if (this.isAuthenticated) return;
-        const { username, password, apiKey } = this.loginForm;
-        if (!username || !password || !apiKey) {
-          this.loginForm.error = 'Enter username, password, and API key to continue.';
+        const { username, password } = this.loginForm;
+        if (!username || !password) {
+          this.loginForm.error = 'Enter username and password to continue.';
           return;
         }
         this.loginForm.error = '';
         this.userProfile = {
           username,
-          apiKey
+          apiKey: ''
         };
         this.isAuthenticated = true;
         this.appMode = 'study';
@@ -188,8 +188,8 @@ export function createLangyApp() {
         this.studyMode = 'reading';
         this.currentCardMode = 'reading';
         this.loginForm = {
-          username: '',
-          password: '',
+          username: 'test-user',
+          password: 'langy-demo',
           apiKey: '',
           error: ''
         };

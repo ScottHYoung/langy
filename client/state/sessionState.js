@@ -26,8 +26,8 @@ export function createInitialState() {
     calibrationComplete: false,
     lexiconLoaded: false,
     loginForm: {
-      username: '',
-      password: '',
+      username: 'test-user',
+      password: 'langy-demo',
       apiKey: '',
       error: ''
     },

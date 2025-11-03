@@ -13,7 +13,7 @@
     <div v-if="!isAuthenticated" class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
       <h1 class="text-2xl font-semibold text-slate-900">Welcome to Langy</h1>
       <p class="mt-2 text-sm text-slate-500">
-        Sign in with your study credentials to pick up where you left off.
+        Sign in with your study credentials to pick up where you left off. Try <span class="font-medium text-slate-700">test-user</span> / <span class="font-medium text-slate-700">langy-demo</span> to explore.
       </p>
       <form class="mt-8 space-y-4 text-left" @submit.prevent="submitLogin">
         <div>
@@ -32,15 +32,6 @@
             type="password"
             class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             autocomplete="current-password"
-          />
-        </div>
-        <div>
-          <label class="text-xs uppercase tracking-[0.25em] text-slate-400">OpenAI API Key</label>
-          <input
-            v-model="loginForm.apiKey"
-            type="password"
-            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-            autocomplete="off"
           />
         </div>
         <p v-if="loginForm.error" class="text-sm text-rose-500">{{ loginForm.error }}</p>
