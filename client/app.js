@@ -1,4 +1,4 @@
-import { createInitialState } from './state/sessionState.js';
+import { createInitialState, READING_TOPIC_LIBRARY } from './state/sessionState.js';
 import { seedCards, focusMetaMap } from './data/seedCards.js';
 import {
   formatPercent,
@@ -389,10 +389,11 @@ export function createLangyApp() {
             await this.loadLexicon();
           }
           const lifetimeTokens = Math.exp(this.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
-          const topic =
+          const topicInput =
             typeof options.topic === 'string' && options.topic.trim()
               ? options.topic.trim()
               : this.readingGeneration.topic;
+          const topic = topicInput || this.pickRandomReadingTopic();
           const difficultyTarget =
             typeof options.difficulty === 'number'
               ? options.difficulty
@@ -598,6 +599,13 @@ export function createLangyApp() {
           ? [...this.readingGeneration.debugSteps, record]
           : [record];
         this.readingGeneration.debugSteps = steps.slice(-20);
+      },
+      pickRandomReadingTopic() {
+        if (!Array.isArray(READING_TOPIC_LIBRARY) || !READING_TOPIC_LIBRARY.length) {
+          return '城市生活随记';
+        }
+        const index = Math.floor(Math.random() * READING_TOPIC_LIBRARY.length);
+        return READING_TOPIC_LIBRARY[index];
       },
       prepareReadingSegments({ segments = [], sentences = [] } = {}) {
         if (!Array.isArray(segments) || !segments.length) {

@@ -470,7 +470,7 @@ async function callOpenAIReadPassage({
             },
             summary_en: { type: 'string', minLength: 10, maxLength: 200 }
           },
-          required: ['paragraphs'],
+          required: ['title', 'paragraphs', 'summary_en'],
           additionalProperties: false
         },
         strict: true
