@@ -174,7 +174,8 @@ export function createInitialState() {
       passageText: '',
       passageStats: null,
       difficultyHistory: [],
-      debugSteps: []
+      debugSteps: [],
+      lastUsedTopic: ''
     },
     calibrationProfiles: {
       reading: createProfileTemplate(),

@@ -392,7 +392,7 @@ export function createLangyApp() {
           const topicInput =
             typeof options.topic === 'string' && options.topic.trim()
               ? options.topic.trim()
-              : this.readingGeneration.topic;
+              : '';
           const topic = topicInput || this.pickRandomReadingTopic();
           const difficultyTarget =
             typeof options.difficulty === 'number'
@@ -404,7 +404,7 @@ export function createLangyApp() {
               : this.readingGeneration.paragraphCount;
 
           Object.assign(this.readingGeneration, {
-            topic,
+            topic: topicInput,
             difficultyTarget,
             paragraphCount,
             lifetimeTokensEstimate: lifetimeTokens,
@@ -413,7 +413,8 @@ export function createLangyApp() {
             passageText: '',
             passageStats: null,
             difficultyHistory: [],
-            debugSteps: []
+            debugSteps: [],
+            lastUsedTopic: topic
           });
 
           await this.runReadingPassageAttempt({
@@ -451,11 +452,12 @@ export function createLangyApp() {
           return;
         }
 
+        const debugTopic = this.readingGeneration.lastUsedTopic || topic || 'general';
         this.recordReadingDebugStep({
           label: `Generating attempt ${attempt}`,
-          details: `Topic="${topic || 'general'}", target=${Math.round(difficultyTarget * 100)}%, adjustment=${easeAdjustment.toFixed(
-            2
-          )}`,
+          details: `Topic="${debugTopic}", target=${Math.round(
+            difficultyTarget * 100
+          )}%, adjustment=${easeAdjustment.toFixed(2)}`,
           intent: 'request'
         });
 
