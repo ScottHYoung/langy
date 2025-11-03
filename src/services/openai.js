@@ -101,5 +101,134 @@ async function callOpenAIAudio({ text, voice = 'alloy', audioFormat = 'mp3', mod
 
 module.exports = {
   callOpenAI,
-  callOpenAIAudio
+  callOpenAIAudio,
+  callOpenAIReadGlosses
 };
+
+async function callOpenAIReadGlosses({ text, targets }) {
+  if (!Array.isArray(targets) || !targets.length) {
+    return [];
+  }
+  const sanitizedTargets = targets
+    .filter((entry) => entry && typeof entry.word === 'string' && entry.word.trim())
+    .slice(0, 24)
+    .map((entry) => ({
+      key: typeof entry.key === 'string' && entry.key.trim() ? entry.key.trim() : entry.word.trim(),
+      word: entry.word.trim(),
+      sentence:
+        typeof entry.sentence === 'string' && entry.sentence.trim()
+          ? entry.sentence.trim()
+          : entry.word.trim()
+    }));
+
+  if (!sanitizedTargets.length) {
+    return [];
+  }
+
+  const passage = typeof text === 'string' ? text.trim() : '';
+  const targetPayload = sanitizedTargets
+    .map(
+      (entry, index) =>
+        `${index + 1}. key: ${entry.key}\n   word: ${entry.word}\n   sentence: ${entry.sentence}`
+    )
+    .join('\n');
+
+  const systemPrompt = [
+    'You are a bilingual assistant helping an intermediate Mandarin learner read authentic text.',
+    'For each target word, provide:',
+    '1) accurate pinyin with tone marks,',
+    '2) a concise English gloss (<= 6 words) that fits the sentence context,',
+    '3) a short note (<= 20 words) highlighting nuance, tone, or usage if needed (otherwise an empty string).',
+    'Return strictly JSON following the provided schema. Do not add commentary.'
+  ].join(' ');
+
+  const userPrompt = [
+    'Reading passage:',
+    passage || '(short passage omitted)',
+    '',
+    'Targets requiring glosses:',
+    targetPayload
+  ].join('\n');
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      temperature: 0.2,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'contextual_glosses',
+          schema: {
+            type: 'object',
+            properties: {
+              glosses: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    key: { type: 'string' },
+                    word: { type: 'string' },
+                    pinyin: { type: 'string' },
+                    gloss: { type: 'string' },
+                    note: { type: 'string' }
+                  },
+                  required: ['key', 'word', 'pinyin', 'gloss', 'note'],
+                  additionalProperties: false
+                }
+              }
+            },
+            required: ['glosses'],
+            additionalProperties: false
+          },
+          strict: true
+        }
+      },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ]
+    })
+  });
+
+  const payload = await response.json();
+  if (!response.ok) {
+    const details = payload?.error ?? payload;
+    throw new Error(`OpenAI gloss error: ${response.status} ${response.statusText} ${JSON.stringify(details)}`);
+  }
+
+  const content = payload?.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error('OpenAI gloss response missing content');
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(content);
+  } catch (error) {
+    throw new Error(`Unable to parse OpenAI gloss JSON: ${error.message}`);
+  }
+
+  const glosses = Array.isArray(parsed?.glosses) ? parsed.glosses : [];
+  return glosses
+    .filter(
+      (entry) =>
+        entry &&
+        typeof entry.key === 'string' &&
+        typeof entry.word === 'string' &&
+        typeof entry.pinyin === 'string' &&
+        typeof entry.gloss === 'string' &&
+        typeof entry.note === 'string'
+    )
+    .map((entry) => ({
+      key: entry.key,
+      word: entry.word,
+      pinyin: entry.pinyin,
+      gloss: entry.gloss,
+      note: entry.note
+    }));
+}

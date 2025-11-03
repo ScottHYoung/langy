@@ -1,5 +1,5 @@
 const { setCommonHeaders, readJsonBody } = require('../utils/http');
-const { callOpenAI, callOpenAIAudio } = require('../services/openai');
+const { callOpenAI, callOpenAIAudio, callOpenAIReadGlosses } = require('../services/openai');
 
 async function handleApiGenerate(req, res) {
   if (req.method === 'OPTIONS') {
@@ -58,7 +58,8 @@ async function handleApiGenerate(req, res) {
 
 module.exports = {
   handleApiGenerate,
-  handleApiGenerateAudio
+  handleApiGenerateAudio,
+  handleApiReadAnalyze
 };
 
 async function handleApiGenerateAudio(req, res) {
@@ -111,6 +112,86 @@ async function handleApiGenerateAudio(req, res) {
     );
   } catch (error) {
     console.error('OpenAI audio request failed:', error);
+    setCommonHeaders(res);
+    res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ error: error.message }));
+  }
+}
+
+async function handleApiReadAnalyze(req, res) {
+  if (req.method === 'OPTIONS') {
+    setCommonHeaders(res);
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    setCommonHeaders(res);
+    res.writeHead(405, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ error: 'Method not allowed' }));
+    return;
+  }
+
+  let body;
+  try {
+    body = await readJsonBody(req);
+  } catch (error) {
+    setCommonHeaders(res);
+    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ error: error.message }));
+    return;
+  }
+
+  const text = typeof body.text === 'string' ? body.text : '';
+  const targetsInput = Array.isArray(body.targets) ? body.targets : [];
+
+  const sanitizedTargets = targetsInput
+    .map((entry) => {
+      const word = typeof entry.word === 'string' ? entry.word.trim() : '';
+      const key = typeof entry.key === 'string' ? entry.key.trim() : '';
+      const sentence = typeof entry.sentence === 'string' ? entry.sentence.trim() : '';
+      if (!word) return null;
+      return {
+        key: key || `${word}-${entry.sentenceIndex ?? 0}`,
+        word,
+        sentence,
+        sentenceIndex:
+          typeof entry.sentenceIndex === 'number' && Number.isFinite(entry.sentenceIndex)
+            ? entry.sentenceIndex
+            : 0
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 24);
+
+  if (!sanitizedTargets.length) {
+    setCommonHeaders(res);
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ glosses: [] }));
+    return;
+  }
+
+  try {
+    const glosses = await callOpenAIReadGlosses({
+      text,
+      targets: sanitizedTargets
+    });
+
+    const payload = {
+      glosses: glosses.map((gloss) => ({
+        key: gloss.key,
+        word: gloss.word,
+        pinyin: gloss.pinyin,
+        gloss: gloss.gloss,
+        note: gloss.note
+      }))
+    };
+    setCommonHeaders(res);
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(payload));
+  } catch (error) {
+    console.error('OpenAI read gloss request failed:', error);
     setCommonHeaders(res);
     res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({ error: error.message }));

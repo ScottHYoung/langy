@@ -41,6 +41,16 @@ export function createInitialState() {
       username: '',
       apiKey: ''
     },
+    readingDraftText: '',
+    readingAnalyzedText: '',
+    readingSegments: [],
+    readingSentenceContexts: [],
+    readingGlossesByKey: {},
+    readingProcessing: false,
+    readingGlossLoading: false,
+    readingErrorMessage: '',
+    readingMinProbability: 0.5,
+    readingLastAnalyzedAt: null,
     calibrationProfiles: {
       reading: createProfileTemplate(),
       listening: createProfileTemplate()

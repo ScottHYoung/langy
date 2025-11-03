@@ -8,8 +8,9 @@ import {
   clampProbability
 } from './utils/formatters.js';
 import { highlightFocus as highlightFocusText } from './utils/text.js';
+import { segmentChineseText } from './utils/segmentation.js';
 import { fetchFrequencyCorpus, initializeLexicon } from './services/lexicon.js';
-import { generateCard } from './services/api.js';
+import { generateCard, requestReadGlosses } from './services/api.js';
 import { requestSentenceAudio } from './services/audio.js';
 import { initializeCalibration, consumeCalibrationIndex, handleCalibrationResponse } from './services/calibration.js';
 import {
@@ -298,12 +299,321 @@ export function createLangyApp() {
             };
           })
           .filter(Boolean);
+      },
+      lexiconWordSet() {
+        if (!Array.isArray(this.lexicon) || !this.lexicon.length) {
+          return new Set();
+        }
+        return new Set(this.lexicon.map((entry) => entry.word).filter(Boolean));
+      },
+      readingSegmentsAvailable() {
+        return Array.isArray(this.readingSegments) && this.readingSegments.length > 0;
+      },
+      readingHighlightedSegments() {
+        if (!this.readingSegmentsAvailable) return [];
+        return this.readingSegments.filter((segment) => segment.isWord && segment.highlight);
+      },
+      readingThresholdPercent() {
+        const normalized = Math.max(0, Math.min(1, this.readingMinProbability || 0));
+        return Math.round(normalized * 100);
+      },
+      readingGlossEntries() {
+        if (!this.readingHighlightedSegments.length) return [];
+        const seenKeys = new Set();
+        const entries = [];
+        this.readingHighlightedSegments.forEach((segment) => {
+          const key = segment.glossKey;
+          if (!key || seenKeys.has(key)) {
+            return;
+          }
+          seenKeys.add(key);
+          const gloss = this.readingGlossesByKey?.[key] || null;
+          entries.push({
+            key,
+            word: segment.text,
+            pinyin: gloss?.pinyin || '',
+            gloss: gloss?.gloss || '',
+            note: gloss?.note || '',
+            probability: segment.probability
+          });
+        });
+        return entries;
+      },
+      readingWordCount() {
+        if (!this.readingSegmentsAvailable) return 0;
+        return this.readingSegments.filter((segment) => segment.isWord).length;
+      },
+      readingSegmentsBySentence() {
+        if (!this.readingSegmentsAvailable) return [];
+        const groups = new Map();
+        this.readingSegments.forEach((segment) => {
+          const index = typeof segment.sentenceIndex === 'number' ? segment.sentenceIndex : 0;
+          if (!groups.has(index)) {
+            groups.set(index, []);
+          }
+          groups.get(index).push(segment);
+        });
+        const contexts = new Map();
+        this.readingSentenceContexts.forEach((sentence) => {
+          contexts.set(sentence.index, sentence.text || '');
+        });
+        return Array.from(groups.entries())
+          .map(([index, segments]) => ({
+            index,
+            text: contexts.get(index) || '',
+            segments
+          }))
+          .sort((a, b) => a.index - b.index);
       }
     },
     methods: {
       selectMode(mode) {
         if (!mode) return;
         this.setAppMode(mode);
+      },
+      segmentReadText(text, options = {}) {
+        const dictionary = this.lexiconWordSet;
+        const result = segmentChineseText(text, {
+          dictionary,
+          maxWordLength:
+            typeof options.maxWordLength === 'number' ? options.maxWordLength : undefined,
+          preferJieba: options.preferJieba
+        });
+        return result;
+      },
+      async analyzeReadingInput() {
+        const rawText =
+          typeof this.readingDraftText === 'string' ? this.readingDraftText.trim() : '';
+        if (!rawText) {
+          this.readingErrorMessage = 'Paste some Mandarin text to analyze.';
+          return;
+        }
+        this.readingProcessing = true;
+        this.readingGlossLoading = false;
+        this.readingErrorMessage = '';
+        try {
+          if (!this.lexiconLoaded) {
+            await this.loadLexicon();
+          }
+          const { segments, sentences } = this.segmentReadText(rawText);
+          const prepared = this.prepareReadingSegments({
+            segments,
+            sentences
+          });
+          this.readingSegments = prepared.segments;
+          this.updateReadingHighlights();
+          this.readingSentenceContexts = sentences;
+          this.readingAnalyzedText = rawText;
+          this.readingLastAnalyzedAt = Date.now();
+
+          const placeholderMap = {};
+          prepared.targetKeys.forEach((key) => {
+            placeholderMap[key] = this.readingGlossesByKey?.[key] || null;
+          });
+          this.readingGlossesByKey = placeholderMap;
+
+          if (!prepared.targets.length) {
+            return;
+          }
+
+          this.readingGlossLoading = true;
+          try {
+            const glosses = await requestReadGlosses({
+              text: rawText,
+              targets: prepared.targets
+            });
+            const merged = { ...this.readingGlossesByKey };
+            glosses.forEach((entry) => {
+              merged[entry.key] = {
+                word: entry.word,
+                pinyin: entry.pinyin,
+                gloss: entry.gloss,
+                note: entry.note
+              };
+            });
+            this.readingGlossesByKey = merged;
+          } catch (error) {
+            this.readingErrorMessage = error?.message || 'Unable to fetch glosses.';
+          } finally {
+            this.readingGlossLoading = false;
+          }
+        } catch (error) {
+          this.readingErrorMessage = error?.message || 'Unable to analyze text.';
+        } finally {
+          this.readingProcessing = false;
+          if (this.readingGlossLoading) {
+            this.readingGlossLoading = false;
+          }
+        }
+      },
+      prepareReadingSegments({ segments = [], sentences = [] } = {}) {
+        if (!Array.isArray(segments) || !segments.length) {
+          return {
+            segments: [],
+            targets: [],
+            targetKeys: []
+          };
+        }
+        const enriched = [];
+        const targets = [];
+        const targetKeys = [];
+        const sentenceMap = new Map();
+        sentences.forEach((sentence) => {
+          if (sentence && typeof sentence.index === 'number') {
+            sentenceMap.set(sentence.index, sentence.text || '');
+          }
+        });
+        const requestedKeys = new Set();
+        segments.forEach((segment, index) => {
+          const entry = {
+            id: `segment-${index}`,
+            text: segment.text || '',
+            type: segment.type || 'other',
+            sentenceIndex:
+              typeof segment.sentenceIndex === 'number' ? segment.sentenceIndex : 0,
+            isWord: segment.type === 'word',
+            isSpace: segment.type === 'space',
+            isNewline: segment.type === 'newline',
+            isPunctuation: segment.type === 'punct',
+            probability: null,
+            highlight: false,
+            glossKey: null
+          };
+          if (entry.isWord) {
+            const probability = this.wordProbability(entry.text, { mode: 'reading' });
+            entry.probability =
+              typeof probability === 'number' && Number.isFinite(probability) ? probability : 0;
+            const glossKey = `${entry.text}@${entry.sentenceIndex}`;
+            entry.glossKey = glossKey;
+          }
+          enriched.push(entry);
+        });
+        this.updateReadingHighlights(enriched);
+        enriched.forEach((entry) => {
+          if (!entry.isWord || !entry.highlight || !entry.glossKey) {
+            return;
+          }
+          if (requestedKeys.has(entry.glossKey)) {
+            return;
+          }
+          requestedKeys.add(entry.glossKey);
+          targetKeys.push(entry.glossKey);
+          const sentenceText =
+            sentenceMap.get(entry.sentenceIndex) && sentenceMap.get(entry.sentenceIndex).trim()
+              ? sentenceMap.get(entry.sentenceIndex).trim()
+              : entry.text;
+          targets.push({
+            key: entry.glossKey,
+            word: entry.text,
+            sentence: sentenceText,
+            sentenceIndex: entry.sentenceIndex
+          });
+        });
+        return {
+          segments: enriched,
+          targets,
+          targetKeys
+        };
+      },
+      updateReadingHighlights(segments = null) {
+        const targetSegments = Array.isArray(segments) ? segments : this.readingSegments;
+        if (!Array.isArray(targetSegments)) return;
+        const threshold = Math.max(0, Math.min(1, this.readingMinProbability || 0));
+        targetSegments.forEach((segment) => {
+          if (!segment) return;
+          if (!segment.isWord) {
+            segment.highlight = false;
+            return;
+          }
+          const probability =
+            typeof segment.probability === 'number' && Number.isFinite(segment.probability)
+              ? segment.probability
+              : 0;
+          segment.highlight = probability < threshold;
+        });
+        if (!segments) {
+          this.readingSegments = [...targetSegments];
+        }
+      },
+      handleReadingThresholdChange(value) {
+        let nextValue = value;
+        if (value && value.target) {
+          nextValue = value.target.value;
+        }
+        const parsed = Number.parseFloat(nextValue);
+        if (!Number.isFinite(parsed)) return;
+        const clamped = Math.max(0.05, Math.min(0.95, parsed));
+        this.readingMinProbability = clamped;
+        this.updateReadingHighlights();
+        this.fetchMissingReadingGlosses().catch(() => {
+          // errors handled in fetchMissingReadingGlosses
+        });
+      },
+      readingGlossForSegment(segment) {
+        if (!segment || !segment.glossKey) return null;
+        return this.readingGlossesByKey?.[segment.glossKey] || null;
+      },
+      resetReadingAnalysis() {
+        this.readingAnalyzedText = '';
+        this.readingSegments = [];
+        this.readingSentenceContexts = [];
+        this.readingGlossesByKey = {};
+        this.readingProcessing = false;
+        this.readingGlossLoading = false;
+        this.readingErrorMessage = '';
+        this.readingLastAnalyzedAt = null;
+      },
+      async fetchMissingReadingGlosses() {
+        if (!this.readingSegmentsAvailable) return;
+        const highlighted = this.readingHighlightedSegments;
+        if (!highlighted.length) return;
+        const existingMap = this.readingGlossesByKey || {};
+        const sentenceMap = new Map();
+        this.readingSentenceContexts.forEach((sentence) => {
+          sentenceMap.set(sentence.index, sentence.text || '');
+        });
+        const targets = [];
+        const requested = new Set();
+        highlighted.forEach((segment) => {
+          if (!segment || !segment.glossKey) return;
+          if (requested.has(segment.glossKey)) return;
+          const existing = existingMap[segment.glossKey];
+          if (existing && existing.gloss) {
+            requested.add(segment.glossKey);
+            return;
+          }
+          requested.add(segment.glossKey);
+          const rawSentence = sentenceMap.get(segment.sentenceIndex) || '';
+          const context = rawSentence.trim() ? rawSentence.trim() : segment.text;
+          targets.push({
+            key: segment.glossKey,
+            word: segment.text,
+            sentence: context,
+            sentenceIndex: segment.sentenceIndex
+          });
+        });
+        if (!targets.length) return;
+        this.readingGlossLoading = true;
+        try {
+          const glosses = await requestReadGlosses({
+            text: this.readingAnalyzedText || this.readingDraftText || '',
+            targets
+          });
+          const merged = { ...existingMap };
+          glosses.forEach((entry) => {
+            merged[entry.key] = {
+              word: entry.word,
+              pinyin: entry.pinyin,
+              gloss: entry.gloss,
+              note: entry.note
+            };
+          });
+          this.readingGlossesByKey = merged;
+        } catch (error) {
+          this.readingErrorMessage = error?.message || 'Unable to fetch glosses.';
+        } finally {
+          this.readingGlossLoading = false;
+        }
       },
       async returnToModeMenu() {
         if (!this.appMode) return;
@@ -324,6 +634,7 @@ export function createLangyApp() {
         this.isFlipped = false;
         this.currentIndex = 0;
         this.calibrationStatusMessage = '';
+        this.resetReadingAnalysis();
         this.persistUserProfile();
       },
       refreshCalibrationCompleteness() {
@@ -434,7 +745,9 @@ export function createLangyApp() {
         }
         if (this.appMode === 'read') {
           this.activeLevelMode = 'reading';
-        } else if (this.appMode === 'listen') {
+          return;
+        }
+        if (this.appMode === 'listen') {
           this.activeLevelMode = 'listening';
         }
         await this.loadNextCard({ resetIndex: true });
@@ -524,6 +837,8 @@ export function createLangyApp() {
         this.lexiconLoaded = false;
         this.lexicon = [];
         this.frequencyMap = {};
+        this.resetReadingAnalysis();
+        this.readingDraftText = '';
         this.frequencyProbabilityMap = {};
         this.activeCard = null;
         this.currentIndex = 0;
