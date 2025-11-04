@@ -276,26 +276,12 @@
                 </div>
                 <div v-else-if="readingSegmentsAvailable" class="space-y-6">
                   <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                    <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700">
-                      {{ readingHighlightedSegments.length }} flagged
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
+                      Hover any word to view a gloss
                     </span>
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600">
                       {{ formatPercent(readingGeneration.passageStats?.avgProbability || 0) }} avg known
                     </span>
-                  </div>
-                  <div>
-                    <label class="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                      <span>Highlight words below {{ readingThresholdPercent }}%</span>
-                    </label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="0.95"
-                      step="0.05"
-                      :value="readingMinProbability"
-                      class="mt-1 w-full accent-emerald-500"
-                      @input="handleReadingThresholdChange"
-                    />
                   </div>
                   <div class="space-y-6">
                     <div
@@ -306,43 +292,45 @@
                       <template v-for="segment in paragraph.segments" :key="segment.id">
                         <span
                           v-if="segment.isWord"
-                          class="group relative inline-flex align-baseline px-[0.1em]"
-                          :tabindex="segment.highlight ? 0 : null"
+                          class="group relative inline-flex cursor-pointer align-baseline"
+                          tabindex="0"
+                          @mouseenter="handleReadingWordHover(segment)"
+                          @focus="handleReadingWordHover(segment)"
                         >
                           <span
-                            v-if="segment.highlight"
                             class="pointer-events-none absolute bottom-full left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-1 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white shadow-xl group-focus-visible:flex group-hover:flex"
                           >
-                            <span
-                              v-if="readingGlossForSegment(segment)?.pinyin"
-                              class="whitespace-nowrap font-semibold text-slate-100"
-                            >
-                              {{ readingGlossForSegment(segment).pinyin }}
-                            </span>
-                            <span
-                              v-if="readingGlossForSegment(segment)?.gloss"
-                              class="whitespace-nowrap text-slate-100"
-                            >
-                              {{ readingGlossForSegment(segment).gloss }}
-                            </span>
-                            <span
-                              v-else
-                              class="whitespace-nowrap italic text-slate-400"
-                            >
-                              {{ readingGlossLoading ? 'Loading…' : '—' }}
-                            </span>
-                            <span
-                              v-if="readingGlossForSegment(segment)?.note"
-                              class="whitespace-nowrap text-[11px] font-normal text-slate-300"
-                            >
-                              {{ readingGlossForSegment(segment).note }}
-                            </span>
+                            <template v-if="readingGlossForSegment(segment)?.status === 'ready'">
+                              <span
+                                v-if="readingGlossForSegment(segment)?.pinyin"
+                                class="whitespace-nowrap font-semibold text-slate-100"
+                              >
+                                {{ readingGlossForSegment(segment).pinyin }}
+                              </span>
+                              <span
+                                v-if="readingGlossForSegment(segment)?.gloss"
+                                class="whitespace-nowrap text-slate-100"
+                              >
+                                {{ readingGlossForSegment(segment).gloss }}
+                              </span>
+                              <span
+                                v-if="readingGlossForSegment(segment)?.note"
+                                class="whitespace-nowrap text-[11px] font-normal text-slate-300"
+                              >
+                                {{ readingGlossForSegment(segment).note }}
+                              </span>
+                            </template>
+                            <template v-else-if="readingGlossForSegment(segment)?.status === 'loading'">
+                              <span class="whitespace-nowrap text-slate-200">Loading…</span>
+                            </template>
+                            <template v-else-if="readingGlossForSegment(segment)?.status === 'error'">
+                              <span class="whitespace-nowrap text-slate-200">Unable to load, hover to retry</span>
+                            </template>
+                            <template v-else>
+                              <span class="whitespace-nowrap text-slate-200">Hover for gloss</span>
+                            </template>
                           </span>
-                          <span
-                            :class="segment.highlight
-                              ? 'rounded-md bg-amber-100 px-1 font-semibold text-amber-900 shadow-sm transition group-hover:bg-amber-200'
-                              : ''"
-                          >
+                          <span class="px-[0.05em] leading-relaxed underline decoration-dotted decoration-slate-300 underline-offset-4 group-hover:decoration-solid">
                             {{ segment.text }}
                           </span>
                         </span>
@@ -351,9 +339,6 @@
                       </template>
                     </div>
                   </div>
-                  <p v-if="!readingHighlightedSegments.length" class="text-sm text-slate-500">
-                    Every word is above the current threshold—raise sensitivity to surface more glosses.
-                  </p>
                 </div>
                 <div
                   v-else-if="readingAnalyzedText"

@@ -153,16 +153,8 @@ export function createInitialState() {
     readingProcessing: false,
     readingGlossLoading: false,
     readingErrorMessage: '',
-    readingMinProbability: 0.5,
     readingLastAnalyzedAt: null,
     readingAnalyzedText: '',
-    readingGlossStats: {
-      totalTargets: 0,
-      resolvedTargets: 0,
-      pendingTargets: 0,
-      requestCount: 0,
-      lastBatchSize: 0
-    },
     readingGeneration: {
       topic: '',
       difficultyTarget: 0.92,

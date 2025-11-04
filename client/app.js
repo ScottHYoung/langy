@@ -36,6 +36,13 @@ export function createLangyApp() {
     },
     beforeUnmount() {
       this.disposeAudioResources();
+      if (this._glossRequestTimer) {
+        window.clearTimeout(this._glossRequestTimer);
+        this._glossRequestTimer = null;
+      }
+      if (this._glossRequestQueue) {
+        this._glossRequestQueue.clear();
+      }
     },
     mounted() {
       this.restorePreferences();
@@ -309,18 +316,6 @@ export function createLangyApp() {
       readingSegmentsAvailable() {
         return Array.isArray(this.readingSegments) && this.readingSegments.length > 0;
       },
-      readingHighlightedSegments() {
-        if (!this.readingSegmentsAvailable) return [];
-        return this.readingSegments.filter((segment) => segment.isWord && segment.highlight);
-      },
-      readingThresholdPercent() {
-        const normalized = Math.max(0, Math.min(1, this.readingMinProbability || 0));
-        return Math.round(normalized * 100);
-      },
-      readingWordCount() {
-        if (!this.readingSegmentsAvailable) return 0;
-        return this.readingSegments.filter((segment) => segment.isWord).length;
-      },
       readingParagraphs() {
         if (!this.readingSegmentsAvailable) return [];
         const paragraphs = [];
@@ -389,10 +384,13 @@ export function createLangyApp() {
             await this.loadLexicon();
           }
           const lifetimeTokens = Math.exp(this.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
-          const topicInput =
-            typeof options.topic === 'string' && options.topic.trim()
-              ? options.topic.trim()
-              : '';
+          const providedTopic =
+            typeof options.topic === 'string'
+              ? options.topic
+              : this.readingGeneration?.topic || '';
+          const topicInput = typeof providedTopic === 'string' && providedTopic.trim()
+            ? providedTopic.trim()
+            : '';
           const topic = topicInput || this.pickRandomReadingTopic();
           const difficultyTarget =
             typeof options.difficulty === 'number'
@@ -513,15 +511,6 @@ export function createLangyApp() {
             )}%`,
             intent: 'success'
           });
-          const highlightedTargets = this.readingHighlightedSegments.length;
-          this.readingGlossStats = {
-            totalTargets: highlightedTargets,
-            resolvedTargets: 0,
-            pendingTargets: highlightedTargets,
-            requestCount: 0,
-            lastBatchSize: 0
-          };
-          await this.fetchMissingReadingGlosses();
           return;
         }
 
@@ -559,12 +548,7 @@ export function createLangyApp() {
         });
         this.readingSegments = prepared.segments;
         this.readingSentenceContexts = sentences;
-        const placeholderMap = {};
-        prepared.targetKeys.forEach((key) => {
-          placeholderMap[key] = this.readingGlossesByKey?.[key] || null;
-        });
-        this.readingGlossesByKey = placeholderMap;
-        this.updateReadingHighlights();
+        this.readingGlossesByKey = prepared.glossEntries;
         this.readingAnalyzedText = text;
         this.readingLastAnalyzedAt = Date.now();
 
@@ -588,7 +572,7 @@ export function createLangyApp() {
         return {
           avgProbability,
           wordCount: wordSegments.length,
-          flaggedCount: this.readingHighlightedSegments.length,
+          flaggedCount: 0,
           hardest
         };
       },
@@ -613,20 +597,11 @@ export function createLangyApp() {
         if (!Array.isArray(segments) || !segments.length) {
           return {
             segments: [],
-            targets: [],
-            targetKeys: []
+            glossEntries: {}
           };
         }
         const enriched = [];
-        const targets = [];
-        const targetKeys = [];
-        const sentenceMap = new Map();
-        sentences.forEach((sentence) => {
-          if (sentence && typeof sentence.index === 'number') {
-            sentenceMap.set(sentence.index, sentence.text || '');
-          }
-        });
-        const requestedKeys = new Set();
+        const glossEntries = {};
         segments.forEach((segment, index) => {
           const entry = {
             id: `segment-${index}`,
@@ -639,7 +614,6 @@ export function createLangyApp() {
             isNewline: segment.type === 'newline',
             isPunctuation: segment.type === 'punct',
             probability: null,
-            highlight: false,
             glossKey: null
           };
           if (entry.isWord) {
@@ -648,85 +622,97 @@ export function createLangyApp() {
               typeof probability === 'number' && Number.isFinite(probability) ? probability : 0;
             const glossKey = `${entry.text}@${entry.sentenceIndex}`;
             entry.glossKey = glossKey;
+            const previous = this.readingGlossesByKey?.[glossKey];
+            glossEntries[glossKey] = previous
+              ? { ...previous }
+              : {
+                  key: glossKey,
+                  word: entry.text,
+                  sentenceIndex: entry.sentenceIndex,
+                  status: 'idle',
+                  pinyin: '',
+                  gloss: '',
+                  note: ''
+                };
           }
           enriched.push(entry);
         });
-        this.updateReadingHighlights(enriched);
-        enriched.forEach((entry) => {
-          if (!entry.isWord || !entry.highlight || !entry.glossKey) {
-            return;
-          }
-          if (requestedKeys.has(entry.glossKey)) {
-            return;
-          }
-          requestedKeys.add(entry.glossKey);
-          targetKeys.push(entry.glossKey);
-          const sentenceText =
-            sentenceMap.get(entry.sentenceIndex) && sentenceMap.get(entry.sentenceIndex).trim()
-              ? sentenceMap.get(entry.sentenceIndex).trim()
-              : entry.text;
-          targets.push({
-            key: entry.glossKey,
-            word: entry.text,
-            sentence: sentenceText,
-            sentenceIndex: entry.sentenceIndex
-          });
-        });
         return {
           segments: enriched,
-          targets,
-          targetKeys
+          glossEntries
         };
-      },
-      updateReadingHighlights(segments = null) {
-        const targetSegments = Array.isArray(segments) ? segments : this.readingSegments;
-        if (!Array.isArray(targetSegments)) return;
-        const threshold = Math.max(0, Math.min(1, this.readingMinProbability || 0));
-        targetSegments.forEach((segment) => {
-          if (!segment) return;
-          if (!segment.isWord) {
-            segment.highlight = false;
-            return;
-          }
-          const probability =
-            typeof segment.probability === 'number' && Number.isFinite(segment.probability)
-              ? segment.probability
-              : 0;
-          segment.highlight = probability < threshold;
-        });
-        if (!segments) {
-          this.readingSegments = [...targetSegments];
-        }
-      },
-      async handleReadingThresholdChange(value) {
-        let nextValue = value;
-        if (value && value.target) {
-          nextValue = value.target.value;
-        }
-        const parsed = Number.parseFloat(nextValue);
-        if (!Number.isFinite(parsed)) return;
-        const clamped = Math.max(0.05, Math.min(0.95, parsed));
-        this.readingMinProbability = clamped;
-        this.updateReadingHighlights();
-        const highlightedCount = this.readingHighlightedSegments.length;
-        this.readingGlossStats = {
-          totalTargets: highlightedCount,
-          resolvedTargets: Math.min(
-            highlightedCount,
-            this.readingGlossStats.resolvedTargets || 0
-          ),
-          pendingTargets: Math.max(
-            0,
-            highlightedCount - (this.readingGlossStats.resolvedTargets || 0)
-          ),
-          requestCount: this.readingGlossStats.requestCount || 0,
-          lastBatchSize: this.readingGlossStats.lastBatchSize || 0
-        };
-        await this.fetchMissingReadingGlosses();
       },
       readingGlossForSegment(segment) {
         if (!segment || !segment.glossKey) return null;
         return this.readingGlossesByKey?.[segment.glossKey] || null;
+      },
+      readingSentenceTextForIndex(index) {
+        if (!Array.isArray(this.readingSentenceContexts)) return '';
+        const match = this.readingSentenceContexts.find(
+          (sentence) => typeof sentence?.index === 'number' && sentence.index === index
+        );
+        if (match && typeof match.text === 'string' && match.text.trim()) {
+          return match.text.trim();
+        }
+        return '';
+      },
+      handleReadingWordHover(segment) {
+        this.ensureGlossForSegment(segment);
+      },
+      ensureGlossForSegment(segment) {
+        if (!segment || !segment.isWord || !segment.glossKey) {
+          return;
+        }
+        const entry = this.readingGlossForSegment(segment);
+        if (entry && (entry.status === 'ready' || entry.status === 'loading')) {
+          return;
+        }
+        const sentenceText =
+          this.readingSentenceTextForIndex(segment.sentenceIndex) || segment.text || '';
+        const target = {
+          key: segment.glossKey,
+          word: segment.text,
+          sentence: sentenceText,
+          sentenceIndex: segment.sentenceIndex
+        };
+        const current = this.readingGlossesByKey?.[segment.glossKey] || {};
+        const updated = {
+          ...this.readingGlossesByKey,
+          [segment.glossKey]: {
+            word: segment.text,
+            pinyin: current.pinyin || '',
+            gloss: current.gloss || '',
+            note: current.note || '',
+            status: 'loading'
+          }
+        };
+        this.readingGlossesByKey = updated;
+        this.enqueueGlossTargets([target]);
+      },
+      enqueueGlossTargets(targets = []) {
+        if (!Array.isArray(targets) || !targets.length) return;
+        if (!this._glossRequestQueue) {
+          this._glossRequestQueue = new Map();
+        }
+        targets.forEach((target) => {
+          if (!target || !target.key) return;
+          this._glossRequestQueue.set(target.key, target);
+        });
+        if (this._glossRequestTimer) {
+          return;
+        }
+        this._glossRequestTimer = window.setTimeout(() => {
+          this._glossRequestTimer = null;
+          const queuedTargets = this._glossRequestQueue
+            ? Array.from(this._glossRequestQueue.values())
+            : [];
+          if (this._glossRequestQueue) {
+            this._glossRequestQueue.clear();
+          }
+          if (queuedTargets.length) {
+            this.fetchGlossesForTargets(queuedTargets, this.readingAnalyzedText || '');
+          }
+        }, 80);
       },
       resetReadingAnalysis() {
         this.readingAnalyzedText = '';
@@ -737,112 +723,80 @@ export function createLangyApp() {
         this.readingGlossLoading = false;
         this.readingErrorMessage = '';
         this.readingLastAnalyzedAt = null;
-        this.readingGlossStats = {
-          totalTargets: 0,
-          resolvedTargets: 0,
-          pendingTargets: 0,
-          requestCount: 0,
-          lastBatchSize: 0
-        };
+        if (this._glossRequestTimer) {
+          window.clearTimeout(this._glossRequestTimer);
+          this._glossRequestTimer = null;
+        }
+        if (this._glossRequestQueue) {
+          this._glossRequestQueue.clear();
+        }
       },
       async fetchGlossesForTargets(targets = [], sourceText = '') {
         if (!Array.isArray(targets) || !targets.length) return;
         const text = typeof sourceText === 'string' ? sourceText : '';
-        const existing = this.readingGlossesByKey || {};
-        const pending = targets.filter((target) => {
-          if (!target || !target.key) return false;
-          const entry = existing[target.key];
-          return !entry || !entry.gloss;
-        });
+        const seen = new Set();
+        const pending = targets
+          .map((target) => {
+            if (!target || !target.key) return null;
+            if (seen.has(target.key)) return null;
+            seen.add(target.key);
+            const entry = this.readingGlossesByKey?.[target.key];
+            if (entry && entry.status === 'ready') {
+              return null;
+            }
+            return target;
+          })
+          .filter(Boolean);
         if (!pending.length) return;
-        const MAX_BATCH = 16;
-        const attemptCounts = new Map();
-        const queue = pending.map((target) => ({ target, attempt: 0 }));
-        const totalTargets = this.readingGlossStats.totalTargets || pending.length;
         this.readingGlossLoading = true;
         try {
-          while (queue.length) {
-            const batchItems = queue.splice(0, MAX_BATCH);
-            const batchTargets = batchItems.map((item) => item.target);
-            const glosses = await requestReadGlosses({
-              text,
-              targets: batchTargets
-            });
-            const responses = Array.isArray(glosses) ? glosses : [];
-            const merged = { ...this.readingGlossesByKey };
-            responses.forEach((entry) => {
-              merged[entry.key] = {
-                word: entry.word,
-                pinyin: entry.pinyin,
-                gloss: entry.gloss,
-                note: entry.note
-              };
-            });
-            this.readingGlossesByKey = merged;
-
-            const unresolved = batchItems.filter(({ target }) => {
-              const entry = this.readingGlossesByKey[target.key];
-              return !entry || !entry.gloss;
-            });
-            unresolved.forEach((item) => {
-              const prev = attemptCounts.get(item.target.key) ?? 0;
-              attemptCounts.set(item.target.key, prev + 1);
-            });
-            const retriable = unresolved.filter((item) => attemptCounts.get(item.target.key) < 3);
-            if (retriable.length) {
-              queue.push(...retriable.map((item) => ({ target: item.target, attempt: item.attempt + 1 })));
-            }
-
-            const resolvedCount = batchItems.length - unresolved.length;
-            const newResolvedTotal = Math.min(
-              totalTargets,
-              (this.readingGlossStats.resolvedTargets || 0) + resolvedCount
-            );
-            this.readingGlossStats = {
-              totalTargets,
-              resolvedTargets: newResolvedTotal,
-              pendingTargets: queue.length,
-              requestCount: (this.readingGlossStats.requestCount || 0) + 1,
-              lastBatchSize: batchItems.length
+          const glosses = await requestReadGlosses({
+            text,
+            targets: pending
+          });
+          const responses = Array.isArray(glosses) ? glosses : [];
+          const merged = { ...this.readingGlossesByKey };
+          const respondedKeys = new Set();
+          responses.forEach((entry) => {
+            if (!entry || !entry.key) return;
+            respondedKeys.add(entry.key);
+            merged[entry.key] = {
+              word: entry.word,
+              pinyin: entry.pinyin,
+              gloss: entry.gloss,
+              note: entry.note,
+              status: entry.gloss ? 'ready' : 'error'
             };
-          }
+          });
+          pending.forEach((target) => {
+            if (respondedKeys.has(target.key)) return;
+            const current = merged[target.key] || {};
+            merged[target.key] = {
+              word: target.word,
+              pinyin: current.pinyin || '',
+              gloss: current.gloss || '',
+              note: current.note || '',
+              status: 'error'
+            };
+          });
+          this.readingGlossesByKey = merged;
         } catch (error) {
           this.readingErrorMessage = error?.message || 'Unable to fetch glosses.';
+          const merged = { ...this.readingGlossesByKey };
+          pending.forEach((target) => {
+            const current = merged[target.key] || {};
+            merged[target.key] = {
+              word: target.word,
+              pinyin: current.pinyin || '',
+              gloss: current.gloss || '',
+              note: current.note || '',
+              status: 'error'
+            };
+          });
+          this.readingGlossesByKey = merged;
         } finally {
           this.readingGlossLoading = false;
         }
-      },
-      async fetchMissingReadingGlosses() {
-        if (!this.readingSegmentsAvailable) return;
-        const highlighted = this.readingHighlightedSegments;
-        if (!highlighted.length) return;
-        const sentenceMap = new Map();
-        this.readingSentenceContexts.forEach((sentence) => {
-          sentenceMap.set(sentence.index, sentence.text || '');
-        });
-        const targets = [];
-        const requested = new Set();
-        const glossMap = this.readingGlossesByKey || {};
-        highlighted.forEach((segment) => {
-          if (!segment || !segment.glossKey) return;
-          if (requested.has(segment.glossKey)) return;
-          const existing = glossMap[segment.glossKey];
-          if (existing && existing.gloss) {
-            requested.add(segment.glossKey);
-            return;
-          }
-          requested.add(segment.glossKey);
-          const rawSentence = sentenceMap.get(segment.sentenceIndex) || '';
-          const context = rawSentence.trim() ? rawSentence.trim() : segment.text;
-          targets.push({
-            key: segment.glossKey,
-            word: segment.text,
-            sentence: context,
-            sentenceIndex: segment.sentenceIndex
-          });
-        });
-        if (!targets.length) return;
-        await this.fetchGlossesForTargets(targets, this.readingAnalyzedText || '');
       },
       async returnToModeMenu() {
         if (!this.appMode) return;
