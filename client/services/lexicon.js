@@ -30,6 +30,12 @@ export function initializeLexicon(state, entries) {
     state.frequencyMap[word] = safeFrequency;
     totalFrequency += safeFrequency;
   });
+  state.lexiconIndexByWord = {};
+  state.lexicon.forEach((entry, index) => {
+    if (entry?.word) {
+      state.lexiconIndexByWord[entry.word] = index;
+    }
+  });
   state.totalCorpusFrequency = Math.max(totalFrequency, 1);
   Object.entries(state.frequencyMap).forEach(([word, frequency]) => {
     state.frequencyProbabilityMap[word] = frequency / state.totalCorpusFrequency;

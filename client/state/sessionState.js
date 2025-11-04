@@ -211,8 +211,41 @@ export function createInitialState() {
     calibrationMinFrequencyProbability: 0,
     calibrationHistory: [],
     pendingCalibrationModes: [],
+    lexiconIndexByWord: {},
+    studyKnowledgeBase: {
+      reading: {},
+      listening: {}
+    },
+    studyMixStats: {
+      reading: { newServed: 0, reviewServed: 0 },
+      listening: { newServed: 0, reviewServed: 0 }
+    },
+    studyNewPerformance: {
+      reading: { trials: 0, correct: 0 },
+      listening: { trials: 0, correct: 0 }
+    },
+    studyDynamicSuccessRates: {
+      reading: 0.5,
+      listening: 0.5
+    },
+    studyNewWordRatio: 0.4,
+    studyNewWordSpread: 0.12,
+    studyCalibrationSensitivity: 0.6,
+    studyMinSuccessRate: 0.35,
+    studyMaxSuccessRate: 0.75,
+    studyReviewBaseIntervalMinutes: 10,
+    studyReviewHardIntervalMinutes: 4,
+    studyReviewIncorrectIntervalMinutes: 1,
+    studyReviewIntervalGrowth: 1.6,
+    studyReviewEaseDefault: 2.4,
+    studyReviewEaseMin: 1.2,
+    studyReviewEaseMax: 3.5,
+    studyReviewMaxIntervalMinutes: 60 * 24 * 60,
+    studyReviewOverdueGraceMinutes: 10,
+    currentStudyCard: null,
+    pendingCardModeOverride: null,
     targetSuccessRate: 0.5,
     targetWindowSize: 100,
-    responseOptions: ['sentence', 'focus', 'unknown']
+    responseOptions: ['easy', 'hard', 'incorrect']
   };
 }

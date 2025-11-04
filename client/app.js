@@ -196,24 +196,48 @@ export function createLangyApp() {
       responseButtons() {
         return [
           {
-            type: 'sentence',
-            label: 'Fully understood.',
+            type: 'easy',
+            label: 'Easy',
             classes:
-              'h-14 rounded-2xl border border-emerald-400/60 bg-emerald-50 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-500'
+              'h-14 rounded-2xl border border-emerald-400/70 bg-emerald-50 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100 hover:border-emerald-500'
           },
           {
-            type: 'focus',
-            label: 'Focus word understood.',
+            type: 'hard',
+            label: 'Hard',
             classes:
-              'h-14 rounded-2xl border border-sky-400/60 bg-sky-50 text-sm font-medium text-sky-700 transition hover:bg-sky-100 hover:border-sky-500'
+              'h-14 rounded-2xl border border-amber-400/70 bg-amber-50 text-sm font-semibold text-amber-700 transition hover:bg-amber-100 hover:border-amber-500'
           },
           {
-            type: 'unknown',
-            label: 'I do not know the focus word.',
+            type: 'incorrect',
+            label: 'Incorrect',
             classes:
-              'h-14 rounded-2xl border border-rose-400/60 bg-rose-50 text-sm font-medium text-rose-700 transition hover:bg-rose-100 hover:border-rose-500'
+              'h-14 rounded-2xl border border-rose-400/70 bg-rose-50 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 hover:border-rose-500'
           }
         ];
+      },
+      studyCardStatusLabel() {
+        if (this.appMode !== 'study' || this.calibrationActive) return '';
+        if (!this.currentStudyCard) return '';
+        if (this.currentStudyCard.label) return this.currentStudyCard.label;
+        if (this.currentStudyCard.source === 'review') return 'Review';
+        if (this.currentStudyCard.source === 'new') return 'New Word';
+        return '';
+      },
+      studyCardStatusDetail() {
+        if (this.appMode !== 'study' || this.calibrationActive) return '';
+        if (!this.currentStudyCard) return '';
+        return this.currentStudyCard.detail || '';
+      },
+      studyCardStatusClasses() {
+        if (this.appMode !== 'study' || this.calibrationActive) return '';
+        const tone = this.currentStudyCard?.tone;
+        if (tone === 'review-due') {
+          return 'border-rose-200 bg-rose-50 text-rose-700';
+        }
+        if (tone === 'review-upcoming') {
+          return 'border-amber-200 bg-amber-50 text-amber-700';
+        }
+        return 'border-sky-200 bg-sky-50 text-sky-700';
       },
       levelTokensMean() {
         return Math.exp(this.logExposureMean);
@@ -829,6 +853,7 @@ export function createLangyApp() {
         this.appMode = null;
         this.isFlipped = false;
         this.currentIndex = 0;
+        this.resetStudyCardContext();
         this.calibrationStatusMessage = '';
         this.resetReadingAnalysis();
         this.persistUserProfile();
@@ -1037,6 +1062,7 @@ export function createLangyApp() {
         this.frequencyProbabilityMap = {};
         this.activeCard = null;
         this.currentIndex = 0;
+        this.resetStudyCardContext();
         this.appMode = null;
         this.studyMode = 'reading';
         this.currentCardMode = 'reading';
@@ -1073,6 +1099,22 @@ export function createLangyApp() {
         };
         this.logExposureMean = DEFAULT_LOG_EXPOSURE;
         this.logExposureVar = DEFAULT_LOG_VARIANCE;
+        this.studyKnowledgeBase = {
+          reading: {},
+          listening: {}
+        };
+        this.studyMixStats = {
+          reading: { newServed: 0, reviewServed: 0 },
+          listening: { newServed: 0, reviewServed: 0 }
+        };
+        this.studyNewPerformance = {
+          reading: { trials: 0, correct: 0 },
+          listening: { trials: 0, correct: 0 }
+        };
+        this.studyDynamicSuccessRates = {
+          reading: this.targetSuccessRate,
+          listening: this.targetSuccessRate
+        };
         this.pendingCalibrationModes = [];
         try {
           window.localStorage.removeItem('langy-study-mode');
@@ -1134,6 +1176,7 @@ export function createLangyApp() {
         this.calibrationResponses = [];
         this.calibrationHistory = [];
         this.calibrationProbeCounts = {};
+        this.resetStudyCardContext();
         this.activeCard = null;
         this.isFlipped = false;
         this.refreshCalibrationCompleteness();
@@ -1157,6 +1200,7 @@ export function createLangyApp() {
           const raw = window.localStorage.getItem(`langy-profile:${username}`);
           if (!raw) return;
           const data = JSON.parse(raw);
+          this.ensureStudyStructures();
           if (typeof data.studyMode === 'string') {
             this.studyMode = data.studyMode;
             this.persistStudyMode();
@@ -1217,6 +1261,72 @@ export function createLangyApp() {
           if (typeof data.listeningCardChance === 'number' && Number.isFinite(data.listeningCardChance)) {
             this.listeningCardChance = Math.min(Math.max(data.listeningCardChance, 0), 1);
           }
+          if (data.studyState && typeof data.studyState === 'object') {
+            const knowledgeSource = data.studyState.knowledgeBase || {};
+            const hydrateKnowledge = (mode) => {
+              const source = knowledgeSource[mode];
+              const target = {};
+              if (source && typeof source === 'object') {
+                Object.keys(source).forEach((word) => {
+                  if (!word) return;
+                  const entry = source[word];
+                  if (!entry || typeof entry !== 'object') return;
+                  target[word] = {
+                    word,
+                    dueAt: typeof entry.dueAt === 'number' ? entry.dueAt : null,
+                    intervalMinutes:
+                      typeof entry.intervalMinutes === 'number'
+                        ? entry.intervalMinutes
+                        : this.studyReviewIncorrectIntervalMinutes,
+                    easeFactor:
+                      typeof entry.easeFactor === 'number'
+                        ? entry.easeFactor
+                        : this.studyReviewEaseDefault,
+                    lastSeenAt: typeof entry.lastSeenAt === 'number' ? entry.lastSeenAt : null,
+                    streak: typeof entry.streak === 'number' ? entry.streak : 0,
+                    lastRating: typeof entry.lastRating === 'string' ? entry.lastRating : 'incorrect'
+                  };
+                });
+              }
+              this.studyKnowledgeBase[mode] = target;
+            };
+            hydrateKnowledge('reading');
+            hydrateKnowledge('listening');
+            if (data.studyState.mixStats && typeof data.studyState.mixStats === 'object') {
+              this.studyMixStats = {
+                reading: {
+                  newServed: Number(data.studyState.mixStats.reading?.newServed) || 0,
+                  reviewServed: Number(data.studyState.mixStats.reading?.reviewServed) || 0
+                },
+                listening: {
+                  newServed: Number(data.studyState.mixStats.listening?.newServed) || 0,
+                  reviewServed: Number(data.studyState.mixStats.listening?.reviewServed) || 0
+                }
+              };
+            }
+            if (data.studyState.newPerformance && typeof data.studyState.newPerformance === 'object') {
+              this.studyNewPerformance = {
+                reading: {
+                  trials: Number(data.studyState.newPerformance.reading?.trials) || 0,
+                  correct: Number(data.studyState.newPerformance.reading?.correct) || 0
+                },
+                listening: {
+                  trials: Number(data.studyState.newPerformance.listening?.trials) || 0,
+                  correct: Number(data.studyState.newPerformance.listening?.correct) || 0
+                }
+              };
+            }
+            if (data.studyState.dynamicSuccessRates && typeof data.studyState.dynamicSuccessRates === 'object') {
+              this.studyDynamicSuccessRates = {
+                reading: Number.isFinite(data.studyState.dynamicSuccessRates.reading)
+                  ? data.studyState.dynamicSuccessRates.reading
+                  : this.targetSuccessRate,
+                listening: Number.isFinite(data.studyState.dynamicSuccessRates.listening)
+                  ? data.studyState.dynamicSuccessRates.listening
+                  : this.targetSuccessRate
+              };
+            }
+          }
           const activeProfile = getLevelProfile(this, this.activeLevelMode);
           this.logExposureMean = activeProfile.logExposureMean ?? DEFAULT_LOG_EXPOSURE;
           this.logExposureVar = activeProfile.logExposureVar ?? DEFAULT_LOG_VARIANCE;
@@ -1228,6 +1338,7 @@ export function createLangyApp() {
       persistUserProfile() {
         const username = this.userProfile?.username;
         if (!username) return;
+        this.ensureStudyStructures();
         const serializeProfile = (mode) => {
           const profile = ensureLevelProfile(this, mode);
           return {
@@ -1237,6 +1348,24 @@ export function createLangyApp() {
             calibrationStatusMessage: profile?.calibrationStatusMessage || '',
             lastCalibratedAt: profile?.lastCalibratedAt ?? null
           };
+        };
+        const serializeKnowledgeBase = (mode) => {
+          const snapshot = {};
+          const base = this.getStudyKnowledgeBase(mode);
+          Object.keys(base).forEach((word) => {
+            if (!word) return;
+            const entry = base[word];
+            if (!entry) return;
+            snapshot[word] = {
+              dueAt: entry.dueAt ?? null,
+              intervalMinutes: entry.intervalMinutes ?? 0,
+              easeFactor: entry.easeFactor ?? this.studyReviewEaseDefault,
+              lastSeenAt: entry.lastSeenAt ?? null,
+              streak: entry.streak ?? 0,
+              lastRating: entry.lastRating || 'incorrect'
+            };
+          });
+          return snapshot;
         };
         const payload = {
           studyMode: this.studyMode,
@@ -1254,6 +1383,15 @@ export function createLangyApp() {
             listening: this.calibrationStatusByMode?.listening || ''
           },
           listeningCardChance: this.listeningCardChance,
+          studyState: {
+            knowledgeBase: {
+              reading: serializeKnowledgeBase('reading'),
+              listening: serializeKnowledgeBase('listening')
+            },
+            mixStats: this.studyMixStats,
+            newPerformance: this.studyNewPerformance,
+            dynamicSuccessRates: this.studyDynamicSuccessRates
+          },
           updatedAt: Date.now()
         };
         try {
@@ -1275,6 +1413,7 @@ export function createLangyApp() {
           this.activeCard = null;
           this.isFlipped = false;
           this.currentIndex = 0;
+          this.resetStudyCardContext();
           if (mode === 'read') {
             this.currentCardMode = 'reading';
             this.activeLevelMode = 'reading';
@@ -1313,6 +1452,7 @@ export function createLangyApp() {
           const entries = await fetchFrequencyCorpus();
           if (entries.length) {
             initializeLexicon(this, entries);
+            this.rebuildLexiconIndex();
             this.lexiconLoaded = true;
             this.calibrationActive = false;
             this.activeCalibrationMode = null;
@@ -1330,15 +1470,28 @@ export function createLangyApp() {
             frequency: 1
           }));
           initializeLexicon(this, fallbackEntries);
+          this.rebuildLexiconIndex();
           this.lexiconLoaded = true;
           this.calibrationActive = false;
           this.activeCalibrationMode = null;
           this.refreshCalibrationCompleteness();
         }
       },
+      rebuildLexiconIndex() {
+        this.lexiconIndexByWord = {};
+        if (!Array.isArray(this.lexicon)) return;
+        this.lexicon.forEach((entry, index) => {
+          if (entry?.word) {
+            this.lexiconIndexByWord[entry.word] = index;
+          }
+        });
+      },
       async loadNextCard({ advance = false, resetIndex = false, targetIndex = null } = {}) {
         if (!this.lexicon.length || this.isLoadingCard) return;
         const maxIndex = this.lexicon.length - 1;
+        let selectedWord = null;
+        const usingStudyScheduler =
+          this.appMode === 'study' && !this.calibrationActive && this.isStudyReady && targetIndex == null;
         if (this.calibrationActive) {
           const calibrationIndex = consumeCalibrationIndex(this);
           if (calibrationIndex != null) {
@@ -1351,20 +1504,50 @@ export function createLangyApp() {
               logExposure: fallbackLog
             });
           }
+          this.resetStudyCardContext();
+        } else if (usingStudyScheduler) {
+          const studyTarget = this.selectStudyTarget();
+          if (!studyTarget) {
+            this.errorMessage = 'No study targets available yet.';
+            this.resetStudyCardContext();
+            this.prepareAudioForNewCard();
+            return;
+          }
+          this.currentStudyCard = studyTarget;
+          this.pendingCardModeOverride = studyTarget.mode;
+          if (Number.isFinite(studyTarget.lexiconIndex)) {
+            this.currentIndex = studyTarget.lexiconIndex;
+          } else if (studyTarget.word && this.lexiconIndexByWord[studyTarget.word] != null) {
+            this.currentIndex = this.lexiconIndexByWord[studyTarget.word];
+          }
+          selectedWord = studyTarget.word;
         } else if (targetIndex != null) {
           const clamped = Math.max(0, Math.min(maxIndex, targetIndex));
           this.currentIndex = clamped;
+          this.resetStudyCardContext();
         } else if (resetIndex) {
           this.currentIndex = 0;
+          this.resetStudyCardContext();
         } else if (advance) {
           this.currentIndex = Math.min(maxIndex, this.currentIndex + 1);
+          this.resetStudyCardContext();
         } else if (this.currentIndex > maxIndex) {
           this.currentIndex = maxIndex;
+          this.resetStudyCardContext();
+        } else if (this.appMode !== 'study') {
+          this.resetStudyCardContext();
         }
-        const entry = this.lexicon[this.currentIndex];
-        if (!entry) return;
+        const entry = selectedWord ? { word: selectedWord } : this.lexicon[this.currentIndex];
+        if (!entry || !entry.word) return;
+        if (this.appMode !== 'study') {
+          this.pendingCardModeOverride = null;
+        }
         this.prepareAudioForNewCard();
         await this.fetchCardForWord(entry.word);
+      },
+      resetStudyCardContext() {
+        this.currentStudyCard = null;
+        this.pendingCardModeOverride = null;
       },
       async fetchCardForWord(word) {
         if (!word) return;
@@ -1409,7 +1592,8 @@ export function createLangyApp() {
         this.stopAudioPlayback({ clearUrl: false });
         const currentWord = this.currentCard?.focus?.hanzi;
         const freqProbability = currentWord ? this.frequencyProbabilityMap[currentWord] ?? 0 : 0;
-        const isKnown = type === 'sentence' || type === 'focus';
+        const rating = type;
+        const isKnown = rating === 'easy' || rating === 'hard';
 
         if (this.calibrationActive) {
           if (currentWord && freqProbability > 0) {
@@ -1432,6 +1616,14 @@ export function createLangyApp() {
 
         const modeForUpdate = this.isListeningCard ? 'listening' : 'reading';
         this.activeLevelMode = modeForUpdate;
+        if (!this.calibrationActive && this.appMode === 'study' && currentWord) {
+          this.recordStudyOutcome({
+            word: currentWord,
+            mode: modeForUpdate,
+            rating,
+            source: this.currentStudyCard?.source
+          });
+        }
         if (currentWord && freqProbability > 0) {
           this.totalResponses += 1;
           const update = applyLevelUpdate(this, currentWord, freqProbability, isKnown, {
@@ -1447,12 +1639,21 @@ export function createLangyApp() {
             posteriorVar: update.posteriorVar
           });
         }
-        const nextIndex = this.selectNextIndex({ mode: modeForUpdate });
-        await this.loadNextCard({ targetIndex: nextIndex });
+        if (this.appMode === 'study') {
+          await this.loadNextCard({});
+        } else {
+          const nextIndex = this.selectNextIndex({ mode: modeForUpdate });
+          await this.loadNextCard({ targetIndex: nextIndex });
+        }
+        if (!this.calibrationActive) {
+          this.persistUserProfile();
+        }
       },
       async advanceCard() {
         if (!this.lexicon.length) return;
         if (this.calibrationActive) {
+          await this.loadNextCard({});
+        } else if (this.appMode === 'study') {
           await this.loadNextCard({});
         } else {
           this.stopAudioPlayback({ clearUrl: false });
@@ -1565,6 +1766,12 @@ export function createLangyApp() {
         }
       },
       assignCardMode() {
+        if (this.pendingCardModeOverride) {
+          this.currentCardMode = this.pendingCardModeOverride;
+          this.activeLevelMode = this.pendingCardModeOverride;
+          this.pendingCardModeOverride = null;
+          return;
+        }
         if (!this.currentCard) {
           this.currentCardMode = 'reading';
           this.activeLevelMode = 'reading';
@@ -1637,8 +1844,16 @@ export function createLangyApp() {
             : this.logExposureMean;
           return this.findIndexClosestToProbability(0.5, { logExposure: focusLog });
         }
-        const target = this.targetSuccessRate;
-        const center = this.findIndexClosestToProbability(target, options);
+        const mode = options.mode || this.activeLevelMode || 'reading';
+        const baseTarget = this.getStudyTargetSuccessRate(mode);
+        const spread = Math.max(0, this.studyNewWordSpread ?? 0);
+        const jitter = spread ? (Math.random() - 0.5) * spread : 0;
+        const target = clampProbability(
+          baseTarget + jitter,
+          this.studyMinSuccessRate ?? 0.35,
+          this.studyMaxSuccessRate ?? 0.75
+        );
+        const center = this.findIndexClosestToProbability(target, { ...options, mode });
         const windowSize = Math.max(20, this.targetWindowSize);
         const maxIndex = this.lexicon.length - 1;
         const halfWindow = Math.floor(windowSize / 2);
@@ -1649,7 +1864,7 @@ export function createLangyApp() {
         for (let idx = start; idx <= end; idx++) {
           const entry = this.lexicon[idx];
           if (!entry) continue;
-          const probability = this.wordProbability(entry.word, options);
+          const probability = this.wordProbability(entry.word, { ...options, mode });
           candidates.push({
             idx,
             score: Math.abs(probability - target)
@@ -1707,6 +1922,299 @@ export function createLangyApp() {
         if (this.recentLevelUpdates.length > this.maxRecentLevelUpdates) {
           this.recentLevelUpdates.length = this.maxRecentLevelUpdates;
         }
+      },
+      ensureStudyStructures() {
+        if (!this.studyKnowledgeBase || typeof this.studyKnowledgeBase !== 'object') {
+          this.studyKnowledgeBase = { reading: {}, listening: {} };
+        }
+        if (!this.studyMixStats || typeof this.studyMixStats !== 'object') {
+          this.studyMixStats = { reading: { newServed: 0, reviewServed: 0 }, listening: { newServed: 0, reviewServed: 0 } };
+        }
+        if (!this.studyNewPerformance || typeof this.studyNewPerformance !== 'object') {
+          this.studyNewPerformance = { reading: { trials: 0, correct: 0 }, listening: { trials: 0, correct: 0 } };
+        }
+        if (!this.studyDynamicSuccessRates || typeof this.studyDynamicSuccessRates !== 'object') {
+          this.studyDynamicSuccessRates = { reading: this.targetSuccessRate, listening: this.targetSuccessRate };
+        }
+        ['reading', 'listening'].forEach((mode) => {
+          if (!this.studyKnowledgeBase[mode] || typeof this.studyKnowledgeBase[mode] !== 'object') {
+            this.studyKnowledgeBase[mode] = {};
+          }
+          if (!this.studyMixStats[mode]) {
+            this.studyMixStats[mode] = { newServed: 0, reviewServed: 0 };
+          }
+          if (!this.studyNewPerformance[mode]) {
+            this.studyNewPerformance[mode] = { trials: 0, correct: 0 };
+          }
+          if (typeof this.studyDynamicSuccessRates[mode] !== 'number' || !Number.isFinite(this.studyDynamicSuccessRates[mode])) {
+            this.studyDynamicSuccessRates[mode] = this.targetSuccessRate;
+          }
+        });
+      },
+      getStudyKnowledgeBase(mode) {
+        this.ensureStudyStructures();
+        return this.studyKnowledgeBase[mode] || {};
+      },
+      isWordInKnowledge(mode, word) {
+        if (!word) return false;
+        const base = this.getStudyKnowledgeBase(mode);
+        return Boolean(base[word]);
+      },
+      peekReviewCandidate(mode) {
+        const base = this.getStudyKnowledgeBase(mode);
+        const entries = Object.values(base);
+        if (!entries.length) return null;
+        let best = null;
+        entries.forEach((entry) => {
+          if (!entry?.word) return;
+          if (!best || (entry.dueAt ?? Infinity) < (best.dueAt ?? Infinity)) {
+            best = entry;
+          }
+        });
+        if (!best) return null;
+        const now = Date.now();
+        return {
+          entry: best,
+          isDue: (best.dueAt ?? 0) <= now,
+          dueAt: best.dueAt ?? now
+        };
+      },
+      pickNewWordCandidate(mode) {
+        if (!this.lexicon.length) return null;
+        const attempts = Math.min(this.lexicon.length, 80);
+        const visited = new Set();
+        for (let i = 0; i < attempts; i += 1) {
+          const idx = this.selectNextIndex({ mode });
+          if (visited.has(idx)) continue;
+          visited.add(idx);
+          const entry = this.lexicon[idx];
+          if (!entry?.word) continue;
+          if (this.isWordInKnowledge(mode, entry.word)) continue;
+          return {
+            word: entry.word,
+            lexiconIndex: idx
+          };
+        }
+        return null;
+      },
+      registerStudyMix(mode, source) {
+        this.ensureStudyStructures();
+        const stats = this.studyMixStats[mode];
+        if (!stats) return;
+        if (source === 'new') {
+          stats.newServed += 1;
+        } else {
+          stats.reviewServed += 1;
+        }
+      },
+      updateNewPerformance(mode, rating) {
+        this.ensureStudyStructures();
+        const stats = this.studyNewPerformance[mode];
+        if (!stats) return;
+        const weight = rating === 'easy' ? 1 : rating === 'hard' ? 0.5 : 0;
+        stats.trials += 1;
+        stats.correct += weight;
+        const observed = stats.correct / Math.max(stats.trials, 1);
+        const base = this.targetSuccessRate ?? 0.5;
+        const sensitivity = this.studyCalibrationSensitivity ?? 0.6;
+        const minTarget = this.studyMinSuccessRate ?? 0.35;
+        const maxTarget = this.studyMaxSuccessRate ?? 0.75;
+        const adjusted = Math.min(
+          maxTarget,
+          Math.max(minTarget, base - (observed - base) * sensitivity)
+        );
+        this.studyDynamicSuccessRates[mode] = adjusted;
+      },
+      getStudyTargetSuccessRate(mode) {
+        this.ensureStudyStructures();
+        const value = this.studyDynamicSuccessRates?.[mode];
+        if (typeof value === 'number' && Number.isFinite(value)) {
+          return value;
+        }
+        return this.targetSuccessRate ?? 0.5;
+      },
+      applyStudyScheduling({ mode, word, rating }) {
+        if (!word || !mode) return;
+        this.ensureStudyStructures();
+        const base = this.getStudyKnowledgeBase(mode);
+        const now = Date.now();
+        const easeDefault = this.studyReviewEaseDefault ?? 2.4;
+        const incorrectInterval = this.studyReviewIncorrectIntervalMinutes ?? 1;
+        const hardInterval = this.studyReviewHardIntervalMinutes ?? 4;
+        const baseInterval = this.studyReviewBaseIntervalMinutes ?? 10;
+        const easeMin = this.studyReviewEaseMin ?? 1.2;
+        const easeMax = this.studyReviewEaseMax ?? 3.5;
+        const growth = this.studyReviewIntervalGrowth ?? 1.6;
+        const maxInterval = this.studyReviewMaxIntervalMinutes ?? 10080;
+        const entry = base[word] || {
+          word,
+          mode,
+          intervalMinutes: 0,
+          easeFactor: easeDefault,
+          streak: 0
+        };
+        if (typeof entry.easeFactor !== 'number' || !Number.isFinite(entry.easeFactor)) {
+          entry.easeFactor = easeDefault;
+        }
+        if (typeof entry.intervalMinutes !== 'number' || !Number.isFinite(entry.intervalMinutes)) {
+          entry.intervalMinutes = 0;
+        }
+        if (rating === 'incorrect') {
+          entry.streak = 0;
+          entry.intervalMinutes = incorrectInterval;
+          entry.easeFactor = Math.max(easeMin, entry.easeFactor - 0.3);
+        } else if (rating === 'hard') {
+          entry.streak = Math.max(1, entry.streak + 1);
+          entry.intervalMinutes =
+            entry.intervalMinutes > 0
+              ? Math.max(hardInterval, entry.intervalMinutes * 0.7)
+              : hardInterval;
+          entry.easeFactor = Math.max(easeMin, entry.easeFactor - 0.05);
+        } else {
+          entry.streak = Math.max(1, entry.streak + 1);
+          if (entry.intervalMinutes <= 0) {
+            entry.intervalMinutes = baseInterval;
+          } else {
+            entry.intervalMinutes = Math.max(
+              baseInterval,
+              entry.intervalMinutes * entry.easeFactor * growth
+            );
+          }
+          entry.easeFactor = Math.min(easeMax, entry.easeFactor + 0.1);
+        }
+        entry.intervalMinutes = Math.min(entry.intervalMinutes, maxInterval);
+        entry.lastRating = rating;
+        entry.lastSeenAt = now;
+        entry.dueAt = now + entry.intervalMinutes * 60 * 1000;
+        base[word] = entry;
+      },
+      recordStudyOutcome({ word, mode, rating, source }) {
+        if (!word || !mode) return;
+        const normalizedSource = source === 'review' ? 'review' : 'new';
+        this.registerStudyMix(mode, normalizedSource);
+        if (normalizedSource === 'new') {
+          this.updateNewPerformance(mode, rating);
+        }
+        this.applyStudyScheduling({ mode, word, rating });
+      },
+      studyModePriority() {
+        if (this.studyMode !== 'listening' || !this.isListeningCalibrated) {
+          return ['reading'];
+        }
+        const chance = Math.min(Math.max(this.listeningCardChance ?? 0.5, 0), 1);
+        const primary = Math.random() < chance ? 'listening' : 'reading';
+        const secondary = primary === 'listening' ? 'reading' : 'listening';
+        return [primary, secondary];
+      },
+      buildStudyCardMeta({ source, mode, entry = null, word, lexiconIndex = null }) {
+        const now = Date.now();
+        let detail = mode === 'listening' ? 'Listening focus' : 'Reading focus';
+        let tone = source === 'review' ? 'review-upcoming' : 'new';
+        let dueAt = entry?.dueAt ?? null;
+        if (source === 'review') {
+          const due = entry?.dueAt ?? now;
+          dueAt = due;
+          if (due <= now) {
+            const overdueMinutes = Math.max(0, Math.round((now - due) / 60000));
+            detail = overdueMinutes > 0 ? `${overdueMinutes}m overdue` : 'Due now';
+            tone = 'review-due';
+          } else {
+            const etaMinutes = Math.max(1, Math.round((due - now) / 60000));
+            detail = `Due in ${etaMinutes}m`;
+            tone = 'review-upcoming';
+          }
+        }
+        return {
+          word,
+          source,
+          mode,
+          label: source === 'review' ? 'Review' : 'New Word',
+          detail,
+          tone,
+          dueAt,
+          lexiconIndex,
+          knowledgeEntry: entry || null
+        };
+      },
+      selectStudyTargetForMode(mode) {
+        const reviewCandidate = this.peekReviewCandidate(mode);
+        const newCandidate = this.pickNewWordCandidate(mode);
+        if (!reviewCandidate && !newCandidate) {
+          return null;
+        }
+        const useReview = this.shouldServeReview({
+          mode,
+          reviewCandidate,
+          newCandidate
+        });
+        if (useReview && reviewCandidate) {
+          const word = reviewCandidate.entry?.word;
+          if (!word) return null;
+          const lexIndex =
+            this.lexiconIndexByWord?.[word] != null ? this.lexiconIndexByWord[word] : null;
+          return this.buildStudyCardMeta({
+            source: 'review',
+            mode,
+            entry: reviewCandidate.entry,
+            word,
+            lexiconIndex: lexIndex
+          });
+        }
+        if (newCandidate) {
+          return this.buildStudyCardMeta({
+            source: 'new',
+            mode,
+            entry: null,
+            word: newCandidate.word,
+            lexiconIndex: newCandidate.lexiconIndex
+          });
+        }
+        if (reviewCandidate) {
+          const word = reviewCandidate.entry?.word;
+          if (!word) return null;
+          const lexIndex =
+            this.lexiconIndexByWord?.[word] != null ? this.lexiconIndexByWord[word] : null;
+          return this.buildStudyCardMeta({
+            source: 'review',
+            mode,
+            entry: reviewCandidate.entry,
+            word,
+            lexiconIndex: lexIndex
+          });
+        }
+        return null;
+      },
+      shouldServeReview({ mode, reviewCandidate, newCandidate }) {
+        if (!reviewCandidate) return false;
+        if (!newCandidate) return true;
+        const stats = this.studyMixStats?.[mode] || { newServed: 0, reviewServed: 0 };
+        const total = stats.newServed + stats.reviewServed;
+        const targetRatio = this.studyNewWordRatio ?? 0.4;
+        const currentRatio = total ? stats.newServed / total : 0;
+        const overdueGraceMs = (this.studyReviewOverdueGraceMinutes ?? 10) * 60 * 1000;
+        const now = Date.now();
+        const overdue =
+          reviewCandidate.dueAt != null && now - reviewCandidate.dueAt > overdueGraceMs;
+        if (reviewCandidate.isDue && (currentRatio >= targetRatio || overdue)) {
+          return true;
+        }
+        if (!reviewCandidate.isDue) {
+          return currentRatio > targetRatio;
+        }
+        return currentRatio >= targetRatio;
+      },
+      selectStudyTarget() {
+        if (!this.lexicon.length || !this.isStudyReady) {
+          return null;
+        }
+        const priorities = this.studyModePriority();
+        for (const mode of priorities) {
+          const target = this.selectStudyTargetForMode(mode);
+          if (target) {
+            return target;
+          }
+        }
+        return null;
       },
       recordCalibrationSummary(fit, priorMean) {
         const calibratedStd =
