@@ -39,3 +39,10 @@
 - [ ] Prototype a dual-mode experience: flashcard drills for targeted gaps plus graded reading/listening sessions that highlight low-confidence words inline.
 - [ ] Investigate using comprehension checks on longer passages to update many word probabilities at once, complementing single-word flashes.
 - [ ] Explore TTS/translation overlays for rare words so audio practice can reinforce the exposure model without overwhelming the learner.
+
+## Half-life / ACT-R Roadmap
+- [ ] Expand demo into production scheduler: compute expected utility (EV) per word using half-life deltas and frequency weights, then drive card selection from EV rankings.
+- [ ] Split reading vs. listening memory traces so EV comparison respects modality-specific half-life states.
+- [ ] Surface parameter controls (alpha coefficients, h0, noise terms) in UI and persist per user.
+- [ ] Instrument Bayesian/gradient updates to refine alpha/tau/gamma based on observed successes at given lags.
+- [ ] Replace legacy review queue with the half-life model once validated against demo results.
