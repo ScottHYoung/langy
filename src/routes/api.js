@@ -5,6 +5,7 @@ const {
   callOpenAIReadGlosses,
   callOpenAIReadPassage
 } = require('../services/openai');
+const { resolveGlossesLocally } = require('../services/glossary');
 
 async function handleApiGenerate(req, res) {
   if (req.method === 'OPTIONS') {
@@ -182,19 +183,43 @@ async function handleApiReadAnalyze(req, res) {
   }
 
   try {
-    const glosses = await callOpenAIReadGlosses({
-      text,
-      targets: sanitizedTargets
+    const localResolution = await resolveGlossesLocally(sanitizedTargets);
+    const pendingTargets = localResolution.unresolved || [];
+    const localGlosses = Array.isArray(localResolution.resolved) ? localResolution.resolved : [];
+    let remoteGlosses = [];
+
+    if (pendingTargets.length) {
+      remoteGlosses = await callOpenAIReadGlosses({
+        text,
+        targets: pendingTargets
+      });
+    }
+
+    const merged = new Map();
+    localGlosses.forEach((entry) => {
+      if (!entry || !entry.key) return;
+      merged.set(entry.key, {
+        key: entry.key,
+        word: entry.word,
+        pinyin: entry.pinyin,
+        gloss: entry.gloss,
+        note: entry.note || 'CEDICT'
+      });
+    });
+
+    remoteGlosses.forEach((entry) => {
+      if (!entry || !entry.key) return;
+      merged.set(entry.key, {
+        key: entry.key,
+        word: entry.word,
+        pinyin: entry.pinyin,
+        gloss: entry.gloss,
+        note: entry.note || 'OpenAI'
+      });
     });
 
     const payload = {
-      glosses: glosses.map((gloss) => ({
-        key: gloss.key,
-        word: gloss.word,
-        pinyin: gloss.pinyin,
-        gloss: gloss.gloss,
-        note: gloss.note
-      }))
+      glosses: Array.from(merged.values())
     };
     setCommonHeaders(res);
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
