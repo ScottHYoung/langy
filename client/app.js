@@ -239,6 +239,79 @@ export function createLangyApp() {
         }
         return 'border-sky-200 bg-sky-50 text-sky-700';
       },
+      studyReviewQueue() {
+        if (this.appMode !== 'study') return [];
+        this.ensureStudyStructures();
+        const now = Date.now();
+        const entries = [];
+        ['reading', 'listening'].forEach((mode) => {
+          const base = this.studyKnowledgeBase?.[mode];
+          if (!base) return;
+          Object.keys(base).forEach((word) => {
+            if (!word) return;
+            const entry = base[word];
+            if (!entry) return;
+            const dueAt =
+              typeof entry.dueAt === 'number' && Number.isFinite(entry.dueAt) ? entry.dueAt : now;
+            const intervalMinutes =
+              typeof entry.intervalMinutes === 'number' && Number.isFinite(entry.intervalMinutes)
+                ? entry.intervalMinutes
+                : 0;
+            entries.push({
+              key: `${mode}:${word}`,
+              word,
+              mode,
+              dueAt,
+              intervalMinutes
+            });
+          });
+        });
+        entries.sort((a, b) => (a.dueAt ?? now) - (b.dueAt ?? now));
+        const limit = 8;
+        return entries.slice(0, limit).map((item) => {
+          const minutesUntil = Math.round(((item.dueAt ?? now) - now) / 60000);
+          const overdue = minutesUntil <= 0;
+          const absMinutes = Math.abs(minutesUntil);
+          let statusLabel = '';
+          if (overdue) {
+            statusLabel = absMinutes ? `${absMinutes}m overdue` : 'Due now';
+          } else if (absMinutes < 60) {
+            statusLabel = `Due in ${Math.max(1, absMinutes)}m`;
+          } else if (absMinutes < 1440) {
+            statusLabel = `Due in ${Math.round(absMinutes / 60)}h`;
+          } else {
+            statusLabel = `Due in ${Math.round(absMinutes / 1440)}d`;
+          }
+          let intervalLabel = '—';
+          if (item.intervalMinutes >= 1440) {
+            intervalLabel = `${Math.round(item.intervalMinutes / 1440)}d`;
+          } else if (item.intervalMinutes >= 60) {
+            intervalLabel = `${Math.round(item.intervalMinutes / 60)}h`;
+          } else {
+            intervalLabel = `${Math.max(1, Math.round(item.intervalMinutes || 0))}m`;
+          }
+          return {
+            ...item,
+            statusLabel,
+            intervalLabel,
+            overdue,
+            toneClass: item.mode === 'listening' ? 'text-sky-600' : 'text-emerald-600',
+            modeLabel: item.mode === 'listening' ? 'Listening' : 'Reading'
+          };
+        });
+      },
+      studyReviewQueueSummary() {
+        if (this.appMode !== 'study') return 'Queue unavailable';
+        const queue = this.studyReviewQueue;
+        if (!queue.length) {
+          return 'Queue empty';
+        }
+        const dueCount = queue.filter((item) => item.overdue).length;
+        if (dueCount > 0) {
+          return `${dueCount} due now`;
+        }
+        return `${queue.length} upcoming`;
+      },
       levelTokensMean() {
         return Math.exp(this.logExposureMean);
       },
