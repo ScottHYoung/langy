@@ -308,10 +308,22 @@ export function createLangyApp() {
           .filter(Boolean);
       },
       lexiconWordSet() {
-        if (!Array.isArray(this.lexicon) || !this.lexicon.length) {
-          return new Set();
+        const set = new Set();
+        if (Array.isArray(this.lexicon)) {
+          this.lexicon.forEach((entry) => {
+            if (entry?.word) {
+              set.add(entry.word);
+            }
+          });
         }
-        return new Set(this.lexicon.map((entry) => entry.word).filter(Boolean));
+        if (typeof window !== 'undefined' && window.__LANGY_LEXICON_META__) {
+          Object.keys(window.__LANGY_LEXICON_META__).forEach((word) => {
+            if (word) {
+              set.add(word);
+            }
+          });
+        }
+        return set;
       },
       readingSegmentsAvailable() {
         return Array.isArray(this.readingSegments) && this.readingSegments.length > 0;
@@ -366,6 +378,7 @@ export function createLangyApp() {
         const dictionary = this.lexiconWordSet;
         const result = segmentChineseText(text, {
           dictionary,
+          frequencyMap: this.frequencyMap || {},
           maxWordLength:
             typeof options.maxWordLength === 'number' ? options.maxWordLength : undefined,
           preferJieba: options.preferJieba
