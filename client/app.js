@@ -1711,6 +1711,7 @@ export function createLangyApp() {
             posteriorMean: update.posteriorMean,
             posteriorVar: update.posteriorVar
           });
+          this.updateCalibrationStatusSnapshot(modeForUpdate);
         }
         if (this.appMode === 'study') {
           await this.loadNextCard({});
@@ -1994,6 +1995,20 @@ export function createLangyApp() {
         this.recentLevelUpdates.unshift(entry);
         if (this.recentLevelUpdates.length > this.maxRecentLevelUpdates) {
           this.recentLevelUpdates.length = this.maxRecentLevelUpdates;
+        }
+      },
+      updateCalibrationStatusSnapshot(mode) {
+        if (!mode) return;
+        if (!this.calibrationStatusByMode) {
+          this.calibrationStatusByMode = {};
+        }
+        const profile = getLevelProfile(this, mode);
+        const tokensEstimate = Math.exp(profile?.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
+        const title = mode === 'listening' ? 'Listening' : 'Reading';
+        const message = `${title} synced – μ≈ ${this.formatTokens(tokensEstimate)}`;
+        this.calibrationStatusByMode[mode] = message;
+        if (!this.calibrationActive && this.primaryCalibrationMode === mode) {
+          this.calibrationStatusMessage = message;
         }
       },
       ensureStudyStructures() {
