@@ -259,7 +259,7 @@ export function createInitialState() {
         alpha3: 0.1,
         h0: 0.5,
         minHalfLife: 0.1,
-        maxHalfLife: 180
+        maxHalfLife: Number.POSITIVE_INFINITY
       }
     }
   };
