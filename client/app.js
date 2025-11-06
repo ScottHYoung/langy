@@ -245,61 +245,35 @@ export function createLangyApp() {
         }
         return 'border-sky-200 bg-sky-50 text-sky-700';
       },
+      studyUpNextQueue() {
+        if (this.appMode !== 'study') return [];
+        const entries = this.computePrioritizedDueEntries({ limit: 20, includeNew: true });
+        return this.formatQueueEntries(entries);
+      },
       studyReviewQueue() {
         if (this.appMode !== 'study') return [];
-        const dueItems = this.computePrioritizedDueEntries({ limit: 20 });
-        const now = Date.now();
-        return dueItems.map((item, index) => {
-          const minutesUntil = Math.round(((item.dueAt ?? now) - now) / 60000);
-          const overdue = minutesUntil <= 0;
-          const absMinutes = Math.abs(minutesUntil);
-          let statusLabel = '';
-          if (overdue) {
-            statusLabel = absMinutes ? `${absMinutes}m overdue` : 'Due now';
-          } else if (absMinutes < 60) {
-            statusLabel = `Due in ${Math.max(1, absMinutes)}m`;
-          } else if (absMinutes < 1440) {
-            statusLabel = `Due in ${Math.round(absMinutes / 60)}h`;
-          } else {
-            statusLabel = `Due in ${Math.round(absMinutes / 1440)}d`;
-          }
-          let intervalLabel = '—';
-          if (item.intervalMinutes >= 1440) {
-            intervalLabel = `${Math.round(item.intervalMinutes / 1440)}d`;
-          } else if (item.intervalMinutes >= 60) {
-            intervalLabel = `${Math.round(item.intervalMinutes / 60)}h`;
-          } else {
-            intervalLabel = `${Math.max(1, Math.round(item.intervalMinutes || 0))}m`;
-          }
-          return {
-            ...item,
-            statusLabel,
-            intervalLabel,
-            overdue,
-            toneClass:
-              item.mode === 'listening'
-                ? 'text-sky-600'
-                : item.source === 'new'
-                ? 'text-amber-600'
-                : 'text-emerald-600',
-            modeLabel:
-              item.source === 'new'
-                ? 'New Word'
-                : item.mode === 'listening'
-                ? 'Listening'
-                : 'Reading',
-            priorityRank: index + 1,
-            priorityValue: item.frequency ?? 0
-          };
-        });
+        const entries = this.computePrioritizedDueEntries({ limit: 20, includeNew: false });
+        return this.formatQueueEntries(entries);
       },
-      studyReviewQueueSummary() {
+      studyUpNextSummary() {
         if (this.appMode !== 'study') return 'Queue unavailable';
-        const queue = this.studyReviewQueue;
+        const queue = this.studyUpNextQueue;
         if (!queue.length) {
           return 'Queue empty';
         }
-        return `Top ${queue.length} due now`;
+        const dueCount = queue.filter((item) => item.overdue).length;
+        if (dueCount > 0) {
+          return `${dueCount} due now`;
+        }
+        return `${queue.length} upcoming`;
+      },
+      studyReviewQueueSummary() {
+        if (this.appMode !== 'study') return 'Reviews unavailable';
+        const queue = this.studyReviewQueue;
+        if (!queue.length) {
+          return 'No reviews due';
+        }
+        return `Top ${queue.length} reviews due`;
       },
       levelTokensMean() {
         return Math.exp(this.logExposureMean);
@@ -2146,6 +2120,97 @@ export function createLangyApp() {
           return dueItems.slice(0, Math.max(0, limit));
         }
         return dueItems;
+      },
+      formatQueueEntries(entries, options = {}) {
+        const { startRank = 1 } = options;
+        const now = Date.now();
+        return entries.map((item, index) => {
+          const rank = startRank + index;
+          const minutesUntil = Math.round(((item.dueAt ?? now) - now) / 60000);
+          const overdue = minutesUntil <= 0;
+          const absMinutes = Math.abs(minutesUntil);
+          let statusLabel = '';
+          if (overdue) {
+            statusLabel = absMinutes ? `${absMinutes}m overdue` : 'Due now';
+          } else if (absMinutes < 60) {
+            statusLabel = `Due in ${Math.max(1, absMinutes)}m`;
+          } else if (absMinutes < 1440) {
+            statusLabel = `Due in ${Math.round(absMinutes / 60)}h`;
+          } else {
+            statusLabel = `Due in ${Math.round(absMinutes / 1440)}d`;
+          }
+          let intervalLabel = '—';
+          if (item.intervalMinutes >= 1440) {
+            intervalLabel = `${Math.round(item.intervalMinutes / 1440)}d`;
+          } else if (item.intervalMinutes >= 60) {
+            intervalLabel = `${Math.round(item.intervalMinutes / 60)}h`;
+          } else {
+            intervalLabel = `${Math.max(1, Math.round(item.intervalMinutes || 0))}m`;
+          }
+          return {
+            ...item,
+            statusLabel,
+            intervalLabel,
+            overdue,
+            toneClass:
+              item.mode === 'listening'
+                ? 'text-sky-600'
+                : item.source === 'new'
+                ? 'text-amber-600'
+                : 'text-emerald-600',
+            modeLabel:
+              item.source === 'new'
+                ? 'New Word'
+                : item.mode === 'listening'
+                ? 'Listening'
+                : 'Reading',
+            priorityRank: rank,
+            priorityValue: item.frequency ?? 0
+          };
+        });
+      },
+      debugResetStudyQueue() {
+        const confirmed = window.confirm('Clear the study queue and treat all cards as new?');
+        if (!confirmed) return;
+        this.studyKnowledgeBase = {
+          reading: {},
+          listening: {}
+        };
+        this.studyMixStats = {
+          reading: { newServed: 0, reviewServed: 0 },
+          listening: { newServed: 0, reviewServed: 0 }
+        };
+        this.studyNewPerformance = {
+          reading: { trials: 0, correct: 0 },
+          listening: { trials: 0, correct: 0 }
+        };
+        const fallbackTarget = this.targetSuccessRate ?? 0.5;
+        this.studyDynamicSuccessRates = {
+          reading: fallbackTarget,
+          listening: fallbackTarget
+        };
+        this.resetStudyCardContext();
+        this.debugCalibrationError = '';
+        this.persistUserProfile();
+      },
+      debugApplyLogExposure() {
+        const value = Number.parseFloat(this.debugCalibrationInput);
+        if (!Number.isFinite(value)) {
+          this.debugCalibrationError = 'Enter a numeric log exposure value.';
+          return;
+        }
+        this.debugCalibrationError = '';
+        this.logExposureMean = value;
+        const variance = Number.isFinite(this.logExposureVar)
+          ? this.logExposureVar
+          : DEFAULT_LOG_VARIANCE;
+        this.logExposureVar = variance;
+        setLevelProfileStats(this, 'reading', { mean: value, variance });
+        setLevelProfileStats(this, 'listening', { mean: value, variance });
+        this.updateCalibrationStatusSnapshot('reading');
+        this.updateCalibrationStatusSnapshot('listening');
+        this.persistUserProfile();
+        this.debugCalibrationInput = value.toString();
       },
       getStudyKnowledgeBase(mode) {
         this.ensureStudyStructures();

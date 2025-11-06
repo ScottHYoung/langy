@@ -186,6 +186,8 @@ export function createInitialState() {
     recentLevelUpdates: [],
     maxRecentLevelUpdates: 12,
     totalResponses: 0,
+    debugCalibrationInput: '',
+    debugCalibrationError: '',
     calibrationActive: false,
     calibrationResponses: [],
     calibrationQueue: [],
