@@ -29,6 +29,12 @@ import {
   DEFAULT_LOG_VARIANCE
 } from './utils/profile.js';
 
+const STUDY_STATE_VERSION = 2;
+const INITIAL_LOOKBACK_DAYS = 3;
+const INITIAL_BASE_INTERVAL_DAYS = 1;
+const INITIAL_SOFT_SPACING = 1.1;
+const PERMANENT_INTERVAL_DAYS = 1e5;
+
 export function createLangyApp() {
   return {
     data() {
@@ -244,6 +250,8 @@ export function createLangyApp() {
         this.ensureStudyStructures();
         const now = Date.now();
         const entries = [];
+        const dueItems = [];
+        const seenWords = new Set();
         ['reading', 'listening'].forEach((mode) => {
           const base = this.studyKnowledgeBase?.[mode];
           if (!base) return;
@@ -257,18 +265,63 @@ export function createLangyApp() {
               typeof entry.intervalMinutes === 'number' && Number.isFinite(entry.intervalMinutes)
                 ? entry.intervalMinutes
                 : 0;
-            entries.push({
+            const frequency = this.frequencyMap?.[word] ?? 0;
+            if (dueAt > now) {
+              return;
+            }
+            seenWords.add(word);
+            dueItems.push({
               key: `${mode}:${word}`,
               word,
               mode,
               dueAt,
-              intervalMinutes
+              intervalMinutes,
+              frequency
             });
           });
         });
-        entries.sort((a, b) => (a.dueAt ?? now) - (b.dueAt ?? now));
-        const limit = 8;
-        return entries.slice(0, limit).map((item) => {
+        const meanExposure = Math.exp(this.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
+        const totalFreq = this.totalCorpusFrequency || 0;
+        const lexicon = Array.isArray(this.lexicon) ? this.lexicon : [];
+        for (let i = 0; i < lexicon.length && dueItems.length < 40; i += 1) {
+          const entry = lexicon[i];
+          if (!entry?.word) continue;
+          if (seenWords.has(entry.word)) continue;
+          const frequency = this.frequencyMap?.[entry.word] ?? entry.frequency ?? 0;
+          if (!frequency || frequency <= 0) continue;
+          const freqProb =
+            this.frequencyProbabilityMap?.[entry.word] ??
+            (totalFreq > 0 ? frequency / totalFreq : 0);
+          if (!freqProb) continue;
+          const exposures = meanExposure * freqProb;
+          const intervalDays =
+            INITIAL_BASE_INTERVAL_DAYS *
+            Math.pow(INITIAL_SOFT_SPACING, Math.max(exposures, 0));
+          if (!Number.isFinite(intervalDays) || intervalDays >= PERMANENT_INTERVAL_DAYS) {
+            continue;
+          }
+          if (intervalDays > INITIAL_LOOKBACK_DAYS) {
+            continue;
+          }
+          const intervalMinutes = intervalDays * 1440;
+          dueItems.push({
+            key: `new:${entry.word}`,
+            word: entry.word,
+            mode: 'reading',
+            dueAt: now,
+            intervalMinutes,
+            frequency,
+            source: 'new'
+          });
+          seenWords.add(entry.word);
+        }
+        dueItems.sort((a, b) => {
+          const freqDelta = (b.frequency ?? 0) - (a.frequency ?? 0);
+          if (freqDelta !== 0) return freqDelta;
+          return (a.dueAt ?? now) - (b.dueAt ?? now);
+        });
+        const limit = 20;
+        return dueItems.slice(0, limit).map((item, index) => {
           const minutesUntil = Math.round(((item.dueAt ?? now) - now) / 60000);
           const overdue = minutesUntil <= 0;
           const absMinutes = Math.abs(minutesUntil);
@@ -295,8 +348,19 @@ export function createLangyApp() {
             statusLabel,
             intervalLabel,
             overdue,
-            toneClass: item.mode === 'listening' ? 'text-sky-600' : 'text-emerald-600',
-            modeLabel: item.mode === 'listening' ? 'Listening' : 'Reading'
+            toneClass:
+              item.mode === 'listening'
+                ? 'text-sky-600'
+                : item.source === 'new'
+                ? 'text-amber-600'
+                : 'text-emerald-600',
+            modeLabel:
+              item.source === 'new'
+                ? 'New Word'
+                : item.mode === 'listening'
+                ? 'Listening'
+                : 'Reading',
+            priorityRank: index + 1
           };
         });
       },
@@ -306,11 +370,7 @@ export function createLangyApp() {
         if (!queue.length) {
           return 'Queue empty';
         }
-        const dueCount = queue.filter((item) => item.overdue).length;
-        if (dueCount > 0) {
-          return `${dueCount} due now`;
-        }
-        return `${queue.length} upcoming`;
+        return `Top ${queue.length} due now`;
       },
       levelTokensMean() {
         return Math.exp(this.logExposureMean);
@@ -1334,7 +1394,31 @@ export function createLangyApp() {
           if (typeof data.listeningCardChance === 'number' && Number.isFinite(data.listeningCardChance)) {
             this.listeningCardChance = Math.min(Math.max(data.listeningCardChance, 0), 1);
           }
-          if (data.studyState && typeof data.studyState === 'object') {
+          const storedStudyStateVersion =
+            typeof data.studyStateVersion === 'number'
+              ? data.studyStateVersion
+              : Number.parseInt(data.studyStateVersion, 10);
+          const resetStudyState =
+            !Number.isFinite(storedStudyStateVersion) || storedStudyStateVersion < STUDY_STATE_VERSION;
+          if (resetStudyState) {
+            this.studyKnowledgeBase = {
+              reading: {},
+              listening: {}
+            };
+            this.studyMixStats = {
+              reading: { newServed: 0, reviewServed: 0 },
+              listening: { newServed: 0, reviewServed: 0 }
+            };
+            this.studyNewPerformance = {
+              reading: { trials: 0, correct: 0 },
+              listening: { trials: 0, correct: 0 }
+            };
+            this.studyDynamicSuccessRates = {
+              reading: this.targetSuccessRate,
+              listening: this.targetSuccessRate
+            };
+          }
+          if (!resetStudyState && data.studyState && typeof data.studyState === 'object') {
             const knowledgeSource = data.studyState.knowledgeBase || {};
             const hydrateKnowledge = (mode) => {
               const source = knowledgeSource[mode];
@@ -1441,6 +1525,7 @@ export function createLangyApp() {
           return snapshot;
         };
         const payload = {
+          studyStateVersion: STUDY_STATE_VERSION,
           studyMode: this.studyMode,
           calibrationComplete: this.calibrationComplete,
           logExposureMean: this.logExposureMean,
