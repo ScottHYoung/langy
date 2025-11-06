@@ -247,81 +247,9 @@ export function createLangyApp() {
       },
       studyReviewQueue() {
         if (this.appMode !== 'study') return [];
-        this.ensureStudyStructures();
+        const dueItems = this.computePrioritizedDueEntries({ limit: 20 });
         const now = Date.now();
-        const entries = [];
-        const dueItems = [];
-        const seenWords = new Set();
-        ['reading', 'listening'].forEach((mode) => {
-          const base = this.studyKnowledgeBase?.[mode];
-          if (!base) return;
-          Object.keys(base).forEach((word) => {
-            if (!word) return;
-            const entry = base[word];
-            if (!entry) return;
-            const dueAt =
-              typeof entry.dueAt === 'number' && Number.isFinite(entry.dueAt) ? entry.dueAt : now;
-            const intervalMinutes =
-              typeof entry.intervalMinutes === 'number' && Number.isFinite(entry.intervalMinutes)
-                ? entry.intervalMinutes
-                : 0;
-            const frequency = this.frequencyMap?.[word] ?? 0;
-            if (dueAt > now) {
-              return;
-            }
-            seenWords.add(word);
-            dueItems.push({
-              key: `${mode}:${word}`,
-              word,
-              mode,
-              dueAt,
-              intervalMinutes,
-              frequency
-            });
-          });
-        });
-        const meanExposure = Math.exp(this.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
-        const totalFreq = this.totalCorpusFrequency || 0;
-        const lexicon = Array.isArray(this.lexicon) ? this.lexicon : [];
-        for (let i = 0; i < lexicon.length && dueItems.length < 40; i += 1) {
-          const entry = lexicon[i];
-          if (!entry?.word) continue;
-          if (seenWords.has(entry.word)) continue;
-          const frequency = this.frequencyMap?.[entry.word] ?? entry.frequency ?? 0;
-          if (!frequency || frequency <= 0) continue;
-          const freqProb =
-            this.frequencyProbabilityMap?.[entry.word] ??
-            (totalFreq > 0 ? frequency / totalFreq : 0);
-          if (!freqProb) continue;
-          const exposures = meanExposure * freqProb;
-          const intervalDays =
-            INITIAL_BASE_INTERVAL_DAYS *
-            Math.pow(INITIAL_SOFT_SPACING, Math.max(exposures, 0));
-          if (!Number.isFinite(intervalDays) || intervalDays >= PERMANENT_INTERVAL_DAYS) {
-            continue;
-          }
-          if (intervalDays > INITIAL_LOOKBACK_DAYS) {
-            continue;
-          }
-          const intervalMinutes = intervalDays * 1440;
-          dueItems.push({
-            key: `new:${entry.word}`,
-            word: entry.word,
-            mode: 'reading',
-            dueAt: now,
-            intervalMinutes,
-            frequency,
-            source: 'new'
-          });
-          seenWords.add(entry.word);
-        }
-        dueItems.sort((a, b) => {
-          const freqDelta = (b.frequency ?? 0) - (a.frequency ?? 0);
-          if (freqDelta !== 0) return freqDelta;
-          return (a.dueAt ?? now) - (b.dueAt ?? now);
-        });
-        const limit = 20;
-        return dueItems.slice(0, limit).map((item, index) => {
+        return dueItems.map((item, index) => {
           const minutesUntil = Math.round(((item.dueAt ?? now) - now) / 60000);
           const overdue = minutesUntil <= 0;
           const absMinutes = Math.abs(minutesUntil);
@@ -2124,6 +2052,87 @@ export function createLangyApp() {
           }
         });
       },
+      computePrioritizedDueEntries(options = {}) {
+        const { limit = Infinity, includeNew = true } = options;
+        this.ensureStudyStructures();
+        const now = Date.now();
+        const dueItems = [];
+        const seenWords = new Set();
+        ['reading', 'listening'].forEach((mode) => {
+          const base = this.studyKnowledgeBase?.[mode];
+          if (!base) return;
+          Object.keys(base).forEach((word) => {
+            if (!word || seenWords.has(word)) return;
+            const entry = base[word];
+            if (!entry) return;
+            const dueAt =
+              typeof entry.dueAt === 'number' && Number.isFinite(entry.dueAt) ? entry.dueAt : now;
+            if (dueAt > now) return;
+            const intervalMinutes =
+              typeof entry.intervalMinutes === 'number' && Number.isFinite(entry.intervalMinutes)
+                ? entry.intervalMinutes
+                : 0;
+            const frequency = this.frequencyMap?.[word] ?? 0;
+            seenWords.add(word);
+            dueItems.push({
+              key: `${mode}:${word}`,
+              word,
+              mode,
+              source: 'review',
+              dueAt,
+              intervalMinutes,
+              frequency,
+              lexiconIndex:
+                this.lexiconIndexByWord?.[word] != null ? this.lexiconIndexByWord[word] : null
+            });
+          });
+        });
+        if (includeNew && this.lexicon?.length) {
+          const meanExposure = Math.exp(this.logExposureMean ?? DEFAULT_LOG_EXPOSURE);
+          const totalFreq = this.totalCorpusFrequency || 0;
+          const lexicon = Array.isArray(this.lexicon) ? this.lexicon : [];
+          for (let i = 0; i < lexicon.length && dueItems.length < 200; i += 1) {
+            const entry = lexicon[i];
+            if (!entry?.word || seenWords.has(entry.word)) continue;
+            const frequency = this.frequencyMap?.[entry.word] ?? entry.frequency ?? 0;
+            if (!frequency || frequency <= 0) continue;
+            const freqProb =
+              this.frequencyProbabilityMap?.[entry.word] ??
+              (totalFreq > 0 ? frequency / totalFreq : 0);
+            if (!freqProb) continue;
+            const exposures = meanExposure * Math.max(freqProb, 0);
+            const intervalDays =
+              INITIAL_BASE_INTERVAL_DAYS * Math.pow(INITIAL_SOFT_SPACING, Math.max(exposures, 0));
+            if (!Number.isFinite(intervalDays) || intervalDays >= PERMANENT_INTERVAL_DAYS) {
+              continue;
+            }
+            if (intervalDays > INITIAL_LOOKBACK_DAYS) {
+              continue;
+            }
+            const intervalMinutes = intervalDays * 1440;
+            seenWords.add(entry.word);
+            dueItems.push({
+              key: `new:${entry.word}`,
+              word: entry.word,
+              mode: 'reading',
+              source: 'new',
+              dueAt: now,
+              intervalMinutes,
+              frequency,
+              lexiconIndex: i
+            });
+          }
+        }
+        dueItems.sort((a, b) => {
+          const freqDelta = (b.frequency ?? 0) - (a.frequency ?? 0);
+          if (freqDelta !== 0) return freqDelta;
+          return (a.dueAt ?? now) - (b.dueAt ?? now);
+        });
+        if (Number.isFinite(limit)) {
+          return dueItems.slice(0, Math.max(0, limit));
+        }
+        return dueItems;
+      },
       getStudyKnowledgeBase(mode) {
         this.ensureStudyStructures();
         return this.studyKnowledgeBase[mode] || {};
@@ -2379,6 +2388,25 @@ export function createLangyApp() {
       selectStudyTarget() {
         if (!this.lexicon.length || !this.isStudyReady) {
           return null;
+        }
+        const prioritized = this.computePrioritizedDueEntries({ limit: 1 });
+        if (prioritized.length) {
+          const entry = prioritized[0];
+          const mode = entry.mode || 'reading';
+          const source = entry.source === 'review' ? 'review' : 'new';
+          const knowledgeBase = this.getStudyKnowledgeBase(mode);
+          const knowledgeEntry = source === 'review' ? knowledgeBase[entry.word] || null : null;
+          const lexIndex =
+            entry.lexiconIndex != null
+              ? entry.lexiconIndex
+              : this.lexiconIndexByWord?.[entry.word] ?? null;
+          return this.buildStudyCardMeta({
+            source,
+            mode,
+            entry: knowledgeEntry,
+            word: entry.word,
+            lexiconIndex: lexIndex
+          });
         }
         const priorities = this.studyModePriority();
         for (const mode of priorities) {
