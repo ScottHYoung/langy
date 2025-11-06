@@ -1711,8 +1711,12 @@ export function createLangyApp() {
             source: this.currentStudyCard?.source
           });
         }
+        const isReviewCard = this.appMode === 'study' && this.currentStudyCard?.source === 'review';
+        const allowCalibrationUpdate = !isReviewCard;
         if (currentWord && freqProbability > 0) {
           this.totalResponses += 1;
+        }
+        if (currentWord && freqProbability > 0 && allowCalibrationUpdate) {
           const update = applyLevelUpdate(this, currentWord, freqProbability, isKnown, {
             mode: modeForUpdate
           });
