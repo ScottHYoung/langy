@@ -247,5 +247,20 @@ export function createInitialState() {
     targetSuccessRate: 0.5,
     targetWindowSize: 100,
     responseOptions: ['easy', 'hard', 'incorrect'],
+    actrDemo: {
+      initialized: false,
+      sampleWords: [],
+      selectedWordId: null,
+      simulatedNow: Date.now(),
+      params: {
+        alpha0: 0.1,
+        alpha1: 0.25,
+        alpha2: 0.05,
+        alpha3: 0.1,
+        h0: 0.5,
+        minHalfLife: 0.1,
+        maxHalfLife: Number.POSITIVE_INFINITY
+      }
+    }
   };
 }

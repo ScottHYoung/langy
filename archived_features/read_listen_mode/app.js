@@ -28,6 +28,13 @@ import {
   DEFAULT_LOG_EXPOSURE,
   DEFAULT_LOG_VARIANCE
 } from './utils/profile.js';
+import {
+  HALF_LIFE_DEFAULTS,
+  initializeHalfLifeState,
+  predictRecall as predictHalfLifeRecall,
+  applyHalfLifeUpdate,
+  simulateFutureProbability
+} from './services/halfLifeModel.js';
 
 export function createLangyApp() {
   return {
@@ -465,6 +472,40 @@ export function createLangyApp() {
           ? this.readingGeneration.debugSteps
           : [];
       },
+      actrDemoReady() {
+        return Boolean(this.actrDemo?.initialized);
+      },
+      actrDemoSamples() {
+        return Array.isArray(this.actrDemo?.sampleWords) ? this.actrDemo.sampleWords : [];
+      },
+      actrDemoSelectedWord() {
+        const selected = this.actrDemo?.selectedWordId;
+        if (!selected) return null;
+        return this.actrDemoSamples.find((sample) => sample.id === selected) || null;
+      },
+      actrDemoSelectedHistory() {
+        const sample = this.actrDemoSelectedWord;
+        if (!sample?.state?.history?.length) return [];
+        const base = sample.state.history[0]?.timestamp ?? this.actrDemo.simulatedNow;
+        const span = Math.max(
+          1,
+          (sample.state.history[sample.state.history.length - 1]?.timestamp || base) - base
+        );
+        return sample.state.history.map((point) => ({
+          x: (point.timestamp - base) / span,
+          y: point.probability
+        }));
+      },
+      actrDemoChartPoints() {
+        if (!this.actrDemoSelectedHistory.length) return '';
+        return this.actrDemoSelectedHistory
+          .map((point) => {
+            const x = (point.x || 0) * 300;
+            const y = (1 - (point.y || 0)) * 100;
+            return `${x},${y}`;
+          })
+          .join(' ');
+      }
     },
     methods: {
       selectMode(mode) {
@@ -937,6 +978,105 @@ export function createLangyApp() {
         const needsListening = this.studyMode === 'listening';
         this.calibrationComplete = readingReady && (!needsListening || listeningReady);
         this.syncCalibrationStatusMessage();
+      },
+      ensureActrDemoStructure() {
+        if (!this.actrDemo) {
+          this.actrDemo = {
+            initialized: false,
+            sampleWords: [],
+            selectedWordId: null,
+            simulatedNow: Date.now(),
+            params: { ...HALF_LIFE_DEFAULTS }
+          };
+        }
+        if (!this.actrDemo.params) {
+          this.actrDemo.params = { ...HALF_LIFE_DEFAULTS };
+        }
+      },
+      actrDemoSelectWord(id) {
+        this.ensureActrDemoStructure();
+        if (!id) {
+          this.actrDemo.selectedWordId = null;
+          return;
+        }
+        this.actrDemo.selectedWordId = id;
+      },
+      actrDemoSkipMinutes(minutes = 60) {
+        this.ensureActrDemoStructure();
+        const deltaMs = Math.max(0, minutes) * 60 * 1000;
+        this.actrDemo.simulatedNow += deltaMs;
+        this.actrDemoSamples.forEach((sample) => {
+          const state = sample.state;
+          if (!state) return;
+          const probability = predictHalfLifeRecall(state, this.actrDemo.simulatedNow).probability;
+          state.history = state.history || [];
+          state.history.push({
+            timestamp: this.actrDemo.simulatedNow,
+            probability
+          });
+          if (state.history.length > 200) {
+            state.history.shift();
+          }
+        });
+      },
+      async initActrDemo() {
+        this.ensureActrDemoStructure();
+        if (!this.lexiconLoaded) {
+          await this.loadLexicon();
+        }
+        if (!this.lexicon.length) return;
+        const sampleCount = 5;
+        const samples = [];
+        const total = this.lexicon.length;
+        for (let i = 0; i < sampleCount; i += 1) {
+          const idx = Math.max(0, total - 1 - i);
+          const entry = this.lexicon[idx];
+          if (!entry?.word) continue;
+          const state = initializeHalfLifeState({
+            prior: 0,
+            params: this.actrDemo.params
+          });
+          samples.push({
+            id: `demo-${entry.word}`,
+            word: entry.word,
+            index: idx,
+            state,
+            events: []
+          });
+        }
+        this.actrDemo.sampleWords = samples;
+        this.actrDemo.selectedWordId = samples[0]?.id ?? null;
+        this.actrDemo.simulatedNow = Date.now();
+        this.actrDemo.initialized = true;
+      },
+      actrDemoHandleResponse(sampleId, ratingType) {
+        this.ensureActrDemoStructure();
+        const sample = this.actrDemoSamples.find((item) => item.id === sampleId);
+        if (!sample) return;
+        const ratingMap = {
+          easy: 1,
+          hard: 0.7,
+          incorrect: 0
+        };
+        const outcome = ratingMap[ratingType];
+        if (outcome == null) return;
+        const now = this.actrDemo.simulatedNow;
+        const updatedState = applyHalfLifeUpdate(sample.state, outcome, now, this.actrDemo.params);
+        sample.state = updatedState;
+        sample.events.push({
+          timestamp: now,
+          outcome: ratingType,
+          halfLife: updatedState.halfLife
+        });
+        if (sample.events.length > 100) {
+          sample.events.shift();
+        }
+        this.actrDemo.selectedWordId = sample.id;
+      },
+      actrDemoProbability(sample) {
+        if (!sample?.state) return 0;
+        return predictHalfLifeRecall(sample.state, this.actrDemo?.simulatedNow ?? Date.now())
+          .probability;
       },
       requiredCalibrationModesForMode(mode) {
         if (!mode) return [];

@@ -646,6 +646,141 @@
             </div>
           </div>
 
+          <section v-if="debugMode" class="w-full max-w-5xl rounded-2xl border border-purple-200 bg-white p-5 shadow-sm">
+            <div class="mb-3 flex items-center justify-between">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-purple-500">Half-life demo</p>
+                <h3 class="text-lg font-semibold text-slate-900">ACT-R preview sandbox</h3>
+              </div>
+              <button
+                type="button"
+                class="rounded-full border border-purple-300 px-4 py-2 text-sm font-semibold text-purple-600 hover:bg-purple-50"
+                @click="initActrDemo"
+              >
+                {{ actrDemoReady ? 'Reset demo' : 'Init demo' }}
+              </button>
+            </div>
+            <p class="text-sm text-slate-600">Interact with a few rare words to watch the half-life model update. Use the skip controls to fast-forward simulated time and observe decay.</p>
+            <div v-if="actrDemoReady" class="mt-4 space-y-6">
+              <div class="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-slate-500">
+                <span>Simulated time: {{ new Date(actrDemo.simulatedNow).toLocaleString() }}</span>
+                <div class="flex gap-2 text-[11px]">
+                  <button
+                    type="button"
+                    class="rounded-full border border-slate-300 px-3 py-1 text-slate-600 hover:bg-slate-50"
+                    @click="actrDemoSkipMinutes(5)"
+                  >
+                    +5m
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-full border border-slate-300 px-3 py-1 text-slate-600 hover:bg-slate-50"
+                    @click="actrDemoSkipMinutes(60)"
+                  >
+                    +1h
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-full border border-slate-300 px-3 py-1 text-slate-600 hover:bg-slate-50"
+                    @click="actrDemoSkipMinutes(60 * 24)"
+                  >
+                    +1d
+                  </button>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                  <thead class="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-400">
+                    <tr>
+                      <th class="px-3 py-2">Word</th>
+                      <th class="px-3 py-2">Half-life (days)</th>
+                      <th class="px-3 py-2">Recall now</th>
+                      <th class="px-3 py-2 text-center">Review</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr
+                      v-for="sample in actrDemoSamples"
+                      :key="sample.id"
+                      :class="actrDemoSelectedWord?.id === sample.id ? 'bg-purple-50/50' : ''"
+                      @click="actrDemoSelectWord(sample.id)"
+                      class="cursor-pointer"
+                    >
+                      <td class="px-3 py-2 font-semibold text-slate-800">{{ sample.word }}</td>
+                      <td class="px-3 py-2 text-slate-600">{{ sample.state.halfLife.toFixed(2) }}</td>
+                      <td class="px-3 py-2 text-slate-600">{{ formatPercent(actrDemoProbability(sample)) }}</td>
+                      <td class="px-3 py-2">
+                        <div class="flex flex-wrap gap-2 text-xs">
+                          <button
+                            type="button"
+                            class="rounded-full border border-emerald-200 px-2 py-1 text-emerald-600 hover:bg-emerald-50"
+                            @click.stop="actrDemoHandleResponse(sample.id, 'easy')"
+                          >
+                            Easy
+                          </button>
+                          <button
+                            type="button"
+                            class="rounded-full border border-amber-200 px-2 py-1 text-amber-600 hover:bg-amber-50"
+                            @click.stop="actrDemoHandleResponse(sample.id, 'hard')"
+                          >
+                            Hard
+                          </button>
+                          <button
+                            type="button"
+                            class="rounded-full border border-rose-200 px-2 py-1 text-rose-600 hover:bg-rose-50"
+                            @click.stop="actrDemoHandleResponse(sample.id, 'incorrect')"
+                          >
+                            Incorrect
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div v-if="actrDemoSelectedWord" class="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+                <div class="rounded-2xl border border-slate-200 p-4">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Activation graph</p>
+                  <svg width="320" height="120" class="mt-3">
+                    <rect width="320" height="120" fill="#f8fafc" rx="12"></rect>
+                    <polyline
+                      v-if="actrDemoChartPoints"
+                      :points="actrDemoChartPoints"
+                      fill="none"
+                      stroke="#7c3aed"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                      stroke-linecap="round"
+                    ></polyline>
+                    <line x1="0" y1="100" x2="320" y2="100" stroke="#cbd5f5" stroke-dasharray="4"></line>
+                  </svg>
+                  <p class="mt-2 text-xs text-slate-500">Probability decay for <span class="font-semibold">{{ actrDemoSelectedWord.word }}</span></p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 p-4">
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Recent events</p>
+                  <ul class="mt-3 space-y-2 text-sm">
+                    <li
+                      v-for="event in actrDemoSelectedWord.events.slice().reverse()"
+                      :key="event.timestamp + event.outcome"
+                      class="rounded-xl border border-slate-100 px-3 py-2"
+                    >
+                      <div class="flex items-center justify-between">
+                        <span class="font-semibold text-slate-800">{{ event.outcome }}</span>
+                        <span class="text-xs text-slate-500">{{ new Date(event.timestamp).toLocaleTimeString() }}</span>
+                      </div>
+                      <p class="text-xs text-slate-500">Half-life → {{ event.halfLife.toFixed(2) }} days</p>
+                    </li>
+                    <li v-if="!actrDemoSelectedWord.events.length" class="text-xs text-slate-400">No interactions yet—run a few reviews.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div v-else class="mt-4 rounded-2xl border border-dashed border-purple-200 bg-purple-50 p-4 text-sm text-purple-700">
+              Load the sampled corpus and click “Init demo” to generate rare-word test cases.
+            </div>
+          </section>
         </template>
         <template v-else>
           <div
