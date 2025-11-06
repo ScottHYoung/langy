@@ -288,7 +288,8 @@ export function createLangyApp() {
                 : item.mode === 'listening'
                 ? 'Listening'
                 : 'Reading',
-            priorityRank: index + 1
+            priorityRank: index + 1,
+            priorityValue: item.frequency ?? 0
           };
         });
       },
@@ -2126,6 +2127,15 @@ export function createLangyApp() {
         dueItems.sort((a, b) => {
           const freqDelta = (b.frequency ?? 0) - (a.frequency ?? 0);
           if (freqDelta !== 0) return freqDelta;
+          const aSource = a.source === 'review' ? 0 : 1;
+          const bSource = b.source === 'review' ? 0 : 1;
+          if (aSource !== bSource) return aSource - bSource;
+          if (a.source === 'review' && b.source === 'review') {
+            const intervalDelta = (a.intervalMinutes ?? Infinity) - (b.intervalMinutes ?? Infinity);
+            if (Number.isFinite(intervalDelta) && intervalDelta !== 0) {
+              return intervalDelta;
+            }
+          }
           return (a.dueAt ?? now) - (b.dueAt ?? now);
         });
         if (Number.isFinite(limit)) {
