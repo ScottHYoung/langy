@@ -12,6 +12,13 @@ const SENTENCE_FINAL_PUNCTUATION = new Set(
   Array.from('。！？!?；;')
 );
 
+let unicodeWordRegex = null;
+try {
+  unicodeWordRegex = new RegExp('[\\p{Letter}\\p{Number}]', 'u');
+} catch (error) {
+  unicodeWordRegex = null;
+}
+
 function isWhitespace(char) {
   return /\s/.test(char);
 }
@@ -26,6 +33,13 @@ function isAsciiPunctuation(char) {
 
 function isPunctuation(char) {
   return isChinesePunctuation(char) || isAsciiPunctuation(char);
+}
+
+function isUnicodeWordChar(char) {
+  if (unicodeWordRegex) {
+    return unicodeWordRegex.test(char);
+  }
+  return /[A-Za-z0-9]/.test(char);
 }
 
 function isCjkChar(char) {
@@ -304,6 +318,61 @@ export function segmentChineseText(text, options = {}) {
   const refinedTokens = refineTokens(rawTokens, dictionary, frequencyMap, maxWordLength);
   const normalizedTokens = normalizeTokens(refinedTokens);
   const annotated = annotateSentences(normalizedTokens);
+  const sentences = buildSentenceContexts(annotated);
+  return {
+    segments: annotated,
+    sentences
+  };
+}
+
+export function segmentPlainText(text, options = {}) {
+  if (typeof text !== 'string' || !text.trim()) {
+    return { segments: [], sentences: [] };
+  }
+  const normalizedText = text.replace(/\r\n/g, '\n');
+  const segments = [];
+  let buffer = '';
+  let bufferType = null;
+
+  const flushBuffer = () => {
+    if (!buffer) return;
+    segments.push({
+      text: buffer,
+      type: bufferType || 'word'
+    });
+    buffer = '';
+    bufferType = null;
+  };
+
+  for (const char of normalizedText) {
+    if (char === '\n') {
+      flushBuffer();
+      segments.push({ text: '\n', type: 'newline' });
+      continue;
+    }
+    if (isWhitespace(char)) {
+      if (bufferType !== 'space') {
+        flushBuffer();
+        bufferType = 'space';
+      }
+      buffer += char;
+      continue;
+    }
+    if (isPunctuation(char)) {
+      flushBuffer();
+      segments.push({ text: char, type: 'punct' });
+      continue;
+    }
+    const nextType = isUnicodeWordChar(char) ? 'word' : 'other';
+    if (bufferType && bufferType !== nextType) {
+      flushBuffer();
+    }
+    bufferType = nextType;
+    buffer += char;
+  }
+  flushBuffer();
+
+  const annotated = annotateSentences(segments);
   const sentences = buildSentenceContexts(annotated);
   return {
     segments: annotated,

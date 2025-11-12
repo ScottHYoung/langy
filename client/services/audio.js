@@ -1,10 +1,17 @@
-export async function requestSentenceAudio({ text, voice = 'alloy', audioFormat = 'mp3' }) {
+export async function requestSentenceAudio({
+  text,
+  voice = 'alloy',
+  audioFormat = 'mp3',
+  language
+} = {}) {
+  const languageId =
+    typeof language === 'string' && language.trim() ? language.trim() : undefined;
   const response = await fetch('/api/generate-audio', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ text, voice, audioFormat })
+    body: JSON.stringify({ text, voice, audioFormat, language: languageId })
   });
 
   let payload = null;

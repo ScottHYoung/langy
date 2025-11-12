@@ -15,6 +15,18 @@
       <p class="mt-2 text-sm text-slate-500">
         Sign in with your study credentials to pick up where you left off. Try <span class="font-medium text-slate-700">test-user</span> / <span class="font-medium text-slate-700">langy-demo</span> to explore.
       </p>
+      <div class="mt-6 text-left">
+        <label class="text-xs uppercase tracking-[0.25em] text-slate-400">Language</label>
+        <select
+          :value="activeLanguage"
+          class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+          @change="changeLanguage($event.target.value)"
+        >
+          <option v-for="lang in languageOptions" :key="lang.id" :value="lang.id">
+            {{ lang.label }}
+          </option>
+        </select>
+      </div>
       <form class="mt-8 space-y-4 text-left" @submit.prevent="submitLogin">
         <div>
           <label class="text-xs uppercase tracking-[0.25em] text-slate-400">Username</label>
@@ -54,22 +66,36 @@
             You’re working in <span class="font-semibold text-slate-700">{{ currentModeTitle }}</span> mode.
           </p>
         </div>
-        <div class="flex items-center gap-3">
-          <button
-            v-if="appMode"
-            type="button"
-            class="rounded-full border border-slate-300 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 transition hover:border-slate-400 hover:bg-slate-100"
-            @click="returnToModeMenu"
-          >
-            Back to modes
-          </button>
-          <button
-            type="button"
-            class="rounded-full border border-slate-300 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 transition hover:border-slate-400 hover:bg-slate-100"
-            @click="logout"
-          >
-            Logout
-          </button>
+        <div class="flex flex-col gap-3 text-left sm:flex-row sm:items-center sm:gap-6">
+          <div>
+            <label class="text-xs uppercase tracking-[0.25em] text-slate-400">Language</label>
+            <select
+              :value="activeLanguage"
+              class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              @change="changeLanguage($event.target.value)"
+            >
+              <option v-for="lang in languageOptions" :key="lang.id" :value="lang.id">
+                {{ lang.label }}
+              </option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              v-if="appMode"
+              type="button"
+              class="rounded-full border border-slate-300 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 transition hover:border-slate-400 hover:bg-slate-100"
+              @click="returnToModeMenu"
+            >
+              Back to modes
+            </button>
+            <button
+              type="button"
+              class="rounded-full border border-slate-300 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 transition hover:border-slate-400 hover:bg-slate-100"
+              @click="logout"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -481,9 +507,14 @@
                 </div>
                 <div v-if="currentCard" class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
                   <div class="flex flex-wrap items-center gap-4">
-                    <span class="text-4xl font-semibold text-amber-500">{{ currentCard.focus.hanzi }}</span>
+                    <span class="text-4xl font-semibold text-amber-500">
+                      {{ currentCard.focus.display || currentCard.focus.hanzi }}
+                    </span>
                     <div>
-                      <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin || '—' }}</p>
+                      <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ romanizationLabel }}</p>
+                      <p class="text-sm text-slate-600">
+                        {{ currentCard.focus.pronunciation || currentCard.focus.pinyin || '—' }}
+                      </p>
                       <p class="text-sm text-slate-500">{{ currentCard.wordTranslation || '—' }}</p>
                       <p class="text-xs uppercase tracking-[0.2em] text-slate-400">
                         {{ currentCard.focus.literal || '—' }}
@@ -830,9 +861,14 @@
                       class="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm"
                     >
                       <div class="flex flex-wrap items-center gap-4">
-                        <span class="text-4xl font-semibold text-amber-500">{{ currentCard.focus.hanzi }}</span>
+                        <span class="text-4xl font-semibold text-amber-500">
+                          {{ currentCard.focus.display || currentCard.focus.hanzi }}
+                        </span>
                         <div>
-                          <p class="text-sm text-slate-600">{{ currentCard.focus.pinyin || '—' }}</p>
+                          <p class="text-xs uppercase tracking-[0.3em] text-slate-400">{{ romanizationLabel }}</p>
+                          <p class="text-sm text-slate-600">
+                            {{ currentCard.focus.pronunciation || currentCard.focus.pinyin || '—' }}
+                          </p>
                           <p class="text-sm text-slate-500">{{ currentCard.wordTranslation || '—' }}</p>
                           <p class="text-xs uppercase tracking-[0.2em] text-slate-400">
                             {{ currentCard.focus.literal || '—' }}

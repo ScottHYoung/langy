@@ -405,6 +405,13 @@ export const seedCards = [
 ];
 
 export const focusMetaMap = seedCards.reduce((acc, card) => {
-  acc[card.focus.hanzi] = { ...card.focus };
+  const key =
+    card?.focus?.hanzi || card?.focus?.word || card?.focus?.text || card?.sentence?.focus;
+  if (!key) return acc;
+  acc[key] = {
+    ...card.focus,
+    display: card?.focus?.hanzi || card?.focus?.word || card?.focus?.text || key,
+    pronunciation: card?.focus?.pinyin || card?.focus?.pronunciation || ''
+  };
   return acc;
 }, {});

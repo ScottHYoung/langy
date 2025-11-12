@@ -1,5 +1,6 @@
 const { OPENAI_API_KEY, MODEL } = require('../config');
 const { logApiUsage } = require('../utils/logging');
+const { getLanguageSpec, DEFAULT_LANGUAGE_ID } = require('../config/languages');
 
 const MODEL_PRICING = {
   'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
@@ -27,15 +28,58 @@ function estimateCostUsd(model, inputTokens, outputTokens) {
   return Number(cost.toFixed(6));
 }
 
-async function callOpenAI(word) {
-  const systemPrompt = [
-    'You generate concise Mandarin study cards.',
-    'Return a JSON object with: (a) a single Mandarin sentence that naturally uses the target word, (b) the target word written in pinyin with tone marks, (c) an English translation of the sentence, (d) the word’s English gloss (translation), (e) a short English definition clarifying nuance, and (f) a short English usage hint (<= 25 words) covering register, collocations, or nuance.',
-    'The sentence should be under 30 Chinese characters, sound natural, and the target word must appear exactly as provided.',
-    'All English outputs must be in English only.',
-    'Return strictly JSON with the shape: {"sentence": "...", "word_pinyin": "...", "sentence_translation": "...", "word_translation": "...", "definition": "...", "usage_hint": "..."}'
-  ].join(' ');
+function resolveLanguage(languageId) {
+  return getLanguageSpec(languageId || DEFAULT_LANGUAGE_ID);
+}
 
+function buildCardSystemPrompt(language) {
+  const name = language?.label || 'the target language';
+  const romanizationLabel = language?.romanizationLabel || 'romanization';
+  const limit = language?.card?.sentenceLengthLimit ?? 120;
+  const scriptDescriptor = language?.card?.scriptDescriptor || 'target sentence';
+  const romanizationNote =
+    language?.card?.romanizationNote ||
+    `Provide the target word's ${romanizationLabel} using standard conventions.`;
+  return [
+    `You generate concise ${name} study cards for intermediate learners.`,
+    `Use natural, idiomatic ${name} and include the target word exactly as provided (respecting casing and script).`,
+    `Keep the ${scriptDescriptor.toLowerCase()} under ${limit} characters, including punctuation.`,
+    romanizationNote,
+    'Return a JSON object with the fields: sentence, word_pinyin, sentence_translation, word_translation, definition, usage_hint.',
+    'All English outputs (translations, definitions, usage hints) must remain in English only.',
+    'Do not add commentary outside of the JSON response.'
+  ].join(' ');
+}
+
+function buildGlossSystemPrompt(language) {
+  const name = language?.label || 'the target language';
+  const romanizationDescriptor =
+    language?.gloss?.romanizationDescriptor || language?.romanizationLabel || 'romanization';
+  return [
+    `You are a bilingual assistant helping an intermediate ${name} learner read authentic text.`,
+    `For each target word provide: (1) ${romanizationDescriptor}, (2) a concise English gloss (<= 6 words) that fits the sentence, (3) an optional nuance note (<= 20 words, or empty string if unnecessary).`,
+    'Respond strictly with JSON that matches the provided schema and avoid commentary.'
+  ].join(' ');
+}
+
+function buildReadingSystemPrompt(language, immersion, difficulty, revisionNote) {
+  const descriptor = language?.reading?.descriptor || `${language?.label || 'target language'} passages`;
+  const name = language?.label || 'the target language';
+  return [
+    `You craft short graded ${descriptor}.`,
+    `Learner profile: ${immersion.summary} (${immersion.label}).`,
+    `Target comprehension: ${Math.round(difficulty.target * 100)}% known words (${difficulty.label}).`,
+    difficulty.instructions,
+    `Use natural ${name} only—no English, transliteration, or pinyin inside the passage.`,
+    'Prefer high-frequency vocabulary and support any rare terms with context.',
+    revisionNote
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+async function callOpenAI(word, options = {}) {
+  const language = resolveLanguage(options.languageId);
+  const systemPrompt = buildCardSystemPrompt(language);
   const userPrompt = `Target word: ${word}`;
 
   const payloadBody = {
@@ -72,13 +116,13 @@ async function callOpenAI(word) {
   let responsePayloadSize = 0;
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENAI_API_KEY}`
-    },
-    body: requestPayload
-  });
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OPENAI_API_KEY}`
+      },
+      body: requestPayload
+    });
 
     const payload = await response.json();
     responsePayloadSize = bytesFor(JSON.stringify(payload));
@@ -108,7 +152,8 @@ async function callOpenAI(word) {
       inputTokens,
       outputTokens,
       estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, outputTokens),
-      success: true
+      success: true,
+      meta: { language: language.id }
     });
     return parsed;
   } catch (error) {
@@ -125,7 +170,8 @@ async function callOpenAI(word) {
       outputTokens: 0,
       estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, 0),
       success: false,
-      error: error?.message || 'Unknown error'
+      error: error?.message || 'Unknown error',
+      meta: { language: language.id }
     });
     throw error;
   }
@@ -211,10 +257,11 @@ module.exports = {
   callOpenAIReadPassage
 };
 
-async function callOpenAIReadGlosses({ text, targets }) {
+async function callOpenAIReadGlosses({ text, targets, languageId }) {
   if (!Array.isArray(targets) || !targets.length) {
     return [];
   }
+  const language = resolveLanguage(languageId);
   const sanitizedTargets = targets
     .filter((entry) => entry && typeof entry.word === 'string' && entry.word.trim())
     .slice(0, 24)
@@ -239,14 +286,7 @@ async function callOpenAIReadGlosses({ text, targets }) {
     )
     .join('\n');
 
-  const systemPrompt = [
-    'You are a bilingual assistant helping an intermediate Mandarin learner read authentic text.',
-    'For each target word, provide:',
-    '1) accurate pinyin with tone marks,',
-    '2) a concise English gloss (<= 6 words) that fits the sentence context,',
-    '3) a short note (<= 20 words) highlighting nuance, tone, or usage if needed (otherwise an empty string).',
-    'Return strictly JSON following the provided schema. Do not add commentary.'
-  ].join(' ');
+  const systemPrompt = buildGlossSystemPrompt(language);
 
   const userPrompt = [
     'Reading passage:',
@@ -361,7 +401,8 @@ async function callOpenAIReadGlosses({ text, targets }) {
       estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, outputTokens),
       success: true,
       targetsRequested: targets.length,
-      glossesReturned: results.length
+      glossesReturned: results.length,
+      meta: { language: language.id }
     });
     return results;
   } catch (error) {
@@ -379,7 +420,8 @@ async function callOpenAIReadGlosses({ text, targets }) {
       estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, 0),
       success: false,
       error: error?.message || 'Unknown error',
-      targetsRequested: targets.length
+      targetsRequested: targets.length,
+      meta: { language: language.id }
     });
     throw error;
   }
@@ -425,8 +467,10 @@ async function callOpenAIReadPassage({
   difficultyTarget,
   paragraphCount = 2,
   easeAdjustment = 0,
-  previousPassage = null
+  previousPassage = null,
+  languageId
 }) {
+  const language = resolveLanguage(languageId);
   const immersion = describeImmersion(lifetimeTokens);
   const difficulty = describeDifficulty(difficultyTarget, easeAdjustment);
   const safeParagraphCount = Math.min(4, Math.max(2, paragraphCount | 0));
@@ -435,14 +479,7 @@ async function callOpenAIReadPassage({
     ? 'The prior attempt was too difficult; simplify low-frequency vocabulary while preserving the overall idea.'
     : 'Write fresh content; avoid overusing rare words.';
 
-  const systemPrompt = [
-    'You craft short graded Mandarin reading passages.',
-    `Learner profile: ${immersion.summary} (${immersion.label}).`,
-    `Target comprehension: ${Math.round(difficulty.target * 100)}% known words (${difficulty.label}).`,
-    'Use natural Mandarin, avoid mixing in pinyin or English glosses.',
-    'Prefer everyday, high-frequency expressions; only a handful of rarer words may appear, and they must be well-supported by context.',
-    revisionNote
-  ].join(' ');
+  const systemPrompt = buildReadingSystemPrompt(language, immersion, difficulty, revisionNote);
 
   const userPrompt = [
     topicLine,
@@ -522,7 +559,7 @@ async function callOpenAIReadPassage({
     const outputTokens = estimateTokensFromChars(JSON.stringify(parsed).length);
     logApiUsage({
       type: 'chat.completions',
-      mode: 'read-passage',
+      mode: 'read-generate',
       model: MODEL,
       latencyMs,
       requestBytes,
@@ -531,15 +568,12 @@ async function callOpenAIReadPassage({
       outputTokens,
       estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, outputTokens),
       success: true,
-      difficultyTarget: difficultyTarget,
-      adjustedDifficulty: difficulty.target,
-      topic: topic || '',
-      paragraphCount: paragraphs.length
+      meta: { language: language.id }
     });
     return {
-      title: parsed?.title || '',
-      summary_en: parsed?.summary_en || '',
+      title: parsed.title || 'Reading practice',
       paragraphs,
+      summary_en: parsed.summary_en || '',
       text,
       adjustedDifficulty: difficulty.target
     };
@@ -548,7 +582,7 @@ async function callOpenAIReadPassage({
     const inputTokens = estimateTokensFromChars(requestPayload.length);
     logApiUsage({
       type: 'chat.completions',
-      mode: 'read-passage',
+      mode: 'read-generate',
       model: MODEL,
       latencyMs,
       requestBytes,
@@ -558,8 +592,8 @@ async function callOpenAIReadPassage({
       estimatedCostUsd: estimateCostUsd(MODEL, inputTokens, 0),
       success: false,
       error: error?.message || 'Unknown error',
-      topic: topic || '',
-      paragraphCount: safeParagraphCount
+      previousPassageLength: previousPassage ? previousPassage.length : 0,
+      meta: { language: language.id }
     });
     throw error;
   }

@@ -5,7 +5,12 @@ const {
   callOpenAIReadGlosses,
   callOpenAIReadPassage
 } = require('../services/openai');
-const { resolveGlossesLocally } = require('../services/glossary');
+const { getLanguageSpec, DEFAULT_LANGUAGE_ID } = require('../config/languages');
+
+function selectLanguage(value) {
+  const id = typeof value === 'string' && value.trim() ? value.trim() : DEFAULT_LANGUAGE_ID;
+  return getLanguageSpec(id);
+}
 
 async function handleApiGenerate(req, res) {
   if (req.method === 'OPTIONS') {
@@ -33,6 +38,7 @@ async function handleApiGenerate(req, res) {
   }
 
   const word = typeof body.word === 'string' ? body.word.trim() : '';
+  const language = selectLanguage(body.language);
   if (!word) {
     setCommonHeaders(res);
     res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -41,7 +47,7 @@ async function handleApiGenerate(req, res) {
   }
 
   try {
-    const completion = await callOpenAI(word);
+    const completion = await callOpenAI(word, { languageId: language.id });
     const payload = {
       word,
       sentence: completion.sentence,
@@ -49,7 +55,8 @@ async function handleApiGenerate(req, res) {
       sentence_translation: completion.sentence_translation,
       word_translation: completion.word_translation,
       definition: completion.definition,
-      usage_hint: completion.usage_hint
+      usage_hint: completion.usage_hint,
+      language: language.id
     };
     setCommonHeaders(res);
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -97,6 +104,7 @@ async function handleApiGenerateAudio(req, res) {
   const text = typeof body.text === 'string' ? body.text.trim() : '';
   const voice = typeof body.voice === 'string' && body.voice.trim() ? body.voice.trim() : 'alloy';
   const audioFormat = typeof body.audioFormat === 'string' && body.audioFormat.trim() ? body.audioFormat.trim() : 'mp3';
+  selectLanguage(body.language);
   if (!text) {
     setCommonHeaders(res);
     res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -182,8 +190,15 @@ async function handleApiReadAnalyze(req, res) {
     return;
   }
 
+  const language = selectLanguage(body.language);
+
   try {
-    const localResolution = await resolveGlossesLocally(sanitizedTargets);
+    let localResolution = { resolved: [], unresolved: sanitizedTargets };
+    const localResolver =
+      typeof language.resolveGlossesLocally === 'function' ? language.resolveGlossesLocally : null;
+    if (localResolver) {
+      localResolution = await localResolver(sanitizedTargets);
+    }
     const pendingTargets = localResolution.unresolved || [];
     const localGlosses = Array.isArray(localResolution.resolved) ? localResolution.resolved : [];
     let remoteGlosses = [];
@@ -191,7 +206,8 @@ async function handleApiReadAnalyze(req, res) {
     if (pendingTargets.length) {
       remoteGlosses = await callOpenAIReadGlosses({
         text,
-        targets: pendingTargets
+        targets: pendingTargets,
+        languageId: language.id
       });
     }
 
@@ -279,6 +295,8 @@ async function handleApiReadGenerate(req, res) {
       ? body.previousPassage.trim()
       : null;
 
+  const language = selectLanguage(body.language);
+
   try {
     const result = await callOpenAIReadPassage({
       topic,
@@ -286,7 +304,8 @@ async function handleApiReadGenerate(req, res) {
       difficultyTarget,
       paragraphCount,
       easeAdjustment,
-      previousPassage
+      previousPassage,
+      languageId: language.id
     });
     setCommonHeaders(res);
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });

@@ -1,22 +1,45 @@
 import { initializeCalibration } from './calibration.js';
 
-export async function fetchFrequencyCorpus() {
-  const response = await fetch('corpus/subtlex_word_frequency.txt');
+export async function fetchFrequencyCorpus(language) {
+  const corpusConfig = language?.corpus || {};
+  const path = corpusConfig.path || 'corpus/subtlex_word_frequency.txt';
+  const format = corpusConfig.format || 'tsv';
+  const response = await fetch(path);
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
+  }
+  if (format === 'mk-json') {
+    const payload = await response.json();
+    const results = Array.isArray(payload?.results) ? payload.results : [];
+    return results
+      .map((entry) => {
+        const lemma = entry?.lemma || entry?.word || '';
+        const frequency = Number.parseInt(entry?.total_frequency ?? entry?.frequency ?? 0, 10);
+        if (!lemma || !Number.isFinite(frequency) || frequency <= 0) return null;
+        return {
+          word: lemma,
+          frequency,
+          forms: Array.isArray(entry?.forms) ? entry.forms : []
+        };
+      })
+      .filter(Boolean);
   }
   const raw = await response.text();
   return raw
     .split(/\r?\n/)
     .map((line) => {
-      const [word, freqStr] = line.trim().split(/\s+/);
+      const trimmed = line.trim();
+      if (!trimmed) return null;
+      const parts = trimmed.split(/\s+/);
+      const word = parts[0];
+      const freqStr = parts[1];
       if (!word || !freqStr) return null;
       const frequency = Number.parseInt(freqStr, 10);
       if (!Number.isFinite(frequency) || frequency <= 0) return null;
       return { word, frequency };
     })
     .filter(Boolean)
-    .slice(0, 100000);
+    .slice(0, 120000);
 }
 
 export function initializeLexicon(state, entries) {

@@ -1,10 +1,20 @@
-export async function generateCard(word) {
+export async function generateCard(input) {
+  const payloadInput =
+    typeof input === 'string' ? { word: input } : input && typeof input === 'object' ? input : {};
+  const word = typeof payloadInput.word === 'string' ? payloadInput.word.trim() : '';
+  const languageId =
+    typeof payloadInput.language === 'string' && payloadInput.language.trim()
+      ? payloadInput.language.trim()
+      : undefined;
+  if (!word) {
+    throw new Error('A word is required to generate a card.');
+  }
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ word })
+    body: JSON.stringify({ word, language: languageId })
   });
 
   let payload = null;
@@ -35,7 +45,14 @@ export async function generateCard(word) {
   return payload;
 }
 
-export async function requestReadGlosses({ text = '', targets = [] } = {}) {
+export async function requestReadGlosses(options = {}) {
+  const {
+    text = '',
+    targets = [],
+    language
+  } = options || {};
+  const languageId =
+    typeof language === 'string' && language.trim() ? language.trim() : undefined;
   const response = await fetch('/api/read/analyze', {
     method: 'POST',
     headers: {
@@ -43,7 +60,8 @@ export async function requestReadGlosses({ text = '', targets = [] } = {}) {
     },
     body: JSON.stringify({
       text,
-      targets
+      targets,
+      language: languageId
     })
   });
 
@@ -68,6 +86,10 @@ export async function requestReadGlosses({ text = '', targets = [] } = {}) {
 }
 
 export async function requestReadingPassage(options = {}) {
+  const languageId =
+    typeof options.language === 'string' && options.language.trim()
+      ? options.language.trim()
+      : undefined;
   const response = await fetch('/api/read/generate', {
     method: 'POST',
     headers: {
@@ -79,7 +101,8 @@ export async function requestReadingPassage(options = {}) {
       difficultyTarget: options.difficultyTarget || 0.9,
       paragraphCount: options.paragraphCount || 2,
       easeAdjustment: options.easeAdjustment || 0,
-      previousPassage: options.previousPassage || ''
+      previousPassage: options.previousPassage || '',
+      language: languageId
     })
   });
 

@@ -1,4 +1,8 @@
-import { createInitialState, READING_TOPIC_LIBRARY } from './state/sessionState.js';
+import {
+  createInitialState,
+  createLanguageState,
+  LANGUAGE_STATE_KEYS
+} from './state/sessionState.js';
 import { seedCards, focusMetaMap } from './data/seedCards.js';
 import {
   formatPercent,
@@ -8,7 +12,6 @@ import {
   clampProbability
 } from './utils/formatters.js';
 import { highlightFocus as highlightFocusText } from './utils/text.js';
-import { segmentChineseText } from './utils/segmentation.js';
 import { fetchFrequencyCorpus, initializeLexicon } from './services/lexicon.js';
 import { generateCard, requestReadGlosses, requestReadingPassage } from './services/api.js';
 import { requestSentenceAudio } from './services/audio.js';
@@ -28,6 +31,7 @@ import {
   DEFAULT_LOG_EXPOSURE,
   DEFAULT_LOG_VARIANCE
 } from './utils/profile.js';
+import { getLanguageConfig } from './languages/index.js';
 
 const STUDY_STATE_VERSION = 2;
 const INITIAL_LOOKBACK_DAYS = 3;
@@ -54,6 +58,15 @@ export function createLangyApp() {
       this.restorePreferences();
     },
     computed: {
+      languageOptions() {
+        return Array.isArray(this.languageChoices) ? this.languageChoices : [];
+      },
+      activeLanguageConfig() {
+        return getLanguageConfig(this.activeLanguage);
+      },
+      romanizationLabel() {
+        return this.activeLanguageConfig?.romanizationLabel || 'Romanization';
+      },
       currentCard() {
         return this.activeCard;
       },
@@ -436,14 +449,17 @@ export function createLangyApp() {
       },
       segmentReadText(text, options = {}) {
         const dictionary = this.lexiconWordSet;
-        const result = segmentChineseText(text, {
-          dictionary,
-          frequencyMap: this.frequencyMap || {},
-          maxWordLength:
-            typeof options.maxWordLength === 'number' ? options.maxWordLength : undefined,
-          preferJieba: options.preferJieba
-        });
-        return result;
+        const segmenter = this.activeLanguageConfig?.segmenter;
+        if (typeof segmenter === 'function') {
+          return segmenter(text, {
+            dictionary,
+            frequencyMap: this.frequencyMap || {},
+            maxWordLength:
+              typeof options.maxWordLength === 'number' ? options.maxWordLength : undefined,
+            preferJieba: options.preferJieba
+          });
+        }
+        return { segments: [], sentences: [] };
       },
       async generateReadingPassage(options = {}) {
         if (this.readingGeneration.isGenerating) {
@@ -495,7 +511,8 @@ export function createLangyApp() {
             lifetimeTokens,
             easeAdjustment: 0,
             attempt: 1,
-            previousPassage: null
+            previousPassage: null,
+            languageId: this.activeLanguage
           });
         } catch (error) {
           this.readingErrorMessage = error?.message || 'Unable to generate passage.';
@@ -511,7 +528,8 @@ export function createLangyApp() {
         lifetimeTokens,
         easeAdjustment,
         attempt,
-        previousPassage
+        previousPassage,
+        languageId
       }) {
         const maxAttempts = this.readingGeneration.maxAttempts || 3;
         if (attempt > maxAttempts) {
@@ -540,7 +558,8 @@ export function createLangyApp() {
             difficultyTarget,
             paragraphCount,
             easeAdjustment,
-            previousPassage
+            previousPassage,
+            language: languageId || this.activeLanguage
           });
         } catch (error) {
           this.recordReadingDebugStep({
@@ -602,7 +621,8 @@ export function createLangyApp() {
           lifetimeTokens,
           easeAdjustment: adjustment,
           attempt: nextAttempt,
-          previousPassage: result.text
+          previousPassage: result.text,
+          languageId: languageId || this.activeLanguage
         });
       },
       evaluateReadingPassage(text) {
@@ -660,11 +680,12 @@ export function createLangyApp() {
         this.readingGeneration.debugSteps = steps.slice(-20);
       },
       pickRandomReadingTopic() {
-        if (!Array.isArray(READING_TOPIC_LIBRARY) || !READING_TOPIC_LIBRARY.length) {
-          return '城市生活随记';
+        const topics = this.activeLanguageConfig?.readingTopics;
+        if (!Array.isArray(topics) || !topics.length) {
+          return 'Everyday life';
         }
-        const index = Math.floor(Math.random() * READING_TOPIC_LIBRARY.length);
-        return READING_TOPIC_LIBRARY[index];
+        const index = Math.floor(Math.random() * topics.length);
+        return topics[index];
       },
       prepareReadingSegments({ segments = [], sentences = [] } = {}) {
         if (!Array.isArray(segments) || !segments.length) {
@@ -825,7 +846,8 @@ export function createLangyApp() {
         try {
           const glosses = await requestReadGlosses({
             text,
-            targets: pending
+            targets: pending,
+            language: this.activeLanguage
           });
           const responses = Array.isArray(glosses) ? glosses : [];
           const merged = { ...this.readingGlossesByKey };
@@ -1067,7 +1089,7 @@ export function createLangyApp() {
           username,
           apiKey: ''
         };
-        this.loadUserProfile(username);
+        this.loadUserProfile(username, this.activeLanguage);
         this.refreshCalibrationCompleteness();
         this.isAuthenticated = true;
         this.calibrationActive = false;
@@ -1114,6 +1136,7 @@ export function createLangyApp() {
           username: '',
           apiKey: ''
         };
+        this.languageStateCache = {};
         this.isFlipped = false;
         this.totalResponses = 0;
         this.calibrationResponses = [];
@@ -1230,11 +1253,21 @@ export function createLangyApp() {
         }
         await this.loadNextCard({});
       },
-      loadUserProfile(username) {
+      loadUserProfile(username, languageId = this.activeLanguage) {
         if (!username) return;
+        const storageKey = this.getProfileStorageKey(username, languageId);
         try {
-          const raw = window.localStorage.getItem(`langy-profile:${username}`);
-          if (!raw) return;
+          let raw = storageKey ? window.localStorage.getItem(storageKey) : null;
+          let legacyKeyUsed = false;
+          if (!raw) {
+            const legacyKey = `langy-profile:${username}`;
+            raw = window.localStorage.getItem(legacyKey);
+            if (raw && storageKey) {
+              legacyKeyUsed = true;
+            } else if (!raw) {
+              return;
+            }
+          }
           const data = JSON.parse(raw);
           this.ensureStudyStructures();
           if (typeof data.studyMode === 'string') {
@@ -1391,6 +1424,17 @@ export function createLangyApp() {
           this.logExposureMean = activeProfile.logExposureMean ?? DEFAULT_LOG_EXPOSURE;
           this.logExposureVar = activeProfile.logExposureVar ?? DEFAULT_LOG_VARIANCE;
           this.refreshCalibrationCompleteness();
+          if (legacyKeyUsed && storageKey) {
+            try {
+              window.localStorage.setItem(storageKey, raw);
+              window.localStorage.removeItem(`langy-profile:${username}`);
+            } catch (error) {
+              console.warn('Unable to migrate profile storage key:', error);
+            }
+          }
+          const cache = { ...(this.languageStateCache || {}) };
+          cache[languageId || this.activeLanguage] = this.captureLanguageState();
+          this.languageStateCache = cache;
         } catch (error) {
           console.warn('Unable to load stored profile:', error);
         }
@@ -1429,6 +1473,7 @@ export function createLangyApp() {
         };
         const payload = {
           studyStateVersion: STUDY_STATE_VERSION,
+          language: this.activeLanguage,
           studyMode: this.studyMode,
           calibrationComplete: this.calibrationComplete,
           logExposureMean: this.logExposureMean,
@@ -1455,8 +1500,11 @@ export function createLangyApp() {
           },
           updatedAt: Date.now()
         };
+        const storageKey = this.getProfileStorageKey(username);
+        if (!storageKey) return;
         try {
-          window.localStorage.setItem(`langy-profile:${username}`, JSON.stringify(payload));
+          window.localStorage.setItem(storageKey, JSON.stringify(payload));
+          window.localStorage.removeItem(`langy-profile:${username}`);
         } catch (error) {
           console.warn('Unable to persist profile:', error);
         }
@@ -1510,7 +1558,8 @@ export function createLangyApp() {
           return;
         }
         try {
-          const entries = await fetchFrequencyCorpus();
+          const language = this.activeLanguageConfig;
+          const entries = await fetchFrequencyCorpus(language);
           if (entries.length) {
             initializeLexicon(this, entries);
             this.rebuildLexiconIndex();
@@ -1525,7 +1574,17 @@ export function createLangyApp() {
         }
         if (!this.lexicon.length) {
           const fallbackEntries = Array.from(
-            new Set(seedCards.map((card) => card.focus.hanzi))
+            new Set(
+              seedCards
+                .map(
+                  (card) =>
+                    card?.focus?.hanzi ||
+                    card?.focus?.word ||
+                    card?.focus?.text ||
+                    card?.sentence?.focus
+                )
+                .filter(Boolean)
+            )
           ).map((word) => ({
             word,
             frequency: 1
@@ -1616,9 +1675,12 @@ export function createLangyApp() {
         this.isLoadingCard = true;
         this.errorMessage = '';
         try {
-          const completion = await generateCard(word);
+          const completion = await generateCard({ word, language: this.activeLanguage });
           const meta = focusMetaMap[word] || {};
+          const display = meta.display || meta.hanzi || word;
+          const pronunciation = completion.word_pinyin || meta.pinyin || meta.pronunciation || '';
           this.activeCard = {
+            language: this.activeLanguage,
             sentence: {
               text: completion.sentence,
               focus: word
@@ -1626,8 +1688,11 @@ export function createLangyApp() {
             sentenceTranslation: completion.sentence_translation,
             wordTranslation: completion.word_translation,
             focus: {
-              hanzi: word,
-              pinyin: completion.word_pinyin || meta.pinyin || '',
+              text: word,
+              display,
+              hanzi: meta.hanzi || word,
+              pinyin: pronunciation,
+              pronunciation,
               literal: meta.literal || '',
               definition: completion.definition || meta.definition || '',
               usage: completion.usage_hint || ''
@@ -1811,7 +1876,11 @@ export function createLangyApp() {
         }
         try {
           this.isLoadingAudio = true;
-          const result = await requestSentenceAudio({ text: sentenceText });
+          const result = await requestSentenceAudio({
+            text: sentenceText,
+            voice: this.activeLanguageConfig?.defaultVoice,
+            language: this.activeLanguage
+          });
           if (cached?.url && cached.url !== result.url) {
             URL.revokeObjectURL(cached.url);
           }
@@ -1885,7 +1954,84 @@ export function createLangyApp() {
         }
         this.persistUserProfile();
       },
+      changeLanguage(languageId) {
+        const normalized = getLanguageConfig(languageId)?.id;
+        if (!normalized || normalized === this.activeLanguage) {
+          this.persistLanguagePreference(this.activeLanguage);
+          return;
+        }
+        if (this.userProfile?.username) {
+          this.persistUserProfile();
+        }
+        this.storeCurrentLanguageState();
+        const cached = this.languageStateCache?.[normalized];
+        this.applyLanguageStateSnapshot(normalized, cached);
+        this.activeLanguage = normalized;
+        if (this.userProfile?.username) {
+          this.loadUserProfile(this.userProfile.username, normalized);
+        }
+        this.persistLanguagePreference(normalized);
+        this.restoreStudyModePreference();
+        this.returnToModeMenu();
+      },
+      cloneLanguageStateValue(value) {
+        if (value === null || typeof value !== 'object') {
+          return value;
+        }
+        if (typeof globalThis !== 'undefined' && typeof globalThis.structuredClone === 'function') {
+          try {
+            return globalThis.structuredClone(value);
+          } catch (error) {
+            // fallback to JSON clone
+          }
+        }
+        try {
+          return JSON.parse(JSON.stringify(value));
+        } catch (error) {
+          return value;
+        }
+      },
+      captureLanguageState() {
+        const snapshot = {};
+        LANGUAGE_STATE_KEYS.forEach((key) => {
+          snapshot[key] = this.cloneLanguageStateValue(this[key]);
+        });
+        return snapshot;
+      },
+      applyLanguageStateSnapshot(languageId, snapshot) {
+        const defaults = createLanguageState(languageId);
+        const source = snapshot ? { ...defaults, ...snapshot } : defaults;
+        LANGUAGE_STATE_KEYS.forEach((key) => {
+          this[key] = this.cloneLanguageStateValue(source[key]);
+        });
+      },
+      storeCurrentLanguageState() {
+        if (!this.activeLanguage) return;
+        const cache = { ...(this.languageStateCache || {}) };
+        cache[this.activeLanguage] = this.captureLanguageState();
+        this.languageStateCache = cache;
+      },
       restorePreferences() {
+        this.restoreLanguagePreference();
+        this.restoreStudyModePreference();
+      },
+      restoreLanguagePreference() {
+        try {
+          const stored = window.localStorage.getItem('langy-language');
+          if (stored) {
+            const normalized = getLanguageConfig(stored).id;
+            if (normalized && normalized !== this.activeLanguage) {
+              const cached = this.languageStateCache?.[normalized];
+              this.applyLanguageStateSnapshot(normalized, cached);
+              this.activeLanguage = normalized;
+            }
+          }
+          this.persistLanguagePreference(this.activeLanguage);
+        } catch (error) {
+          // ignore storage errors
+        }
+      },
+      restoreStudyModePreference() {
         try {
           const stored = window.localStorage.getItem('langy-study-mode');
           if (stored === 'listening' || stored === 'reading') {
@@ -1901,6 +2047,18 @@ export function createLangyApp() {
         } catch (error) {
           // ignore storage errors
         }
+      },
+      persistLanguagePreference(languageId = this.activeLanguage) {
+        try {
+          window.localStorage.setItem('langy-language', languageId);
+        } catch (error) {
+          // ignore storage errors
+        }
+      },
+      getProfileStorageKey(username, languageId = this.activeLanguage) {
+        if (!username) return null;
+        const lang = languageId || this.activeLanguage || 'default';
+        return `langy-profile:${username}:${lang}`;
       },
       selectNextIndex(options = {}) {
         if (!this.lexicon.length) return this.currentIndex || 0;
