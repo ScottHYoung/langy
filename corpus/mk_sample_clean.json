@@ -1,0 +1,6624 @@
+{
+  "source": "corpus_raw/mk_full.txt",
+  "sample_size": 1000,
+  "generated_at": "2025-11-12T03:05:40.136741+00:00",
+  "stats": {
+    "total_input_entries": 1000,
+    "total_input_frequency": 38420,
+    "filtered_non_cyrillic": 57,
+    "lemmatization_failures": 0,
+    "retained_entries": 943,
+    "retained_frequency": 38221,
+    "filtered_examples": [
+      "gimme",
+      "wa",
+      "nisi",
+      "terrain",
+      "occur",
+      "2083-та",
+      "juda",
+      "vortac",
+      "5-ти",
+      "4х"
+    ],
+    "failure_examples": [],
+    "unique_lemmas": 942
+  },
+  "results": [
+    {
+      "lemma": "знаете",
+      "total_frequency": 9405,
+      "forms": [
+        "знаете"
+      ]
+    },
+    {
+      "lemma": "остава",
+      "total_frequency": 6713,
+      "forms": [
+        "остави"
+      ]
+    },
+    {
+      "lemma": "проблемот",
+      "total_frequency": 3120,
+      "forms": [
+        "проблемот"
+      ]
+    },
+    {
+      "lemma": "наоколу",
+      "total_frequency": 1966,
+      "forms": [
+        "наоколу"
+      ]
+    },
+    {
+      "lemma": "седум",
+      "total_frequency": 1540,
+      "forms": [
+        "седум"
+      ]
+    },
+    {
+      "lemma": "поента",
+      "total_frequency": 1269,
+      "forms": [
+        "поентата"
+      ]
+    },
+    {
+      "lemma": "лондон",
+      "total_frequency": 1214,
+      "forms": [
+        "лондон"
+      ]
+    },
+    {
+      "lemma": "куче",
+      "total_frequency": 986,
+      "forms": [
+        "кучиња"
+      ]
+    },
+    {
+      "lemma": "користат",
+      "total_frequency": 896,
+      "forms": [
+        "користат"
+      ]
+    },
+    {
+      "lemma": "мајмун",
+      "total_frequency": 552,
+      "forms": [
+        "мајмун"
+      ]
+    },
+    {
+      "lemma": "тргнуваме",
+      "total_frequency": 517,
+      "forms": [
+        "тргнуваме"
+      ]
+    },
+    {
+      "lemma": "бавно",
+      "total_frequency": 459,
+      "forms": [
+        "бавно"
+      ]
+    },
+    {
+      "lemma": "деталите",
+      "total_frequency": 408,
+      "forms": [
+        "деталите"
+      ]
+    },
+    {
+      "lemma": "фред",
+      "total_frequency": 373,
+      "forms": [
+        "фред"
+      ]
+    },
+    {
+      "lemma": "мај",
+      "total_frequency": 308,
+      "forms": [
+        "мај"
+      ]
+    },
+    {
+      "lemma": "златна",
+      "total_frequency": 295,
+      "forms": [
+        "златна"
+      ]
+    },
+    {
+      "lemma": "злосторство",
+      "total_frequency": 280,
+      "forms": [
+        "злосторство"
+      ]
+    },
+    {
+      "lemma": "работеле",
+      "total_frequency": 241,
+      "forms": [
+        "работеле"
+      ]
+    },
+    {
+      "lemma": "исшета",
+      "total_frequency": 222,
+      "forms": [
+        "шета"
+      ]
+    },
+    {
+      "lemma": "напијам",
+      "total_frequency": 214,
+      "forms": [
+        "напијам"
+      ]
+    },
+    {
+      "lemma": "андреј",
+      "total_frequency": 195,
+      "forms": [
+        "андреј"
+      ]
+    },
+    {
+      "lemma": "правиот",
+      "total_frequency": 187,
+      "forms": [
+        "правиот"
+      ]
+    },
+    {
+      "lemma": "темната",
+      "total_frequency": 178,
+      "forms": [
+        "темната"
+      ]
+    },
+    {
+      "lemma": "истражи",
+      "total_frequency": 147,
+      "forms": [
+        "истражува"
+      ]
+    },
+    {
+      "lemma": "заборавев",
+      "total_frequency": 126,
+      "forms": [
+        "заборавев"
+      ]
+    },
+    {
+      "lemma": "аспирин",
+      "total_frequency": 125,
+      "forms": [
+        "аспирин"
+      ]
+    },
+    {
+      "lemma": "шампион",
+      "total_frequency": 125,
+      "forms": [
+        "шампиони"
+      ]
+    },
+    {
+      "lemma": "читате",
+      "total_frequency": 118,
+      "forms": [
+        "читате"
+      ]
+    },
+    {
+      "lemma": "кира",
+      "total_frequency": 115,
+      "forms": [
+        "кира"
+      ]
+    },
+    {
+      "lemma": "одморот",
+      "total_frequency": 113,
+      "forms": [
+        "одморот"
+      ]
+    },
+    {
+      "lemma": "свиреше",
+      "total_frequency": 97,
+      "forms": [
+        "свиреше"
+      ]
+    },
+    {
+      "lemma": "оштетување",
+      "total_frequency": 93,
+      "forms": [
+        "оштетување"
+      ]
+    },
+    {
+      "lemma": "кувар",
+      "total_frequency": 91,
+      "forms": [
+        "кувар"
+      ]
+    },
+    {
+      "lemma": "морт",
+      "total_frequency": 90,
+      "forms": [
+        "морт"
+      ]
+    },
+    {
+      "lemma": "англичанец",
+      "total_frequency": 87,
+      "forms": [
+        "англичанец"
+      ]
+    },
+    {
+      "lemma": "милоста",
+      "total_frequency": 86,
+      "forms": [
+        "милоста"
+      ]
+    },
+    {
+      "lemma": "федералната",
+      "total_frequency": 83,
+      "forms": [
+        "федералната"
+      ]
+    },
+    {
+      "lemma": "утакмица",
+      "total_frequency": 82,
+      "forms": [
+        "утакмицата"
+      ]
+    },
+    {
+      "lemma": "нафта",
+      "total_frequency": 81,
+      "forms": [
+        "нафтата"
+      ]
+    },
+    {
+      "lemma": "морели",
+      "total_frequency": 79,
+      "forms": [
+        "морели"
+      ]
+    },
+    {
+      "lemma": "латино",
+      "total_frequency": 75,
+      "forms": [
+        "латино"
+      ]
+    },
+    {
+      "lemma": "проблематичен",
+      "total_frequency": 74,
+      "forms": [
+        "проблематичен"
+      ]
+    },
+    {
+      "lemma": "полиса",
+      "total_frequency": 74,
+      "forms": [
+        "полиса"
+      ]
+    },
+    {
+      "lemma": "подобри",
+      "total_frequency": 71,
+      "forms": [
+        "подобрува"
+      ]
+    },
+    {
+      "lemma": "сметал",
+      "total_frequency": 68,
+      "forms": [
+        "сметал"
+      ]
+    },
+    {
+      "lemma": "случка",
+      "total_frequency": 66,
+      "forms": [
+        "случка"
+      ]
+    },
+    {
+      "lemma": "дискови",
+      "total_frequency": 65,
+      "forms": [
+        "дискови"
+      ]
+    },
+    {
+      "lemma": "прашуваа",
+      "total_frequency": 63,
+      "forms": [
+        "прашуваа"
+      ]
+    },
+    {
+      "lemma": "срањата",
+      "total_frequency": 55,
+      "forms": [
+        "срањата"
+      ]
+    },
+    {
+      "lemma": "горедолу",
+      "total_frequency": 53,
+      "forms": [
+        "горе-долу"
+      ]
+    },
+    {
+      "lemma": "раскажуваат",
+      "total_frequency": 50,
+      "forms": [
+        "раскажуваат"
+      ]
+    },
+    {
+      "lemma": "разјаснува",
+      "total_frequency": 50,
+      "forms": [
+        "разјасни"
+      ]
+    },
+    {
+      "lemma": "копиле",
+      "total_frequency": 48,
+      "forms": [
+        "копилево"
+      ]
+    },
+    {
+      "lemma": "идиотите",
+      "total_frequency": 47,
+      "forms": [
+        "идиотите"
+      ]
+    },
+    {
+      "lemma": "обавезно",
+      "total_frequency": 47,
+      "forms": [
+        "обавезно"
+      ]
+    },
+    {
+      "lemma": "напаѓај",
+      "total_frequency": 47,
+      "forms": [
+        "напаѓај"
+      ]
+    },
+    {
+      "lemma": "подготвував",
+      "total_frequency": 47,
+      "forms": [
+        "подготвував"
+      ]
+    },
+    {
+      "lemma": "ориентација",
+      "total_frequency": 45,
+      "forms": [
+        "ориентација"
+      ]
+    },
+    {
+      "lemma": "справа",
+      "total_frequency": 44,
+      "forms": [
+        "справите"
+      ]
+    },
+    {
+      "lemma": "дрогираше",
+      "total_frequency": 42,
+      "forms": [
+        "дрогираше"
+      ]
+    },
+    {
+      "lemma": "срж",
+      "total_frequency": 41,
+      "forms": [
+        "срж"
+      ]
+    },
+    {
+      "lemma": "марџи",
+      "total_frequency": 41,
+      "forms": [
+        "марџи"
+      ]
+    },
+    {
+      "lemma": "свиткам",
+      "total_frequency": 40,
+      "forms": [
+        "свиткам"
+      ]
+    },
+    {
+      "lemma": "мировен",
+      "total_frequency": 39,
+      "forms": [
+        "мировен"
+      ]
+    },
+    {
+      "lemma": "пикаш",
+      "total_frequency": 38,
+      "forms": [
+        "пикаш"
+      ]
+    },
+    {
+      "lemma": "зацврсти",
+      "total_frequency": 38,
+      "forms": [
+        "зацврсти"
+      ]
+    },
+    {
+      "lemma": "правилникот",
+      "total_frequency": 37,
+      "forms": [
+        "правилникот"
+      ]
+    },
+    {
+      "lemma": "чорап",
+      "total_frequency": 34,
+      "forms": [
+        "чорап"
+      ]
+    },
+    {
+      "lemma": "докажуваш",
+      "total_frequency": 34,
+      "forms": [
+        "докажуваш"
+      ]
+    },
+    {
+      "lemma": "сликал",
+      "total_frequency": 33,
+      "forms": [
+        "сликал"
+      ]
+    },
+    {
+      "lemma": "фани",
+      "total_frequency": 33,
+      "forms": [
+        "фани"
+      ]
+    },
+    {
+      "lemma": "хедли",
+      "total_frequency": 33,
+      "forms": [
+        "хедли"
+      ]
+    },
+    {
+      "lemma": "русин",
+      "total_frequency": 32,
+      "forms": [
+        "русинка"
+      ]
+    },
+    {
+      "lemma": "оствариш",
+      "total_frequency": 32,
+      "forms": [
+        "оствариш"
+      ]
+    },
+    {
+      "lemma": "болничарка",
+      "total_frequency": 32,
+      "forms": [
+        "болничарка"
+      ]
+    },
+    {
+      "lemma": "полната",
+      "total_frequency": 30,
+      "forms": [
+        "полната"
+      ]
+    },
+    {
+      "lemma": "доживотни",
+      "total_frequency": 30,
+      "forms": [
+        "доживотни"
+      ]
+    },
+    {
+      "lemma": "шпанец",
+      "total_frequency": 30,
+      "forms": [
+        "шпанец"
+      ]
+    },
+    {
+      "lemma": "торпедото",
+      "total_frequency": 30,
+      "forms": [
+        "торпедото"
+      ]
+    },
+    {
+      "lemma": "онтарио",
+      "total_frequency": 28,
+      "forms": [
+        "онтарио"
+      ]
+    },
+    {
+      "lemma": "докажаа",
+      "total_frequency": 28,
+      "forms": [
+        "докажаа"
+      ]
+    },
+    {
+      "lemma": "едмундс",
+      "total_frequency": 27,
+      "forms": [
+        "едмундс"
+      ]
+    },
+    {
+      "lemma": "затвораш",
+      "total_frequency": 27,
+      "forms": [
+        "затвораш"
+      ]
+    },
+    {
+      "lemma": "митски",
+      "total_frequency": 26,
+      "forms": [
+        "митски"
+      ]
+    },
+    {
+      "lemma": "млечен",
+      "total_frequency": 26,
+      "forms": [
+        "млечен"
+      ]
+    },
+    {
+      "lemma": "небесните",
+      "total_frequency": 26,
+      "forms": [
+        "небесните"
+      ]
+    },
+    {
+      "lemma": "минува",
+      "total_frequency": 26,
+      "forms": [
+        "минување"
+      ]
+    },
+    {
+      "lemma": "мајкоебачи",
+      "total_frequency": 25,
+      "forms": [
+        "мајкоебачи"
+      ]
+    },
+    {
+      "lemma": "леќа",
+      "total_frequency": 25,
+      "forms": [
+        "леќа"
+      ]
+    },
+    {
+      "lemma": "преговарач",
+      "total_frequency": 25,
+      "forms": [
+        "преговарач"
+      ]
+    },
+    {
+      "lemma": "фосили",
+      "total_frequency": 24,
+      "forms": [
+        "фосили"
+      ]
+    },
+    {
+      "lemma": "урих",
+      "total_frequency": 23,
+      "forms": [
+        "урих"
+      ]
+    },
+    {
+      "lemma": "асистентот",
+      "total_frequency": 23,
+      "forms": [
+        "асистентот"
+      ]
+    },
+    {
+      "lemma": "гримхолд",
+      "total_frequency": 23,
+      "forms": [
+        "гримхолд"
+      ]
+    },
+    {
+      "lemma": "невооружени",
+      "total_frequency": 22,
+      "forms": [
+        "невооружени"
+      ]
+    },
+    {
+      "lemma": "електрично",
+      "total_frequency": 22,
+      "forms": [
+        "електрично"
+      ]
+    },
+    {
+      "lemma": "светна",
+      "total_frequency": 21,
+      "forms": [
+        "светна"
+      ]
+    },
+    {
+      "lemma": "розенберг",
+      "total_frequency": 21,
+      "forms": [
+        "розенберг"
+      ]
+    },
+    {
+      "lemma": "доживуваат",
+      "total_frequency": 21,
+      "forms": [
+        "доживуваат"
+      ]
+    },
+    {
+      "lemma": "санки",
+      "total_frequency": 21,
+      "forms": [
+        "санки"
+      ]
+    },
+    {
+      "lemma": "излажала",
+      "total_frequency": 20,
+      "forms": [
+        "излажала"
+      ]
+    },
+    {
+      "lemma": "паричниците",
+      "total_frequency": 20,
+      "forms": [
+        "паричниците"
+      ]
+    },
+    {
+      "lemma": "јадица",
+      "total_frequency": 20,
+      "forms": [
+        "јадица"
+      ]
+    },
+    {
+      "lemma": "сложите",
+      "total_frequency": 20,
+      "forms": [
+        "сложите"
+      ]
+    },
+    {
+      "lemma": "плунката",
+      "total_frequency": 20,
+      "forms": [
+        "плунката"
+      ]
+    },
+    {
+      "lemma": "подигнува",
+      "total_frequency": 20,
+      "forms": [
+        "подигнува"
+      ]
+    },
+    {
+      "lemma": "савијано",
+      "total_frequency": 20,
+      "forms": [
+        "савијано"
+      ]
+    },
+    {
+      "lemma": "рефлектори",
+      "total_frequency": 20,
+      "forms": [
+        "рефлектори"
+      ]
+    },
+    {
+      "lemma": "линдерман",
+      "total_frequency": 19,
+      "forms": [
+        "линдерман"
+      ]
+    },
+    {
+      "lemma": "гипсон",
+      "total_frequency": 19,
+      "forms": [
+        "гипсон"
+      ]
+    },
+    {
+      "lemma": "идеал",
+      "total_frequency": 19,
+      "forms": [
+        "идеал"
+      ]
+    },
+    {
+      "lemma": "уметничка",
+      "total_frequency": 19,
+      "forms": [
+        "уметничките"
+      ]
+    },
+    {
+      "lemma": "изменат",
+      "total_frequency": 19,
+      "forms": [
+        "изменат"
+      ]
+    },
+    {
+      "lemma": "прикажам",
+      "total_frequency": 19,
+      "forms": [
+        "прикажам"
+      ]
+    },
+    {
+      "lemma": "притворен",
+      "total_frequency": 18,
+      "forms": [
+        "притворен"
+      ]
+    },
+    {
+      "lemma": "одалечена",
+      "total_frequency": 18,
+      "forms": [
+        "одалечена"
+      ]
+    },
+    {
+      "lemma": "концентрирате",
+      "total_frequency": 18,
+      "forms": [
+        "концентрирате"
+      ]
+    },
+    {
+      "lemma": "разочарувам",
+      "total_frequency": 18,
+      "forms": [
+        "разочарувам"
+      ]
+    },
+    {
+      "lemma": "селмо",
+      "total_frequency": 18,
+      "forms": [
+        "селмо"
+      ]
+    },
+    {
+      "lemma": "десептикони",
+      "total_frequency": 17,
+      "forms": [
+        "десептикони"
+      ]
+    },
+    {
+      "lemma": "вадев",
+      "total_frequency": 17,
+      "forms": [
+        "вадев"
+      ]
+    },
+    {
+      "lemma": "модрица",
+      "total_frequency": 17,
+      "forms": [
+        "модрица"
+      ]
+    },
+    {
+      "lemma": "поко",
+      "total_frequency": 16,
+      "forms": [
+        "поко"
+      ]
+    },
+    {
+      "lemma": "мадо",
+      "total_frequency": 16,
+      "forms": [
+        "мадо"
+      ]
+    },
+    {
+      "lemma": "пробувал",
+      "total_frequency": 16,
+      "forms": [
+        "пробувал"
+      ]
+    },
+    {
+      "lemma": "сторијава",
+      "total_frequency": 16,
+      "forms": [
+        "сторијава"
+      ]
+    },
+    {
+      "lemma": "саундерс",
+      "total_frequency": 16,
+      "forms": [
+        "саундерс"
+      ]
+    },
+    {
+      "lemma": "рубли",
+      "total_frequency": 16,
+      "forms": [
+        "рубли"
+      ]
+    },
+    {
+      "lemma": "освежувач",
+      "total_frequency": 15,
+      "forms": [
+        "освежувач"
+      ]
+    },
+    {
+      "lemma": "заливската",
+      "total_frequency": 15,
+      "forms": [
+        "заливската"
+      ]
+    },
+    {
+      "lemma": "здобиеш",
+      "total_frequency": 15,
+      "forms": [
+        "здобиеш"
+      ]
+    },
+    {
+      "lemma": "прогласуваме",
+      "total_frequency": 15,
+      "forms": [
+        "прогласуваме"
+      ]
+    },
+    {
+      "lemma": "свиок",
+      "total_frequency": 14,
+      "forms": [
+        "свиок"
+      ]
+    },
+    {
+      "lemma": "авакс",
+      "total_frequency": 14,
+      "forms": [
+        "авакс"
+      ]
+    },
+    {
+      "lemma": "зимај",
+      "total_frequency": 14,
+      "forms": [
+        "зимај"
+      ]
+    },
+    {
+      "lemma": "вајлет",
+      "total_frequency": 14,
+      "forms": [
+        "вајлет"
+      ]
+    },
+    {
+      "lemma": "харам",
+      "total_frequency": 14,
+      "forms": [
+        "харам"
+      ]
+    },
+    {
+      "lemma": "прогласи",
+      "total_frequency": 13,
+      "forms": [
+        "прогласува"
+      ]
+    },
+    {
+      "lemma": "истреби",
+      "total_frequency": 13,
+      "forms": [
+        "истребен"
+      ]
+    },
+    {
+      "lemma": "кружен",
+      "total_frequency": 13,
+      "forms": [
+        "кружен"
+      ]
+    },
+    {
+      "lemma": "вресоци",
+      "total_frequency": 13,
+      "forms": [
+        "вресоци"
+      ]
+    },
+    {
+      "lemma": "обезбедија",
+      "total_frequency": 13,
+      "forms": [
+        "обезбедија"
+      ]
+    },
+    {
+      "lemma": "транзит",
+      "total_frequency": 13,
+      "forms": [
+        "транзит"
+      ]
+    },
+    {
+      "lemma": "елам",
+      "total_frequency": 13,
+      "forms": [
+        "елам"
+      ]
+    },
+    {
+      "lemma": "регар",
+      "total_frequency": 12,
+      "forms": [
+        "регар"
+      ]
+    },
+    {
+      "lemma": "станфорд",
+      "total_frequency": 12,
+      "forms": [
+        "станфорд"
+      ]
+    },
+    {
+      "lemma": "патролна",
+      "total_frequency": 12,
+      "forms": [
+        "патролна"
+      ]
+    },
+    {
+      "lemma": "коцкав",
+      "total_frequency": 12,
+      "forms": [
+        "коцкав"
+      ]
+    },
+    {
+      "lemma": "магепсана",
+      "total_frequency": 12,
+      "forms": [
+        "магепсана"
+      ]
+    },
+    {
+      "lemma": "обвинувајќи",
+      "total_frequency": 12,
+      "forms": [
+        "обвинувајќи"
+      ]
+    },
+    {
+      "lemma": "ислите",
+      "total_frequency": 11,
+      "forms": [
+        "mислите"
+      ]
+    },
+    {
+      "lemma": "часовничар",
+      "total_frequency": 11,
+      "forms": [
+        "часовничар"
+      ]
+    },
+    {
+      "lemma": "фенис",
+      "total_frequency": 11,
+      "forms": [
+        "фенис"
+      ]
+    },
+    {
+      "lemma": "фрејови",
+      "total_frequency": 11,
+      "forms": [
+        "фрејови"
+      ]
+    },
+    {
+      "lemma": "шилесто",
+      "total_frequency": 11,
+      "forms": [
+        "шилесто"
+      ]
+    },
+    {
+      "lemma": "распаднато",
+      "total_frequency": 11,
+      "forms": [
+        "распаднато"
+      ]
+    },
+    {
+      "lemma": "звончиња",
+      "total_frequency": 11,
+      "forms": [
+        "звончиња"
+      ]
+    },
+    {
+      "lemma": "фрлеше",
+      "total_frequency": 11,
+      "forms": [
+        "фрлеше"
+      ]
+    },
+    {
+      "lemma": "крстич",
+      "total_frequency": 11,
+      "forms": [
+        "крстич"
+      ]
+    },
+    {
+      "lemma": "вијан",
+      "total_frequency": 10,
+      "forms": [
+        "вијан"
+      ]
+    },
+    {
+      "lemma": "тарасов",
+      "total_frequency": 10,
+      "forms": [
+        "тарасов"
+      ]
+    },
+    {
+      "lemma": "успал",
+      "total_frequency": 10,
+      "forms": [
+        "успал"
+      ]
+    },
+    {
+      "lemma": "затрупува",
+      "total_frequency": 10,
+      "forms": [
+        "затрупа"
+      ]
+    },
+    {
+      "lemma": "затебе",
+      "total_frequency": 10,
+      "forms": [
+        "затебе"
+      ]
+    },
+    {
+      "lemma": "кинан",
+      "total_frequency": 10,
+      "forms": [
+        "кинан"
+      ]
+    },
+    {
+      "lemma": "испразнивме",
+      "total_frequency": 10,
+      "forms": [
+        "испразнивме"
+      ]
+    },
+    {
+      "lemma": "параден",
+      "total_frequency": 10,
+      "forms": [
+        "пара-ден"
+      ]
+    },
+    {
+      "lemma": "дефкон",
+      "total_frequency": 10,
+      "forms": [
+        "дефкон"
+      ]
+    },
+    {
+      "lemma": "чистеа",
+      "total_frequency": 9,
+      "forms": [
+        "чистеа"
+      ]
+    },
+    {
+      "lemma": "потера",
+      "total_frequency": 9,
+      "forms": [
+        "потери"
+      ]
+    },
+    {
+      "lemma": "воздржана",
+      "total_frequency": 9,
+      "forms": [
+        "воздржана"
+      ]
+    },
+    {
+      "lemma": "волен",
+      "total_frequency": 9,
+      "forms": [
+        "волен"
+      ]
+    },
+    {
+      "lemma": "одсечи",
+      "total_frequency": 9,
+      "forms": [
+        "одсечи"
+      ]
+    },
+    {
+      "lemma": "испариш",
+      "total_frequency": 9,
+      "forms": [
+        "испариш"
+      ]
+    },
+    {
+      "lemma": "мрша",
+      "total_frequency": 9,
+      "forms": [
+        "мрша"
+      ]
+    },
+    {
+      "lemma": "станбена",
+      "total_frequency": 9,
+      "forms": [
+        "станбена"
+      ]
+    },
+    {
+      "lemma": "избришавме",
+      "total_frequency": 9,
+      "forms": [
+        "избришавме"
+      ]
+    },
+    {
+      "lemma": "сигуран",
+      "total_frequency": 9,
+      "forms": [
+        "сигуран"
+      ]
+    },
+    {
+      "lemma": "погинува",
+      "total_frequency": 9,
+      "forms": [
+        "погине"
+      ]
+    },
+    {
+      "lemma": "книшка",
+      "total_frequency": 9,
+      "forms": [
+        "книшки"
+      ]
+    },
+    {
+      "lemma": "проклетниците",
+      "total_frequency": 9,
+      "forms": [
+        "проклетниците"
+      ]
+    },
+    {
+      "lemma": "враќала",
+      "total_frequency": 9,
+      "forms": [
+        "враќала"
+      ]
+    },
+    {
+      "lemma": "конечни",
+      "total_frequency": 9,
+      "forms": [
+        "конечни"
+      ]
+    },
+    {
+      "lemma": "стиска",
+      "total_frequency": 8,
+      "forms": [
+        "стисне"
+      ]
+    },
+    {
+      "lemma": "своеглав",
+      "total_frequency": 8,
+      "forms": [
+        "своеглав"
+      ]
+    },
+    {
+      "lemma": "сопрено",
+      "total_frequency": 8,
+      "forms": [
+        "сопрено"
+      ]
+    },
+    {
+      "lemma": "перестројката",
+      "total_frequency": 8,
+      "forms": [
+        "перестројката"
+      ]
+    },
+    {
+      "lemma": "притиснати",
+      "total_frequency": 8,
+      "forms": [
+        "притиснати"
+      ]
+    },
+    {
+      "lemma": "тиква",
+      "total_frequency": 8,
+      "forms": [
+        "тиквава",
+        "тиквите"
+      ]
+    },
+    {
+      "lemma": "гасната",
+      "total_frequency": 8,
+      "forms": [
+        "гасната"
+      ]
+    },
+    {
+      "lemma": "ноб",
+      "total_frequency": 8,
+      "forms": [
+        "ноб"
+      ]
+    },
+    {
+      "lemma": "ирфански",
+      "total_frequency": 8,
+      "forms": [
+        "ирфански"
+      ]
+    },
+    {
+      "lemma": "показалец",
+      "total_frequency": 8,
+      "forms": [
+        "показалец"
+      ]
+    },
+    {
+      "lemma": "соино",
+      "total_frequency": 8,
+      "forms": [
+        "соино"
+      ]
+    },
+    {
+      "lemma": "христово",
+      "total_frequency": 8,
+      "forms": [
+        "христово"
+      ]
+    },
+    {
+      "lemma": "даз",
+      "total_frequency": 8,
+      "forms": [
+        "даз"
+      ]
+    },
+    {
+      "lemma": "придружила",
+      "total_frequency": 7,
+      "forms": [
+        "придружила"
+      ]
+    },
+    {
+      "lemma": "духовното",
+      "total_frequency": 7,
+      "forms": [
+        "духовното"
+      ]
+    },
+    {
+      "lemma": "папирус",
+      "total_frequency": 7,
+      "forms": [
+        "папирус"
+      ]
+    },
+    {
+      "lemma": "поховано",
+      "total_frequency": 7,
+      "forms": [
+        "поховано"
+      ]
+    },
+    {
+      "lemma": "медикаменти",
+      "total_frequency": 7,
+      "forms": [
+        "медикаменти"
+      ]
+    },
+    {
+      "lemma": "запнеме",
+      "total_frequency": 7,
+      "forms": [
+        "запнеме"
+      ]
+    },
+    {
+      "lemma": "скратила",
+      "total_frequency": 7,
+      "forms": [
+        "скратила"
+      ]
+    },
+    {
+      "lemma": "трилион",
+      "total_frequency": 7,
+      "forms": [
+        "трилион"
+      ]
+    },
+    {
+      "lemma": "симболизираат",
+      "total_frequency": 7,
+      "forms": [
+        "симболизираат"
+      ]
+    },
+    {
+      "lemma": "шератон",
+      "total_frequency": 7,
+      "forms": [
+        "шератон"
+      ]
+    },
+    {
+      "lemma": "драматично",
+      "total_frequency": 7,
+      "forms": [
+        "подраматично"
+      ]
+    },
+    {
+      "lemma": "целодневна",
+      "total_frequency": 7,
+      "forms": [
+        "целодневна"
+      ]
+    },
+    {
+      "lemma": "попречите",
+      "total_frequency": 7,
+      "forms": [
+        "попречите"
+      ]
+    },
+    {
+      "lemma": "прогресивен",
+      "total_frequency": 7,
+      "forms": [
+        "прогресивен"
+      ]
+    },
+    {
+      "lemma": "подразбираше",
+      "total_frequency": 7,
+      "forms": [
+        "подразбираше"
+      ]
+    },
+    {
+      "lemma": "завршувале",
+      "total_frequency": 6,
+      "forms": [
+        "завршувале"
+      ]
+    },
+    {
+      "lemma": "плескал",
+      "total_frequency": 6,
+      "forms": [
+        "плескал"
+      ]
+    },
+    {
+      "lemma": "вои",
+      "total_frequency": 6,
+      "forms": [
+        "вои"
+      ]
+    },
+    {
+      "lemma": "бесења",
+      "total_frequency": 6,
+      "forms": [
+        "бесења"
+      ]
+    },
+    {
+      "lemma": "лекомислено",
+      "total_frequency": 6,
+      "forms": [
+        "лекомислено"
+      ]
+    },
+    {
+      "lemma": "пагодата",
+      "total_frequency": 6,
+      "forms": [
+        "пагодата"
+      ]
+    },
+    {
+      "lemma": "дезориентирана",
+      "total_frequency": 6,
+      "forms": [
+        "дезориентирана"
+      ]
+    },
+    {
+      "lemma": "осцилатор",
+      "total_frequency": 6,
+      "forms": [
+        "осцилатор"
+      ]
+    },
+    {
+      "lemma": "заслепува",
+      "total_frequency": 6,
+      "forms": [
+        "заслепување"
+      ]
+    },
+    {
+      "lemma": "сингсинг",
+      "total_frequency": 6,
+      "forms": [
+        "синг-синг"
+      ]
+    },
+    {
+      "lemma": "велеле",
+      "total_frequency": 6,
+      "forms": [
+        "велеле"
+      ]
+    },
+    {
+      "lemma": "негирањето",
+      "total_frequency": 6,
+      "forms": [
+        "негирањето"
+      ]
+    },
+    {
+      "lemma": "гспок",
+      "total_frequency": 6,
+      "forms": [
+        "г.спок."
+      ]
+    },
+    {
+      "lemma": "дотком",
+      "total_frequency": 6,
+      "forms": [
+        "дот-ком"
+      ]
+    },
+    {
+      "lemma": "членската",
+      "total_frequency": 6,
+      "forms": [
+        "членската"
+      ]
+    },
+    {
+      "lemma": "нешт",
+      "total_frequency": 6,
+      "forms": [
+        "нешт"
+      ]
+    },
+    {
+      "lemma": "злоупотребувал",
+      "total_frequency": 5,
+      "forms": [
+        "злоупотребувал"
+      ]
+    },
+    {
+      "lemma": "озвучиле",
+      "total_frequency": 5,
+      "forms": [
+        "озвучиле"
+      ]
+    },
+    {
+      "lemma": "услужени",
+      "total_frequency": 5,
+      "forms": [
+        "услужени"
+      ]
+    },
+    {
+      "lemma": "удавите",
+      "total_frequency": 5,
+      "forms": [
+        "удавите"
+      ]
+    },
+    {
+      "lemma": "луо",
+      "total_frequency": 5,
+      "forms": [
+        "луо"
+      ]
+    },
+    {
+      "lemma": "степер",
+      "total_frequency": 5,
+      "forms": [
+        "степер"
+      ]
+    },
+    {
+      "lemma": "уд",
+      "total_frequency": 5,
+      "forms": [
+        "уд"
+      ]
+    },
+    {
+      "lemma": "виолинистот",
+      "total_frequency": 5,
+      "forms": [
+        "виолинистот"
+      ]
+    },
+    {
+      "lemma": "генерирана",
+      "total_frequency": 5,
+      "forms": [
+        "генерирана"
+      ]
+    },
+    {
+      "lemma": "откупен",
+      "total_frequency": 5,
+      "forms": [
+        "откупен"
+      ]
+    },
+    {
+      "lemma": "отсечената",
+      "total_frequency": 5,
+      "forms": [
+        "отсечената"
+      ]
+    },
+    {
+      "lemma": "астероидите",
+      "total_frequency": 5,
+      "forms": [
+        "астероидите"
+      ]
+    },
+    {
+      "lemma": "торзо",
+      "total_frequency": 5,
+      "forms": [
+        "торзо"
+      ]
+    },
+    {
+      "lemma": "понос",
+      "total_frequency": 5,
+      "forms": [
+        "понос"
+      ]
+    },
+    {
+      "lemma": "вајмен",
+      "total_frequency": 5,
+      "forms": [
+        "вајмен"
+      ]
+    },
+    {
+      "lemma": "тепани",
+      "total_frequency": 5,
+      "forms": [
+        "тепани"
+      ]
+    },
+    {
+      "lemma": "навраќаат",
+      "total_frequency": 5,
+      "forms": [
+        "навраќаат"
+      ]
+    },
+    {
+      "lemma": "студираат",
+      "total_frequency": 5,
+      "forms": [
+        "студираат"
+      ]
+    },
+    {
+      "lemma": "обвиткано",
+      "total_frequency": 5,
+      "forms": [
+        "обвиткано"
+      ]
+    },
+    {
+      "lemma": "збрише",
+      "total_frequency": 5,
+      "forms": [
+        "збришан"
+      ]
+    },
+    {
+      "lemma": "задолго",
+      "total_frequency": 5,
+      "forms": [
+        "задолго"
+      ]
+    },
+    {
+      "lemma": "куревите",
+      "total_frequency": 5,
+      "forms": [
+        "куревите"
+      ]
+    },
+    {
+      "lemma": "глодач",
+      "total_frequency": 5,
+      "forms": [
+        "глодач"
+      ]
+    },
+    {
+      "lemma": "татковинска",
+      "total_frequency": 5,
+      "forms": [
+        "татковинска"
+      ]
+    },
+    {
+      "lemma": "сими",
+      "total_frequency": 5,
+      "forms": [
+        "сими"
+      ]
+    },
+    {
+      "lemma": "наоружаме",
+      "total_frequency": 5,
+      "forms": [
+        "наоружаме"
+      ]
+    },
+    {
+      "lemma": "шарите",
+      "total_frequency": 5,
+      "forms": [
+        "шарите"
+      ]
+    },
+    {
+      "lemma": "релаксираме",
+      "total_frequency": 5,
+      "forms": [
+        "релаксираме"
+      ]
+    },
+    {
+      "lemma": "клетва",
+      "total_frequency": 5,
+      "forms": [
+        "клетвите"
+      ]
+    },
+    {
+      "lemma": "штитела",
+      "total_frequency": 5,
+      "forms": [
+        "штитела"
+      ]
+    },
+    {
+      "lemma": "знел",
+      "total_frequency": 5,
+      "forms": [
+        "знел"
+      ]
+    },
+    {
+      "lemma": "бермудски",
+      "total_frequency": 5,
+      "forms": [
+        "бермудски"
+      ]
+    },
+    {
+      "lemma": "кажаја",
+      "total_frequency": 5,
+      "forms": [
+        "кажаја"
+      ]
+    },
+    {
+      "lemma": "наликувам",
+      "total_frequency": 5,
+      "forms": [
+        "наликувам"
+      ]
+    },
+    {
+      "lemma": "жабец",
+      "total_frequency": 4,
+      "forms": [
+        "жабец"
+      ]
+    },
+    {
+      "lemma": "вдишува",
+      "total_frequency": 4,
+      "forms": [
+        "вдише"
+      ]
+    },
+    {
+      "lemma": "фармацевтот",
+      "total_frequency": 4,
+      "forms": [
+        "фармацевтот"
+      ]
+    },
+    {
+      "lemma": "извини",
+      "total_frequency": 4,
+      "forms": [
+        "извинетe"
+      ]
+    },
+    {
+      "lemma": "гег",
+      "total_frequency": 4,
+      "forms": [
+        "гег"
+      ]
+    },
+    {
+      "lemma": "смрдиме",
+      "total_frequency": 4,
+      "forms": [
+        "смрдиме"
+      ]
+    },
+    {
+      "lemma": "деветнаесеттиот",
+      "total_frequency": 4,
+      "forms": [
+        "деветнаесеттиот"
+      ]
+    },
+    {
+      "lemma": "смекер",
+      "total_frequency": 4,
+      "forms": [
+        "смекер"
+      ]
+    },
+    {
+      "lemma": "нискобуџетен",
+      "total_frequency": 4,
+      "forms": [
+        "нискобуџетен"
+      ]
+    },
+    {
+      "lemma": "разуди",
+      "total_frequency": 4,
+      "forms": [
+        "разуди"
+      ]
+    },
+    {
+      "lemma": "егос",
+      "total_frequency": 4,
+      "forms": [
+        "егос"
+      ]
+    },
+    {
+      "lemma": "неов",
+      "total_frequency": 4,
+      "forms": [
+        "неrов"
+      ]
+    },
+    {
+      "lemma": "рагбисти",
+      "total_frequency": 4,
+      "forms": [
+        "рагбисти"
+      ]
+    },
+    {
+      "lemma": "пропалитет",
+      "total_frequency": 4,
+      "forms": [
+        "пропалитет"
+      ]
+    },
+    {
+      "lemma": "дваицата",
+      "total_frequency": 4,
+      "forms": [
+        "дваицата"
+      ]
+    },
+    {
+      "lemma": "недостапниот",
+      "total_frequency": 4,
+      "forms": [
+        "недостапниот"
+      ]
+    },
+    {
+      "lemma": "стабилизираше",
+      "total_frequency": 4,
+      "forms": [
+        "стабилизираше"
+      ]
+    },
+    {
+      "lemma": "печиво",
+      "total_frequency": 4,
+      "forms": [
+        "печиво"
+      ]
+    },
+    {
+      "lemma": "скалп",
+      "total_frequency": 4,
+      "forms": [
+        "скалп"
+      ]
+    },
+    {
+      "lemma": "орд",
+      "total_frequency": 4,
+      "forms": [
+        "rорд"
+      ]
+    },
+    {
+      "lemma": "запоставено",
+      "total_frequency": 4,
+      "forms": [
+        "запоставено"
+      ]
+    },
+    {
+      "lemma": "дадевте",
+      "total_frequency": 4,
+      "forms": [
+        "дадевте"
+      ]
+    },
+    {
+      "lemma": "претседател",
+      "total_frequency": 4,
+      "forms": [
+        "прецедател"
+      ]
+    },
+    {
+      "lemma": "победеме",
+      "total_frequency": 4,
+      "forms": [
+        "победеме"
+      ]
+    },
+    {
+      "lemma": "појче",
+      "total_frequency": 4,
+      "forms": [
+        "појче"
+      ]
+    },
+    {
+      "lemma": "неписмена",
+      "total_frequency": 4,
+      "forms": [
+        "неписмена"
+      ]
+    },
+    {
+      "lemma": "приближувал",
+      "total_frequency": 4,
+      "forms": [
+        "приближувал"
+      ]
+    },
+    {
+      "lemma": "стиснеше",
+      "total_frequency": 4,
+      "forms": [
+        "стиснеше"
+      ]
+    },
+    {
+      "lemma": "едновремено",
+      "total_frequency": 4,
+      "forms": [
+        "едновремено"
+      ]
+    },
+    {
+      "lemma": "слушните",
+      "total_frequency": 4,
+      "forms": [
+        "слушните"
+      ]
+    },
+    {
+      "lemma": "разводник",
+      "total_frequency": 3,
+      "forms": [
+        "разводник"
+      ]
+    },
+    {
+      "lemma": "колективни",
+      "total_frequency": 3,
+      "forms": [
+        "колективни"
+      ]
+    },
+    {
+      "lemma": "истакнал",
+      "total_frequency": 3,
+      "forms": [
+        "истакнал"
+      ]
+    },
+    {
+      "lemma": "рибизла",
+      "total_frequency": 3,
+      "forms": [
+        "рибизла"
+      ]
+    },
+    {
+      "lemma": "недоследност",
+      "total_frequency": 3,
+      "forms": [
+        "недоследност"
+      ]
+    },
+    {
+      "lemma": "притребале",
+      "total_frequency": 3,
+      "forms": [
+        "притребале"
+      ]
+    },
+    {
+      "lemma": "сервисите",
+      "total_frequency": 3,
+      "forms": [
+        "сервисите"
+      ]
+    },
+    {
+      "lemma": "бидеји",
+      "total_frequency": 3,
+      "forms": [
+        "бидеји"
+      ]
+    },
+    {
+      "lemma": "бесонов",
+      "total_frequency": 3,
+      "forms": [
+        "бесонов"
+      ]
+    },
+    {
+      "lemma": "наркодилери",
+      "total_frequency": 3,
+      "forms": [
+        "наркодилери"
+      ]
+    },
+    {
+      "lemma": "абецедата",
+      "total_frequency": 3,
+      "forms": [
+        "абецедата"
+      ]
+    },
+    {
+      "lemma": "квалификуваат",
+      "total_frequency": 3,
+      "forms": [
+        "квалификуваат"
+      ]
+    },
+    {
+      "lemma": "нна",
+      "total_frequency": 3,
+      "forms": [
+        "нна"
+      ]
+    },
+    {
+      "lemma": "р",
+      "total_frequency": 3,
+      "forms": [
+        "рin"
+      ]
+    },
+    {
+      "lemma": "разместат",
+      "total_frequency": 3,
+      "forms": [
+        "разместат"
+      ]
+    },
+    {
+      "lemma": "распрашувала",
+      "total_frequency": 3,
+      "forms": [
+        "распрашувала"
+      ]
+    },
+    {
+      "lemma": "навиено",
+      "total_frequency": 3,
+      "forms": [
+        "навиено"
+      ]
+    },
+    {
+      "lemma": "формирало",
+      "total_frequency": 3,
+      "forms": [
+        "формирало"
+      ]
+    },
+    {
+      "lemma": "ѕвечкање",
+      "total_frequency": 3,
+      "forms": [
+        "ѕвечкање"
+      ]
+    },
+    {
+      "lemma": "угрински",
+      "total_frequency": 3,
+      "forms": [
+        "угрински"
+      ]
+    },
+    {
+      "lemma": "засакај",
+      "total_frequency": 3,
+      "forms": [
+        "засакај"
+      ]
+    },
+    {
+      "lemma": "повикано",
+      "total_frequency": 3,
+      "forms": [
+        "повикано"
+      ]
+    },
+    {
+      "lemma": "поминуват",
+      "total_frequency": 3,
+      "forms": [
+        "поминуват"
+      ]
+    },
+    {
+      "lemma": "ушко",
+      "total_frequency": 3,
+      "forms": [
+        "ушко"
+      ]
+    },
+    {
+      "lemma": "доброа",
+      "total_frequency": 3,
+      "forms": [
+        "добро.а"
+      ]
+    },
+    {
+      "lemma": "нефункционална",
+      "total_frequency": 3,
+      "forms": [
+        "нефункционална"
+      ]
+    },
+    {
+      "lemma": "одлагања",
+      "total_frequency": 3,
+      "forms": [
+        "одлагања"
+      ]
+    },
+    {
+      "lemma": "неповолните",
+      "total_frequency": 3,
+      "forms": [
+        "неповолните"
+      ]
+    },
+    {
+      "lemma": "шавови",
+      "total_frequency": 3,
+      "forms": [
+        "шавови"
+      ]
+    },
+    {
+      "lemma": "одсвириш",
+      "total_frequency": 3,
+      "forms": [
+        "одсвириш"
+      ]
+    },
+    {
+      "lemma": "искривените",
+      "total_frequency": 3,
+      "forms": [
+        "искривените"
+      ]
+    },
+    {
+      "lemma": "светликав",
+      "total_frequency": 3,
+      "forms": [
+        "светликав"
+      ]
+    },
+    {
+      "lemma": "фигурира",
+      "total_frequency": 3,
+      "forms": [
+        "фигурира"
+      ]
+    },
+    {
+      "lemma": "ѕидарите",
+      "total_frequency": 3,
+      "forms": [
+        "ѕидарите"
+      ]
+    },
+    {
+      "lemma": "грац",
+      "total_frequency": 3,
+      "forms": [
+        "грац"
+      ]
+    },
+    {
+      "lemma": "допиеш",
+      "total_frequency": 3,
+      "forms": [
+        "допиеш"
+      ]
+    },
+    {
+      "lemma": "намигнав",
+      "total_frequency": 3,
+      "forms": [
+        "намигнав"
+      ]
+    },
+    {
+      "lemma": "прејаден",
+      "total_frequency": 3,
+      "forms": [
+        "прејаден"
+      ]
+    },
+    {
+      "lemma": "крекхол",
+      "total_frequency": 3,
+      "forms": [
+        "крекхол"
+      ]
+    },
+    {
+      "lemma": "гушкале",
+      "total_frequency": 3,
+      "forms": [
+        "гушкале"
+      ]
+    },
+    {
+      "lemma": "вилушка",
+      "total_frequency": 3,
+      "forms": [
+        "вилушкава"
+      ]
+    },
+    {
+      "lemma": "океанското",
+      "total_frequency": 3,
+      "forms": [
+        "океанското"
+      ]
+    },
+    {
+      "lemma": "реваншот",
+      "total_frequency": 3,
+      "forms": [
+        "реваншот"
+      ]
+    },
+    {
+      "lemma": "избалансира",
+      "total_frequency": 3,
+      "forms": [
+        "избалансира"
+      ]
+    },
+    {
+      "lemma": "додавал",
+      "total_frequency": 3,
+      "forms": [
+        "додавал"
+      ]
+    },
+    {
+      "lemma": "еврипид",
+      "total_frequency": 3,
+      "forms": [
+        "еврипид"
+      ]
+    },
+    {
+      "lemma": "останеп",
+      "total_frequency": 3,
+      "forms": [
+        "останеп"
+      ]
+    },
+    {
+      "lemma": "слаткарата",
+      "total_frequency": 3,
+      "forms": [
+        "слаткарата"
+      ]
+    },
+    {
+      "lemma": "идинината",
+      "total_frequency": 3,
+      "forms": [
+        "идинината"
+      ]
+    },
+    {
+      "lemma": "опседнувања",
+      "total_frequency": 3,
+      "forms": [
+        "опседнувања"
+      ]
+    },
+    {
+      "lemma": "оддржете",
+      "total_frequency": 3,
+      "forms": [
+        "оддржете"
+      ]
+    },
+    {
+      "lemma": "оздрави",
+      "total_frequency": 3,
+      "forms": [
+        "оздравува"
+      ]
+    },
+    {
+      "lemma": "исмеаната",
+      "total_frequency": 3,
+      "forms": [
+        "исмеаната"
+      ]
+    },
+    {
+      "lemma": "дилија",
+      "total_frequency": 3,
+      "forms": [
+        "дилија"
+      ]
+    },
+    {
+      "lemma": "изразувајќи",
+      "total_frequency": 3,
+      "forms": [
+        "изразувајќи"
+      ]
+    },
+    {
+      "lemma": "злобнику",
+      "total_frequency": 3,
+      "forms": [
+        "злобнику"
+      ]
+    },
+    {
+      "lemma": "дискџокеите",
+      "total_frequency": 3,
+      "forms": [
+        "дискџокеите"
+      ]
+    },
+    {
+      "lemma": "баули",
+      "total_frequency": 2,
+      "forms": [
+        "баули"
+      ]
+    },
+    {
+      "lemma": "приметував",
+      "total_frequency": 2,
+      "forms": [
+        "приметував"
+      ]
+    },
+    {
+      "lemma": "гонзоновинарство",
+      "total_frequency": 2,
+      "forms": [
+        "гонзо-новинарство"
+      ]
+    },
+    {
+      "lemma": "маскл",
+      "total_frequency": 2,
+      "forms": [
+        "маскл"
+      ]
+    },
+    {
+      "lemma": "измакна",
+      "total_frequency": 2,
+      "forms": [
+        "измакна"
+      ]
+    },
+    {
+      "lemma": "моенавистина",
+      "total_frequency": 2,
+      "forms": [
+        "мое.-навистина"
+      ]
+    },
+    {
+      "lemma": "мегнетен",
+      "total_frequency": 2,
+      "forms": [
+        "мегнетен"
+      ]
+    },
+    {
+      "lemma": "моментќе",
+      "total_frequency": 2,
+      "forms": [
+        "момент.ќе"
+      ]
+    },
+    {
+      "lemma": "елзи",
+      "total_frequency": 2,
+      "forms": [
+        "елзи"
+      ]
+    },
+    {
+      "lemma": "инспекторка",
+      "total_frequency": 2,
+      "forms": [
+        "инспекторка"
+      ]
+    },
+    {
+      "lemma": "правија",
+      "total_frequency": 2,
+      "forms": [
+        "правија"
+      ]
+    },
+    {
+      "lemma": "најсјаниот",
+      "total_frequency": 2,
+      "forms": [
+        "најсјаниот"
+      ]
+    },
+    {
+      "lemma": "преминати",
+      "total_frequency": 2,
+      "forms": [
+        "преминати"
+      ]
+    },
+    {
+      "lemma": "сливникот",
+      "total_frequency": 2,
+      "forms": [
+        "сливникот"
+      ]
+    },
+    {
+      "lemma": "пријателски",
+      "total_frequency": 2,
+      "forms": [
+        "најпријателски"
+      ]
+    },
+    {
+      "lemma": "коноко",
+      "total_frequency": 2,
+      "forms": [
+        "коноко"
+      ]
+    },
+    {
+      "lemma": "раморарамора",
+      "total_frequency": 2,
+      "forms": [
+        "рамора.-рамора"
+      ]
+    },
+    {
+      "lemma": "информацијта",
+      "total_frequency": 2,
+      "forms": [
+        "информацијта"
+      ]
+    },
+    {
+      "lemma": "избуткам",
+      "total_frequency": 2,
+      "forms": [
+        "избуткам"
+      ]
+    },
+    {
+      "lemma": "уништеме",
+      "total_frequency": 2,
+      "forms": [
+        "уништеме"
+      ]
+    },
+    {
+      "lemma": "редизајнирањето",
+      "total_frequency": 2,
+      "forms": [
+        "редизајнирањето"
+      ]
+    },
+    {
+      "lemma": "јлу",
+      "total_frequency": 2,
+      "forms": [
+        "јлу"
+      ]
+    },
+    {
+      "lemma": "ејт",
+      "total_frequency": 2,
+      "forms": [
+        "ејт"
+      ]
+    },
+    {
+      "lemma": "поцрвенуваше",
+      "total_frequency": 2,
+      "forms": [
+        "поцрвенуваше"
+      ]
+    },
+    {
+      "lemma": "сакашда",
+      "total_frequency": 2,
+      "forms": [
+        "сакашда"
+      ]
+    },
+    {
+      "lemma": "бела",
+      "total_frequency": 2,
+      "forms": [
+        "белjа"
+      ]
+    },
+    {
+      "lemma": "содржана",
+      "total_frequency": 2,
+      "forms": [
+        "содржана"
+      ]
+    },
+    {
+      "lemma": "крадиме",
+      "total_frequency": 2,
+      "forms": [
+        "крадиме"
+      ]
+    },
+    {
+      "lemma": "фекантно",
+      "total_frequency": 2,
+      "forms": [
+        "фекантно"
+      ]
+    },
+    {
+      "lemma": "азизан",
+      "total_frequency": 2,
+      "forms": [
+        "азизан"
+      ]
+    },
+    {
+      "lemma": "набројат",
+      "total_frequency": 2,
+      "forms": [
+        "набројат"
+      ]
+    },
+    {
+      "lemma": "стрейзънд",
+      "total_frequency": 2,
+      "forms": [
+        "стрейзънд"
+      ]
+    },
+    {
+      "lemma": "хејвајер",
+      "total_frequency": 2,
+      "forms": [
+        "хејвајер"
+      ]
+    },
+    {
+      "lemma": "копеподите",
+      "total_frequency": 2,
+      "forms": [
+        "копеподите"
+      ]
+    },
+    {
+      "lemma": "неивните",
+      "total_frequency": 2,
+      "forms": [
+        "неивните"
+      ]
+    },
+    {
+      "lemma": "мунди",
+      "total_frequency": 2,
+      "forms": [
+        "мунди"
+      ]
+    },
+    {
+      "lemma": "хемлиш",
+      "total_frequency": 2,
+      "forms": [
+        "хемлиш"
+      ]
+    },
+    {
+      "lemma": "згазев",
+      "total_frequency": 2,
+      "forms": [
+        "згазев"
+      ]
+    },
+    {
+      "lemma": "обрзници",
+      "total_frequency": 2,
+      "forms": [
+        "обрзници"
+      ]
+    },
+    {
+      "lemma": "натегаш",
+      "total_frequency": 2,
+      "forms": [
+        "натегаш"
+      ]
+    },
+    {
+      "lemma": "поледни",
+      "total_frequency": 2,
+      "forms": [
+        "поледни"
+      ]
+    },
+    {
+      "lemma": "спојни",
+      "total_frequency": 2,
+      "forms": [
+        "спојни"
+      ]
+    },
+    {
+      "lemma": "познавме",
+      "total_frequency": 2,
+      "forms": [
+        "познавме"
+      ]
+    },
+    {
+      "lemma": "мразим",
+      "total_frequency": 2,
+      "forms": [
+        "мразим"
+      ]
+    },
+    {
+      "lemma": "фимови",
+      "total_frequency": 2,
+      "forms": [
+        "фимови"
+      ]
+    },
+    {
+      "lemma": "ирачкото",
+      "total_frequency": 2,
+      "forms": [
+        "ирачкото"
+      ]
+    },
+    {
+      "lemma": "откажуваа",
+      "total_frequency": 2,
+      "forms": [
+        "откажуваа"
+      ]
+    },
+    {
+      "lemma": "мекклак",
+      "total_frequency": 2,
+      "forms": [
+        "мекклак"
+      ]
+    },
+    {
+      "lemma": "боздоан",
+      "total_frequency": 2,
+      "forms": [
+        "боздоrан"
+      ]
+    },
+    {
+      "lemma": "површинатазнам",
+      "total_frequency": 2,
+      "forms": [
+        "површината.-знам"
+      ]
+    },
+    {
+      "lemma": "исчеткам",
+      "total_frequency": 2,
+      "forms": [
+        "исчеткам"
+      ]
+    },
+    {
+      "lemma": "рбетот",
+      "total_frequency": 2,
+      "forms": [
+        "р`бетот"
+      ]
+    },
+    {
+      "lemma": "бубачи",
+      "total_frequency": 2,
+      "forms": [
+        "бубачи"
+      ]
+    },
+    {
+      "lemma": "пејачу",
+      "total_frequency": 2,
+      "forms": [
+        "пејачу"
+      ]
+    },
+    {
+      "lemma": "мании",
+      "total_frequency": 2,
+      "forms": [
+        "мании"
+      ]
+    },
+    {
+      "lemma": "кошдири",
+      "total_frequency": 2,
+      "forms": [
+        "кош-дири"
+      ]
+    },
+    {
+      "lemma": "сметнување",
+      "total_frequency": 2,
+      "forms": [
+        "сметнување"
+      ]
+    },
+    {
+      "lemma": "поттурнете",
+      "total_frequency": 2,
+      "forms": [
+        "поттурнете"
+      ]
+    },
+    {
+      "lemma": "подлегнуваш",
+      "total_frequency": 2,
+      "forms": [
+        "подлегнуваш"
+      ]
+    },
+    {
+      "lemma": "ислушавме",
+      "total_frequency": 2,
+      "forms": [
+        "ислушавме"
+      ]
+    },
+    {
+      "lemma": "кладенец",
+      "total_frequency": 2,
+      "forms": [
+        "кладенци"
+      ]
+    },
+    {
+      "lemma": "извинувамдамалиот",
+      "total_frequency": 2,
+      "forms": [
+        "извинувам.да.малиот"
+      ]
+    },
+    {
+      "lemma": "мантикора",
+      "total_frequency": 2,
+      "forms": [
+        "мантикора"
+      ]
+    },
+    {
+      "lemma": "л",
+      "total_frequency": 2,
+      "forms": [
+        "aлo"
+      ]
+    },
+    {
+      "lemma": "дублатова",
+      "total_frequency": 2,
+      "forms": [
+        "дублатова"
+      ]
+    },
+    {
+      "lemma": "инсталфест",
+      "total_frequency": 2,
+      "forms": [
+        "инстал-фест"
+      ]
+    },
+    {
+      "lemma": "качуј",
+      "total_frequency": 2,
+      "forms": [
+        "качуј"
+      ]
+    },
+    {
+      "lemma": "доточката",
+      "total_frequency": 2,
+      "forms": [
+        "доточката"
+      ]
+    },
+    {
+      "lemma": "затнаа",
+      "total_frequency": 2,
+      "forms": [
+        "затнаа"
+      ]
+    },
+    {
+      "lemma": "подржувајки",
+      "total_frequency": 2,
+      "forms": [
+        "подржувајки"
+      ]
+    },
+    {
+      "lemma": "шупеците",
+      "total_frequency": 2,
+      "forms": [
+        "шупеците"
+      ]
+    },
+    {
+      "lemma": "сушстество",
+      "total_frequency": 2,
+      "forms": [
+        "сушстество"
+      ]
+    },
+    {
+      "lemma": "интелегентните",
+      "total_frequency": 2,
+      "forms": [
+        "интелегентните"
+      ]
+    },
+    {
+      "lemma": "долко",
+      "total_frequency": 2,
+      "forms": [
+        "долко"
+      ]
+    },
+    {
+      "lemma": "панхед",
+      "total_frequency": 2,
+      "forms": [
+        "панхед"
+      ]
+    },
+    {
+      "lemma": "зох",
+      "total_frequency": 2,
+      "forms": [
+        "зох"
+      ]
+    },
+    {
+      "lemma": "текстуални",
+      "total_frequency": 2,
+      "forms": [
+        "текстуални"
+      ]
+    },
+    {
+      "lemma": "наслонувач",
+      "total_frequency": 2,
+      "forms": [
+        "наслонувач"
+      ]
+    },
+    {
+      "lemma": "климне",
+      "total_frequency": 2,
+      "forms": [
+        "климне"
+      ]
+    },
+    {
+      "lemma": "булеарот",
+      "total_frequency": 2,
+      "forms": [
+        "булеарот"
+      ]
+    },
+    {
+      "lemma": "донелиевата",
+      "total_frequency": 2,
+      "forms": [
+        "донелиевата"
+      ]
+    },
+    {
+      "lemma": "луке",
+      "total_frequency": 2,
+      "forms": [
+        "луке"
+      ]
+    },
+    {
+      "lemma": "слонската",
+      "total_frequency": 2,
+      "forms": [
+        "слонската"
+      ]
+    },
+    {
+      "lemma": "поинакутоа",
+      "total_frequency": 2,
+      "forms": [
+        "поинаку.тоа"
+      ]
+    },
+    {
+      "lemma": "нагала",
+      "total_frequency": 2,
+      "forms": [
+        "нагала"
+      ]
+    },
+    {
+      "lemma": "покачена",
+      "total_frequency": 2,
+      "forms": [
+        "покачена"
+      ]
+    },
+    {
+      "lemma": "пресметувањето",
+      "total_frequency": 2,
+      "forms": [
+        "пресметувањето"
+      ]
+    },
+    {
+      "lemma": "голтнувате",
+      "total_frequency": 2,
+      "forms": [
+        "голтнувате"
+      ]
+    },
+    {
+      "lemma": "потфатив",
+      "total_frequency": 2,
+      "forms": [
+        "потфатив"
+      ]
+    },
+    {
+      "lemma": "доматно",
+      "total_frequency": 2,
+      "forms": [
+        "доматно"
+      ]
+    },
+    {
+      "lemma": "чевличето",
+      "total_frequency": 2,
+      "forms": [
+        "чевличето"
+      ]
+    },
+    {
+      "lemma": "парализирачките",
+      "total_frequency": 2,
+      "forms": [
+        "парализирачките"
+      ]
+    },
+    {
+      "lemma": "стелиј",
+      "total_frequency": 2,
+      "forms": [
+        "стелиј"
+      ]
+    },
+    {
+      "lemma": "илза",
+      "total_frequency": 2,
+      "forms": [
+        "илза"
+      ]
+    },
+    {
+      "lemma": "еврејскохристијански",
+      "total_frequency": 2,
+      "forms": [
+        "еврејско-христијански"
+      ]
+    },
+    {
+      "lemma": "вупс",
+      "total_frequency": 2,
+      "forms": [
+        "вупс"
+      ]
+    },
+    {
+      "lemma": "фисија",
+      "total_frequency": 2,
+      "forms": [
+        "фисија"
+      ]
+    },
+    {
+      "lemma": "бељаџија",
+      "total_frequency": 2,
+      "forms": [
+        "бељаџиите"
+      ]
+    },
+    {
+      "lemma": "несигурен",
+      "total_frequency": 2,
+      "forms": [
+        "понесигурен"
+      ]
+    },
+    {
+      "lemma": "преиспитувајте",
+      "total_frequency": 2,
+      "forms": [
+        "преиспитувајте"
+      ]
+    },
+    {
+      "lemma": "екстракти",
+      "total_frequency": 2,
+      "forms": [
+        "екстракти"
+      ]
+    },
+    {
+      "lemma": "црнчугамомчиња",
+      "total_frequency": 2,
+      "forms": [
+        "црнчуга-момчиња"
+      ]
+    },
+    {
+      "lemma": "цнг",
+      "total_frequency": 2,
+      "forms": [
+        "цнг"
+      ]
+    },
+    {
+      "lemma": "доживувал",
+      "total_frequency": 2,
+      "forms": [
+        "доживувал"
+      ]
+    },
+    {
+      "lemma": "павија",
+      "total_frequency": 2,
+      "forms": [
+        "павија"
+      ]
+    },
+    {
+      "lemma": "деланчето",
+      "total_frequency": 2,
+      "forms": [
+        "деланчето"
+      ]
+    },
+    {
+      "lemma": "раширивме",
+      "total_frequency": 2,
+      "forms": [
+        "раширивме"
+      ]
+    },
+    {
+      "lemma": "какое",
+      "total_frequency": 2,
+      "forms": [
+        "какое"
+      ]
+    },
+    {
+      "lemma": "навредишшто",
+      "total_frequency": 2,
+      "forms": [
+        "навредиш.-што"
+      ]
+    },
+    {
+      "lemma": "зајаковата",
+      "total_frequency": 2,
+      "forms": [
+        "зајаковата"
+      ]
+    },
+    {
+      "lemma": "бакнувано",
+      "total_frequency": 2,
+      "forms": [
+        "бакнувано"
+      ]
+    },
+    {
+      "lemma": "припремала",
+      "total_frequency": 2,
+      "forms": [
+        "припремала"
+      ]
+    },
+    {
+      "lemma": "судиското",
+      "total_frequency": 2,
+      "forms": [
+        "судиското"
+      ]
+    },
+    {
+      "lemma": "вудуто",
+      "total_frequency": 2,
+      "forms": [
+        "вудуто"
+      ]
+    },
+    {
+      "lemma": "либиската",
+      "total_frequency": 2,
+      "forms": [
+        "либиската"
+      ]
+    },
+    {
+      "lemma": "имато",
+      "total_frequency": 2,
+      "forms": [
+        "имато"
+      ]
+    },
+    {
+      "lemma": "распалил",
+      "total_frequency": 2,
+      "forms": [
+        "распалил"
+      ]
+    },
+    {
+      "lemma": "неп",
+      "total_frequency": 2,
+      "forms": [
+        "неп"
+      ]
+    },
+    {
+      "lemma": "морковиве",
+      "total_frequency": 2,
+      "forms": [
+        "морковиве"
+      ]
+    },
+    {
+      "lemma": "техологија",
+      "total_frequency": 2,
+      "forms": [
+        "техологија"
+      ]
+    },
+    {
+      "lemma": "ропските",
+      "total_frequency": 2,
+      "forms": [
+        "ропските"
+      ]
+    },
+    {
+      "lemma": "сублимиран",
+      "total_frequency": 2,
+      "forms": [
+        "сублимиран"
+      ]
+    },
+    {
+      "lemma": "засјаат",
+      "total_frequency": 2,
+      "forms": [
+        "засјаат"
+      ]
+    },
+    {
+      "lemma": "профитирала",
+      "total_frequency": 2,
+      "forms": [
+        "профитирала"
+      ]
+    },
+    {
+      "lemma": "сурогатските",
+      "total_frequency": 2,
+      "forms": [
+        "сурогатските"
+      ]
+    },
+    {
+      "lemma": "озна",
+      "total_frequency": 2,
+      "forms": [
+        "озна"
+      ]
+    },
+    {
+      "lemma": "смејачка",
+      "total_frequency": 2,
+      "forms": [
+        "смејачка"
+      ]
+    },
+    {
+      "lemma": "притисоков",
+      "total_frequency": 2,
+      "forms": [
+        "притисоков"
+      ]
+    },
+    {
+      "lemma": "благословувам",
+      "total_frequency": 2,
+      "forms": [
+        "благословувам"
+      ]
+    },
+    {
+      "lemma": "сиракјуз",
+      "total_frequency": 2,
+      "forms": [
+        "сиракјуз"
+      ]
+    },
+    {
+      "lemma": "решнието",
+      "total_frequency": 2,
+      "forms": [
+        "решeнието"
+      ]
+    },
+    {
+      "lemma": "најбавиот",
+      "total_frequency": 2,
+      "forms": [
+        "најyбавиот"
+      ]
+    },
+    {
+      "lemma": "кабрал",
+      "total_frequency": 2,
+      "forms": [
+        "кабрал"
+      ]
+    },
+    {
+      "lemma": "уништувавме",
+      "total_frequency": 2,
+      "forms": [
+        "уништувавме"
+      ]
+    },
+    {
+      "lemma": "сајбертроникс",
+      "total_frequency": 2,
+      "forms": [
+        "сајбертроникс"
+      ]
+    },
+    {
+      "lemma": "марида",
+      "total_frequency": 2,
+      "forms": [
+        "марида"
+      ]
+    },
+    {
+      "lemma": "аморална",
+      "total_frequency": 2,
+      "forms": [
+        "аморална"
+      ]
+    },
+    {
+      "lemma": "отпутштен",
+      "total_frequency": 2,
+      "forms": [
+        "отпутштен"
+      ]
+    },
+    {
+      "lemma": "неаова",
+      "total_frequency": 2,
+      "forms": [
+        "неа.ова"
+      ]
+    },
+    {
+      "lemma": "кожувот",
+      "total_frequency": 2,
+      "forms": [
+        "кожувот"
+      ]
+    },
+    {
+      "lemma": "самсамичок",
+      "total_frequency": 2,
+      "forms": [
+        "сам-самичок"
+      ]
+    },
+    {
+      "lemma": "ублаживме",
+      "total_frequency": 2,
+      "forms": [
+        "ублаживме"
+      ]
+    },
+    {
+      "lemma": "преговорот",
+      "total_frequency": 2,
+      "forms": [
+        "преговорот"
+      ]
+    },
+    {
+      "lemma": "прехрамбени",
+      "total_frequency": 2,
+      "forms": [
+        "прехрамбени"
+      ]
+    },
+    {
+      "lemma": "аналитичката",
+      "total_frequency": 2,
+      "forms": [
+        "аналитичката"
+      ]
+    },
+    {
+      "lemma": "тимокселин",
+      "total_frequency": 2,
+      "forms": [
+        "тимокселин"
+      ]
+    },
+    {
+      "lemma": "тројанска",
+      "total_frequency": 2,
+      "forms": [
+        "тројанска"
+      ]
+    },
+    {
+      "lemma": "непоштени",
+      "total_frequency": 2,
+      "forms": [
+        "непоштени"
+      ]
+    },
+    {
+      "lemma": "чеизможеби",
+      "total_frequency": 2,
+      "forms": [
+        "чеиз.-можеби"
+      ]
+    },
+    {
+      "lemma": "блааагодараааам",
+      "total_frequency": 2,
+      "forms": [
+        "блааагодараааам"
+      ]
+    },
+    {
+      "lemma": "слизнав",
+      "total_frequency": 2,
+      "forms": [
+        "слизнав"
+      ]
+    },
+    {
+      "lemma": "шиндеровата",
+      "total_frequency": 2,
+      "forms": [
+        "шиндеровата"
+      ]
+    },
+    {
+      "lemma": "портопренс",
+      "total_frequency": 2,
+      "forms": [
+        "порт-о-пренс"
+      ]
+    },
+    {
+      "lemma": "џоната",
+      "total_frequency": 2,
+      "forms": [
+        "џоната"
+      ]
+    },
+    {
+      "lemma": "нагласен",
+      "total_frequency": 2,
+      "forms": [
+        "нагласен"
+      ]
+    },
+    {
+      "lemma": "можаат",
+      "total_frequency": 2,
+      "forms": [
+        "можаат"
+      ]
+    },
+    {
+      "lemma": "серод",
+      "total_frequency": 2,
+      "forms": [
+        "серод"
+      ]
+    },
+    {
+      "lemma": "сторико",
+      "total_frequency": 2,
+      "forms": [
+        "сторико"
+      ]
+    },
+    {
+      "lemma": "наддаваат",
+      "total_frequency": 2,
+      "forms": [
+        "наддаваат"
+      ]
+    },
+    {
+      "lemma": "балетшетај",
+      "total_frequency": 1,
+      "forms": [
+        "балет.шетај."
+      ]
+    },
+    {
+      "lemma": "грејзен",
+      "total_frequency": 1,
+      "forms": [
+        "грејзен"
+      ]
+    },
+    {
+      "lemma": "технологијабез",
+      "total_frequency": 1,
+      "forms": [
+        "технологија.без"
+      ]
+    },
+    {
+      "lemma": "погледми",
+      "total_frequency": 1,
+      "forms": [
+        "погледми"
+      ]
+    },
+    {
+      "lemma": "дективирај",
+      "total_frequency": 1,
+      "forms": [
+        "дективирај"
+      ]
+    },
+    {
+      "lemma": "какокако",
+      "total_frequency": 1,
+      "forms": [
+        "како--како"
+      ]
+    },
+    {
+      "lemma": "нк",
+      "total_frequency": 1,
+      "forms": [
+        "нeкoja"
+      ]
+    },
+    {
+      "lemma": "прикраднеш",
+      "total_frequency": 1,
+      "forms": [
+        "прикраднеш"
+      ]
+    },
+    {
+      "lemma": "вмрежени",
+      "total_frequency": 1,
+      "forms": [
+        "вмрежени"
+      ]
+    },
+    {
+      "lemma": "невесели",
+      "total_frequency": 1,
+      "forms": [
+        "невесели"
+      ]
+    },
+    {
+      "lemma": "вестие",
+      "total_frequency": 1,
+      "forms": [
+        "вестие"
+      ]
+    },
+    {
+      "lemma": "многуможеш",
+      "total_frequency": 1,
+      "forms": [
+        "многу.-можеш"
+      ]
+    },
+    {
+      "lemma": "најнадарените",
+      "total_frequency": 1,
+      "forms": [
+        "најнадарените"
+      ]
+    },
+    {
+      "lemma": "борив",
+      "total_frequency": 1,
+      "forms": [
+        "борив"
+      ]
+    },
+    {
+      "lemma": "вете",
+      "total_frequency": 1,
+      "forms": [
+        "jaвете"
+      ]
+    },
+    {
+      "lemma": "тебетоа",
+      "total_frequency": 1,
+      "forms": [
+        "тебе.-тоа"
+      ]
+    },
+    {
+      "lemma": "пошуми",
+      "total_frequency": 1,
+      "forms": [
+        "пошуми"
+      ]
+    },
+    {
+      "lemma": "дбн",
+      "total_frequency": 1,
+      "forms": [
+        "oдбpaнa"
+      ]
+    },
+    {
+      "lemma": "железничарите",
+      "total_frequency": 1,
+      "forms": [
+        "железничарите"
+      ]
+    },
+    {
+      "lemma": "ченар",
+      "total_frequency": 1,
+      "forms": [
+        "ченар"
+      ]
+    },
+    {
+      "lemma": "цапит",
+      "total_frequency": 1,
+      "forms": [
+        "цапит"
+      ]
+    },
+    {
+      "lemma": "џејкова",
+      "total_frequency": 1,
+      "forms": [
+        "џејкова"
+      ]
+    },
+    {
+      "lemma": "смъртта",
+      "total_frequency": 1,
+      "forms": [
+        "смъртта"
+      ]
+    },
+    {
+      "lemma": "обидинетата",
+      "total_frequency": 1,
+      "forms": [
+        "обидинетата"
+      ]
+    },
+    {
+      "lemma": "варас",
+      "total_frequency": 1,
+      "forms": [
+        "варас"
+      ]
+    },
+    {
+      "lemma": "расказете",
+      "total_frequency": 1,
+      "forms": [
+        "расказете"
+      ]
+    },
+    {
+      "lemma": "зафатнина",
+      "total_frequency": 1,
+      "forms": [
+        "зафатнина"
+      ]
+    },
+    {
+      "lemma": "дренираат",
+      "total_frequency": 1,
+      "forms": [
+        "дренираат"
+      ]
+    },
+    {
+      "lemma": "бувије",
+      "total_frequency": 1,
+      "forms": [
+        "бувије"
+      ]
+    },
+    {
+      "lemma": "замотена",
+      "total_frequency": 1,
+      "forms": [
+        "замотена"
+      ]
+    },
+    {
+      "lemma": "зејдеј",
+      "total_frequency": 1,
+      "forms": [
+        "зејдеј"
+      ]
+    },
+    {
+      "lemma": "бесплата",
+      "total_frequency": 1,
+      "forms": [
+        "бесплата"
+      ]
+    },
+    {
+      "lemma": "калпина",
+      "total_frequency": 1,
+      "forms": [
+        "калпина"
+      ]
+    },
+    {
+      "lemma": "анак",
+      "total_frequency": 1,
+      "forms": [
+        "анак"
+      ]
+    },
+    {
+      "lemma": "тален",
+      "total_frequency": 1,
+      "forms": [
+        "toтален"
+      ]
+    },
+    {
+      "lemma": "недоумица",
+      "total_frequency": 1,
+      "forms": [
+        "недоумици"
+      ]
+    },
+    {
+      "lemma": "замерува",
+      "total_frequency": 1,
+      "forms": [
+        "замерува"
+      ]
+    },
+    {
+      "lemma": "ограбрува",
+      "total_frequency": 1,
+      "forms": [
+        "ограбрува"
+      ]
+    },
+    {
+      "lemma": "џолсон",
+      "total_frequency": 1,
+      "forms": [
+        "џолсон"
+      ]
+    },
+    {
+      "lemma": "дечкикој",
+      "total_frequency": 1,
+      "forms": [
+        "дечки.кој"
+      ]
+    },
+    {
+      "lemma": "ингид",
+      "total_frequency": 1,
+      "forms": [
+        "ингид"
+      ]
+    },
+    {
+      "lemma": "овадржи",
+      "total_frequency": 1,
+      "forms": [
+        "ова.-држи"
+      ]
+    },
+    {
+      "lemma": "крштевања",
+      "total_frequency": 1,
+      "forms": [
+        "крштевања"
+      ]
+    },
+    {
+      "lemma": "љ",
+      "total_frequency": 1,
+      "forms": [
+        "radiљ"
+      ]
+    },
+    {
+      "lemma": "дефни",
+      "total_frequency": 1,
+      "forms": [
+        "дефни"
+      ]
+    },
+    {
+      "lemma": "забодувањето",
+      "total_frequency": 1,
+      "forms": [
+        "забодувањето"
+      ]
+    },
+    {
+      "lemma": "утврденото",
+      "total_frequency": 1,
+      "forms": [
+        "утврденото"
+      ]
+    },
+    {
+      "lemma": "поодобрат",
+      "total_frequency": 1,
+      "forms": [
+        "поодобрат"
+      ]
+    },
+    {
+      "lemma": "скришиле",
+      "total_frequency": 1,
+      "forms": [
+        "скришиле"
+      ]
+    },
+    {
+      "lemma": "арпеже",
+      "total_frequency": 1,
+      "forms": [
+        "арпеже"
+      ]
+    },
+    {
+      "lemma": "фала",
+      "total_frequency": 1,
+      "forms": [
+        "-фала"
+      ]
+    },
+    {
+      "lemma": "припитоми",
+      "total_frequency": 1,
+      "forms": [
+        "припитомува"
+      ]
+    },
+    {
+      "lemma": "расколебан",
+      "total_frequency": 1,
+      "forms": [
+        "расколебан"
+      ]
+    },
+    {
+      "lemma": "воздржал",
+      "total_frequency": 1,
+      "forms": [
+        "воздржал"
+      ]
+    },
+    {
+      "lemma": "распродавање",
+      "total_frequency": 1,
+      "forms": [
+        "распродавање"
+      ]
+    },
+    {
+      "lemma": "балтика",
+      "total_frequency": 1,
+      "forms": [
+        "балтика"
+      ]
+    },
+    {
+      "lemma": "купикуршуми",
+      "total_frequency": 1,
+      "forms": [
+        "купи-куршуми"
+      ]
+    },
+    {
+      "lemma": "црвенко",
+      "total_frequency": 1,
+      "forms": [
+        "црвенко"
+      ]
+    },
+    {
+      "lemma": "еше",
+      "total_frequency": 1,
+      "forms": [
+        "bеше"
+      ]
+    },
+    {
+      "lemma": "напивате",
+      "total_frequency": 1,
+      "forms": [
+        "напивате"
+      ]
+    },
+    {
+      "lemma": "чекаја",
+      "total_frequency": 1,
+      "forms": [
+        "чекај.а"
+      ]
+    },
+    {
+      "lemma": "испуцкам",
+      "total_frequency": 1,
+      "forms": [
+        "испуцкам"
+      ]
+    },
+    {
+      "lemma": "изполнувате",
+      "total_frequency": 1,
+      "forms": [
+        "изполнувате"
+      ]
+    },
+    {
+      "lemma": "ниил",
+      "total_frequency": 1,
+      "forms": [
+        "ниил"
+      ]
+    },
+    {
+      "lemma": "одградот",
+      "total_frequency": 1,
+      "forms": [
+        "одградот"
+      ]
+    },
+    {
+      "lemma": "биолошкомеханички",
+      "total_frequency": 1,
+      "forms": [
+        "биолошко-механички"
+      ]
+    },
+    {
+      "lemma": "едношинската",
+      "total_frequency": 1,
+      "forms": [
+        "едношинската"
+      ]
+    },
+    {
+      "lemma": "роденденскокловновски",
+      "total_frequency": 1,
+      "forms": [
+        "роденденско-кловновски"
+      ]
+    },
+    {
+      "lemma": "присеќам",
+      "total_frequency": 1,
+      "forms": [
+        "присеќам"
+      ]
+    },
+    {
+      "lemma": "погрежете",
+      "total_frequency": 1,
+      "forms": [
+        "погрежете"
+      ]
+    },
+    {
+      "lemma": "запонае",
+      "total_frequency": 1,
+      "forms": [
+        "запонае"
+      ]
+    },
+    {
+      "lemma": "малък",
+      "total_frequency": 1,
+      "forms": [
+        "малък"
+      ]
+    },
+    {
+      "lemma": "несватени",
+      "total_frequency": 1,
+      "forms": [
+        "несватени"
+      ]
+    },
+    {
+      "lemma": "хирп",
+      "total_frequency": 1,
+      "forms": [
+        "хирп"
+      ]
+    },
+    {
+      "lemma": "таурата",
+      "total_frequency": 1,
+      "forms": [
+        "таурата"
+      ]
+    },
+    {
+      "lemma": "раакрши",
+      "total_frequency": 1,
+      "forms": [
+        "раакрши"
+      ]
+    },
+    {
+      "lemma": "реактивираше",
+      "total_frequency": 1,
+      "forms": [
+        "реактивираше"
+      ]
+    },
+    {
+      "lemma": "попуш",
+      "total_frequency": 1,
+      "forms": [
+        "попуш"
+      ]
+    },
+    {
+      "lemma": "сослушел",
+      "total_frequency": 1,
+      "forms": [
+        "сослушел"
+      ]
+    },
+    {
+      "lemma": "мракот",
+      "total_frequency": 1,
+      "forms": [
+        "мракот."
+      ]
+    },
+    {
+      "lemma": "објасним",
+      "total_frequency": 1,
+      "forms": [
+        "објасним"
+      ]
+    },
+    {
+      "lemma": "одври",
+      "total_frequency": 1,
+      "forms": [
+        "одври"
+      ]
+    },
+    {
+      "lemma": "сталиони",
+      "total_frequency": 1,
+      "forms": [
+        "сталиони"
+      ]
+    },
+    {
+      "lemma": "финита",
+      "total_frequency": 1,
+      "forms": [
+        "финита"
+      ]
+    },
+    {
+      "lemma": "хртка",
+      "total_frequency": 1,
+      "forms": [
+        "хртка"
+      ]
+    },
+    {
+      "lemma": "шума",
+      "total_frequency": 1,
+      "forms": [
+        "шумо"
+      ]
+    },
+    {
+      "lemma": "мултифункционалниот",
+      "total_frequency": 1,
+      "forms": [
+        "мултифункционалниот"
+      ]
+    },
+    {
+      "lemma": "поравме",
+      "total_frequency": 1,
+      "forms": [
+        "поравме"
+      ]
+    },
+    {
+      "lemma": "премерувањето",
+      "total_frequency": 1,
+      "forms": [
+        "премерувањето"
+      ]
+    },
+    {
+      "lemma": "никакова",
+      "total_frequency": 1,
+      "forms": [
+        "никакова"
+      ]
+    },
+    {
+      "lemma": "проникнувачки",
+      "total_frequency": 1,
+      "forms": [
+        "проникнувачки"
+      ]
+    },
+    {
+      "lemma": "управничкиот",
+      "total_frequency": 1,
+      "forms": [
+        "управничкиот"
+      ]
+    },
+    {
+      "lemma": "спактакуларно",
+      "total_frequency": 1,
+      "forms": [
+        "спактакуларно"
+      ]
+    },
+    {
+      "lemma": "окапам",
+      "total_frequency": 1,
+      "forms": [
+        "окапам"
+      ]
+    },
+    {
+      "lemma": "васт",
+      "total_frequency": 1,
+      "forms": [
+        "васт"
+      ]
+    },
+    {
+      "lemma": "слагвуд",
+      "total_frequency": 1,
+      "forms": [
+        "слагвуд"
+      ]
+    },
+    {
+      "lemma": "најдде",
+      "total_frequency": 1,
+      "forms": [
+        "најдде"
+      ]
+    },
+    {
+      "lemma": "осмечлиш",
+      "total_frequency": 1,
+      "forms": [
+        "осмечлиш"
+      ]
+    },
+    {
+      "lemma": "бродоградилишта",
+      "total_frequency": 1,
+      "forms": [
+        "бродоградилишта"
+      ]
+    },
+    {
+      "lemma": "избушена",
+      "total_frequency": 1,
+      "forms": [
+        "избушена"
+      ]
+    },
+    {
+      "lemma": "репресиа",
+      "total_frequency": 1,
+      "forms": [
+        "репресиjа"
+      ]
+    },
+    {
+      "lemma": "андрјошенка",
+      "total_frequency": 1,
+      "forms": [
+        "андрјошенка"
+      ]
+    },
+    {
+      "lemma": "где",
+      "total_frequency": 1,
+      "forms": [
+        "г.де"
+      ]
+    },
+    {
+      "lemma": "силноцрвени",
+      "total_frequency": 1,
+      "forms": [
+        "силноцрвени"
+      ]
+    },
+    {
+      "lemma": "невиновст",
+      "total_frequency": 1,
+      "forms": [
+        "невиновст"
+      ]
+    },
+    {
+      "lemma": "излезаше",
+      "total_frequency": 1,
+      "forms": [
+        "излезаше"
+      ]
+    },
+    {
+      "lemma": "бетува",
+      "total_frequency": 1,
+      "forms": [
+        "бетува"
+      ]
+    },
+    {
+      "lemma": "ватоси",
+      "total_frequency": 1,
+      "forms": [
+        "ватоси"
+      ]
+    },
+    {
+      "lemma": "нумерисаш",
+      "total_frequency": 1,
+      "forms": [
+        "нумерисаш"
+      ]
+    },
+    {
+      "lemma": "комуницирајте",
+      "total_frequency": 1,
+      "forms": [
+        "комуницирајте"
+      ]
+    },
+    {
+      "lemma": "обвинитиот",
+      "total_frequency": 1,
+      "forms": [
+        "обвинитиот"
+      ]
+    },
+    {
+      "lemma": "љубенакој",
+      "total_frequency": 1,
+      "forms": [
+        "љубена.кој"
+      ]
+    },
+    {
+      "lemma": "офарбани",
+      "total_frequency": 1,
+      "forms": [
+        "офарбани"
+      ]
+    },
+    {
+      "lemma": "секагош",
+      "total_frequency": 1,
+      "forms": [
+        "секагош"
+      ]
+    },
+    {
+      "lemma": "велосиопед",
+      "total_frequency": 1,
+      "forms": [
+        "велосиопед"
+      ]
+    },
+    {
+      "lemma": "игнорантна",
+      "total_frequency": 1,
+      "forms": [
+        "игнорантна"
+      ]
+    },
+    {
+      "lemma": "рационалниот",
+      "total_frequency": 1,
+      "forms": [
+        "рационалниот"
+      ]
+    },
+    {
+      "lemma": "варес",
+      "total_frequency": 1,
+      "forms": [
+        "варес"
+      ]
+    },
+    {
+      "lemma": "сукњички",
+      "total_frequency": 1,
+      "forms": [
+        "сукњички"
+      ]
+    },
+    {
+      "lemma": "амосние",
+      "total_frequency": 1,
+      "forms": [
+        "амос.ние"
+      ]
+    },
+    {
+      "lemma": "доесам",
+      "total_frequency": 1,
+      "forms": [
+        "доесам"
+      ]
+    },
+    {
+      "lemma": "ечерва",
+      "total_frequency": 1,
+      "forms": [
+        "ечерва"
+      ]
+    },
+    {
+      "lemma": "секспријателка",
+      "total_frequency": 1,
+      "forms": [
+        "секс-пријателка"
+      ]
+    },
+    {
+      "lemma": "збркуваме",
+      "total_frequency": 1,
+      "forms": [
+        "збркуваме"
+      ]
+    },
+    {
+      "lemma": "ќесенце",
+      "total_frequency": 1,
+      "forms": [
+        "ќесенце"
+      ]
+    },
+    {
+      "lemma": "можед",
+      "total_frequency": 1,
+      "forms": [
+        "можед"
+      ]
+    },
+    {
+      "lemma": "брадосаниот",
+      "total_frequency": 1,
+      "forms": [
+        "брадосаниот"
+      ]
+    },
+    {
+      "lemma": "листатано",
+      "total_frequency": 1,
+      "forms": [
+        "листата.но"
+      ]
+    },
+    {
+      "lemma": "попарени",
+      "total_frequency": 1,
+      "forms": [
+        "попарени"
+      ]
+    },
+    {
+      "lemma": "катеричка",
+      "total_frequency": 1,
+      "forms": [
+        "катеричка"
+      ]
+    },
+    {
+      "lemma": "совшено",
+      "total_frequency": 1,
+      "forms": [
+        "совшено"
+      ]
+    },
+    {
+      "lemma": "запазувачи",
+      "total_frequency": 1,
+      "forms": [
+        "запазувачи"
+      ]
+    },
+    {
+      "lemma": "алат",
+      "total_frequency": 1,
+      "forms": [
+        "алатt"
+      ]
+    },
+    {
+      "lemma": "литр",
+      "total_frequency": 1,
+      "forms": [
+        "литр"
+      ]
+    },
+    {
+      "lemma": "лапбендот",
+      "total_frequency": 1,
+      "forms": [
+        "лап-бендот"
+      ]
+    },
+    {
+      "lemma": "скнира",
+      "total_frequency": 1,
+      "forms": [
+        "скeнира"
+      ]
+    },
+    {
+      "lemma": "иаклучително",
+      "total_frequency": 1,
+      "forms": [
+        "иаклучително"
+      ]
+    },
+    {
+      "lemma": "алејуја",
+      "total_frequency": 1,
+      "forms": [
+        "алејуја"
+      ]
+    },
+    {
+      "lemma": "амендола",
+      "total_frequency": 1,
+      "forms": [
+        "амендола"
+      ]
+    },
+    {
+      "lemma": "будалаштина",
+      "total_frequency": 1,
+      "forms": [
+        "будалаштините"
+      ]
+    },
+    {
+      "lemma": "соминтелен",
+      "total_frequency": 1,
+      "forms": [
+        "соминтелен"
+      ]
+    },
+    {
+      "lemma": "мечкатаубиец",
+      "total_frequency": 1,
+      "forms": [
+        "мечката-убиец"
+      ]
+    },
+    {
+      "lemma": "заодоволства",
+      "total_frequency": 1,
+      "forms": [
+        "заодоволства"
+      ]
+    },
+    {
+      "lemma": "екеспериментот",
+      "total_frequency": 1,
+      "forms": [
+        "екеспериментот"
+      ]
+    },
+    {
+      "lemma": "вчита",
+      "total_frequency": 1,
+      "forms": [
+        "вчита"
+      ]
+    },
+    {
+      "lemma": "зглобна",
+      "total_frequency": 1,
+      "forms": [
+        "зглобна"
+      ]
+    },
+    {
+      "lemma": "напришав",
+      "total_frequency": 1,
+      "forms": [
+        "напришав"
+      ]
+    },
+    {
+      "lemma": "фалана",
+      "total_frequency": 1,
+      "forms": [
+        "фала.-на"
+      ]
+    },
+    {
+      "lemma": "дупнатите",
+      "total_frequency": 1,
+      "forms": [
+        "дупнатите"
+      ]
+    },
+    {
+      "lemma": "виеатнам",
+      "total_frequency": 1,
+      "forms": [
+        "виеатнам"
+      ]
+    },
+    {
+      "lemma": "исусеморате",
+      "total_frequency": 1,
+      "forms": [
+        "исусе.морате"
+      ]
+    },
+    {
+      "lemma": "нјорнберските",
+      "total_frequency": 1,
+      "forms": [
+        "нјорнберските"
+      ]
+    },
+    {
+      "lemma": "галициа",
+      "total_frequency": 1,
+      "forms": [
+        "галициа"
+      ]
+    },
+    {
+      "lemma": "кучк",
+      "total_frequency": 1,
+      "forms": [
+        "кучкa"
+      ]
+    },
+    {
+      "lemma": "рапутација",
+      "total_frequency": 1,
+      "forms": [
+        "рапутација"
+      ]
+    },
+    {
+      "lemma": "угаснемо",
+      "total_frequency": 1,
+      "forms": [
+        "угаснемо"
+      ]
+    },
+    {
+      "lemma": "пепеласти",
+      "total_frequency": 1,
+      "forms": [
+        "пепеласти"
+      ]
+    },
+    {
+      "lemma": "шокиравте",
+      "total_frequency": 1,
+      "forms": [
+        "шокиравте"
+      ]
+    },
+    {
+      "lemma": "пријатноблагодарам",
+      "total_frequency": 1,
+      "forms": [
+        "пријатно.-благодарам."
+      ]
+    },
+    {
+      "lemma": "ѓубрешкото",
+      "total_frequency": 1,
+      "forms": [
+        "ѓубрешкото"
+      ]
+    },
+    {
+      "lemma": "растичстете",
+      "total_frequency": 1,
+      "forms": [
+        "растичстете"
+      ]
+    },
+    {
+      "lemma": "декаф",
+      "total_frequency": 1,
+      "forms": [
+        "декаф"
+      ]
+    },
+    {
+      "lemma": "човекојадцитеалигатори",
+      "total_frequency": 1,
+      "forms": [
+        "човекојадците-алигатори"
+      ]
+    },
+    {
+      "lemma": "семенарист",
+      "total_frequency": 1,
+      "forms": [
+        "семенарист"
+      ]
+    },
+    {
+      "lemma": "блискоисточен",
+      "total_frequency": 1,
+      "forms": [
+        "блискоисточен"
+      ]
+    },
+    {
+      "lemma": "толкоу",
+      "total_frequency": 1,
+      "forms": [
+        "толкоу"
+      ]
+    },
+    {
+      "lemma": "заморување",
+      "total_frequency": 1,
+      "forms": [
+        "заморување"
+      ]
+    },
+    {
+      "lemma": "испропаѓаме",
+      "total_frequency": 1,
+      "forms": [
+        "испропаѓаме"
+      ]
+    },
+    {
+      "lemma": "винимобил",
+      "total_frequency": 1,
+      "forms": [
+        "винимобил"
+      ]
+    },
+    {
+      "lemma": "гластер",
+      "total_frequency": 1,
+      "forms": [
+        "гластер"
+      ]
+    },
+    {
+      "lemma": "опашести",
+      "total_frequency": 1,
+      "forms": [
+        "опашести"
+      ]
+    },
+    {
+      "lemma": "коако",
+      "total_frequency": 1,
+      "forms": [
+        "коако"
+      ]
+    },
+    {
+      "lemma": "брзодејствувачко",
+      "total_frequency": 1,
+      "forms": [
+        "брзодејствувачко"
+      ]
+    },
+    {
+      "lemma": "пијанк",
+      "total_frequency": 1,
+      "forms": [
+        "пијанк"
+      ]
+    },
+    {
+      "lemma": "плашишако",
+      "total_frequency": 1,
+      "forms": [
+        "плашиш.ако"
+      ]
+    },
+    {
+      "lemma": "скокањеодмостовиточкаком",
+      "total_frequency": 1,
+      "forms": [
+        "скокање-од-мостови-точка-ком"
+      ]
+    },
+    {
+      "lemma": "заедно",
+      "total_frequency": 1,
+      "forms": [
+        "заедно-"
+      ]
+    },
+    {
+      "lemma": "сплеткаме",
+      "total_frequency": 1,
+      "forms": [
+        "сплеткаме"
+      ]
+    },
+    {
+      "lemma": "кејервил",
+      "total_frequency": 1,
+      "forms": [
+        "кејервил"
+      ]
+    },
+    {
+      "lemma": "зутом",
+      "total_frequency": 1,
+      "forms": [
+        "зутом"
+      ]
+    },
+    {
+      "lemma": "вълнува",
+      "total_frequency": 1,
+      "forms": [
+        "вълнува"
+      ]
+    },
+    {
+      "lemma": "напревена",
+      "total_frequency": 1,
+      "forms": [
+        "напревена"
+      ]
+    },
+    {
+      "lemma": "цуствувам",
+      "total_frequency": 1,
+      "forms": [
+        "цуствувам"
+      ]
+    },
+    {
+      "lemma": "пауновиќ",
+      "total_frequency": 1,
+      "forms": [
+        "пауновиќ"
+      ]
+    },
+    {
+      "lemma": "стритрејсери",
+      "total_frequency": 1,
+      "forms": [
+        "стритрејсери"
+      ]
+    },
+    {
+      "lemma": "бланкуито",
+      "total_frequency": 1,
+      "forms": [
+        "бланкуито"
+      ]
+    },
+    {
+      "lemma": "изораат",
+      "total_frequency": 1,
+      "forms": [
+        "изораат"
+      ]
+    },
+    {
+      "lemma": "маварот",
+      "total_frequency": 1,
+      "forms": [
+        "маварот"
+      ]
+    },
+    {
+      "lemma": "вертков",
+      "total_frequency": 1,
+      "forms": [
+        "вертков"
+      ]
+    },
+    {
+      "lemma": "есапесап",
+      "total_frequency": 1,
+      "forms": [
+        "есап-есап"
+      ]
+    },
+    {
+      "lemma": "брадавички",
+      "total_frequency": 1,
+      "forms": [
+        "брадавички"
+      ]
+    },
+    {
+      "lemma": "жиравче",
+      "total_frequency": 1,
+      "forms": [
+        "жиравче"
+      ]
+    },
+    {
+      "lemma": "сум",
+      "total_frequency": 1,
+      "forms": [
+        "е-maii"
+      ]
+    },
+    {
+      "lemma": "контракултура",
+      "total_frequency": 1,
+      "forms": [
+        "контракултура"
+      ]
+    },
+    {
+      "lemma": "попуиларна",
+      "total_frequency": 1,
+      "forms": [
+        "попуиларна"
+      ]
+    },
+    {
+      "lemma": "џулис",
+      "total_frequency": 1,
+      "forms": [
+        "џулис"
+      ]
+    },
+    {
+      "lemma": "принцуоди",
+      "total_frequency": 1,
+      "forms": [
+        "принцу.оди"
+      ]
+    },
+    {
+      "lemma": "увиеше",
+      "total_frequency": 1,
+      "forms": [
+        "увиеше"
+      ]
+    },
+    {
+      "lemma": "акнеш",
+      "total_frequency": 1,
+      "forms": [
+        "акнеш"
+      ]
+    },
+    {
+      "lemma": "неотровна",
+      "total_frequency": 1,
+      "forms": [
+        "неотровна"
+      ]
+    },
+    {
+      "lemma": "подскокна",
+      "total_frequency": 1,
+      "forms": [
+        "подскокна"
+      ]
+    },
+    {
+      "lemma": "парковата",
+      "total_frequency": 1,
+      "forms": [
+        "парковата"
+      ]
+    },
+    {
+      "lemma": "изоставаат",
+      "total_frequency": 1,
+      "forms": [
+        "изоставаат"
+      ]
+    },
+    {
+      "lemma": "мажти",
+      "total_frequency": 1,
+      "forms": [
+        "мажти"
+      ]
+    },
+    {
+      "lemma": "титеизлегувај",
+      "total_frequency": 1,
+      "forms": [
+        "тите.-излегувај."
+      ]
+    },
+    {
+      "lemma": "харикири",
+      "total_frequency": 1,
+      "forms": [
+        "харикири"
+      ]
+    },
+    {
+      "lemma": "посетта",
+      "total_frequency": 1,
+      "forms": [
+        "посетта"
+      ]
+    },
+    {
+      "lemma": "вајскарвер",
+      "total_frequency": 1,
+      "forms": [
+        "вајскарвер"
+      ]
+    },
+    {
+      "lemma": "ебн",
+      "total_frequency": 1,
+      "forms": [
+        "ебaн"
+      ]
+    },
+    {
+      "lemma": "декораторот",
+      "total_frequency": 1,
+      "forms": [
+        "декораторот"
+      ]
+    },
+    {
+      "lemma": "парамаунт",
+      "total_frequency": 1,
+      "forms": [
+        "парамаунт"
+      ]
+    },
+    {
+      "lemma": "кочијашите",
+      "total_frequency": 1,
+      "forms": [
+        "кочијашите"
+      ]
+    },
+    {
+      "lemma": "надоаѓачко",
+      "total_frequency": 1,
+      "forms": [
+        "надоаѓачко"
+      ]
+    },
+    {
+      "lemma": "орфан",
+      "total_frequency": 1,
+      "forms": [
+        "орфан"
+      ]
+    },
+    {
+      "lemma": "искачувачко",
+      "total_frequency": 1,
+      "forms": [
+        "искачувачко"
+      ]
+    },
+    {
+      "lemma": "агаве",
+      "total_frequency": 1,
+      "forms": [
+        "агаве"
+      ]
+    },
+    {
+      "lemma": "кидам",
+      "total_frequency": 1,
+      "forms": [
+        "кидам"
+      ]
+    },
+    {
+      "lemma": "гејлзила",
+      "total_frequency": 1,
+      "forms": [
+        "гејлзила"
+      ]
+    },
+    {
+      "lemma": "мрмори",
+      "total_frequency": 1,
+      "forms": [
+        "промрмори"
+      ]
+    },
+    {
+      "lemma": "начелниче",
+      "total_frequency": 1,
+      "forms": [
+        "начелниче"
+      ]
+    },
+    {
+      "lemma": "овсените",
+      "total_frequency": 1,
+      "forms": [
+        "овсените"
+      ]
+    },
+    {
+      "lemma": "устре",
+      "total_frequency": 1,
+      "forms": [
+        "устре"
+      ]
+    },
+    {
+      "lemma": "висожество",
+      "total_frequency": 1,
+      "forms": [
+        "висожество"
+      ]
+    },
+    {
+      "lemma": "протријува",
+      "total_frequency": 1,
+      "forms": [
+        "протријува"
+      ]
+    },
+    {
+      "lemma": "споменица",
+      "total_frequency": 1,
+      "forms": [
+        "споменица"
+      ]
+    },
+    {
+      "lemma": "кенебанк",
+      "total_frequency": 1,
+      "forms": [
+        "кенебанк"
+      ]
+    },
+    {
+      "lemma": "обучувале",
+      "total_frequency": 1,
+      "forms": [
+        "обучувале"
+      ]
+    },
+    {
+      "lemma": "мачкиниот",
+      "total_frequency": 1,
+      "forms": [
+        "мачкиниот"
+      ]
+    },
+    {
+      "lemma": "гњуриш",
+      "total_frequency": 1,
+      "forms": [
+        "гњуриш"
+      ]
+    },
+    {
+      "lemma": "исцитира",
+      "total_frequency": 1,
+      "forms": [
+        "исцитира"
+      ]
+    },
+    {
+      "lemma": "теамо",
+      "total_frequency": 1,
+      "forms": [
+        "теамо"
+      ]
+    },
+    {
+      "lemma": "фииино",
+      "total_frequency": 1,
+      "forms": [
+        "фииино"
+      ]
+    },
+    {
+      "lemma": "пртствни",
+      "total_frequency": 1,
+      "forms": [
+        "прeтстaвниk"
+      ]
+    },
+    {
+      "lemma": "залите",
+      "total_frequency": 1,
+      "forms": [
+        "залите"
+      ]
+    },
+    {
+      "lemma": "канибалски",
+      "total_frequency": 1,
+      "forms": [
+        "канибалски"
+      ]
+    },
+    {
+      "lemma": "потплати",
+      "total_frequency": 1,
+      "forms": [
+        "потплаќа"
+      ]
+    },
+    {
+      "lemma": "прободувале",
+      "total_frequency": 1,
+      "forms": [
+        "прободувале"
+      ]
+    },
+    {
+      "lemma": "семвајз",
+      "total_frequency": 1,
+      "forms": [
+        "семвајз"
+      ]
+    },
+    {
+      "lemma": "дензигер",
+      "total_frequency": 1,
+      "forms": [
+        "дензигер"
+      ]
+    },
+    {
+      "lemma": "позборувано",
+      "total_frequency": 1,
+      "forms": [
+        "позборувано"
+      ]
+    },
+    {
+      "lemma": "погребем",
+      "total_frequency": 1,
+      "forms": [
+        "погребем"
+      ]
+    },
+    {
+      "lemma": "фиксај",
+      "total_frequency": 1,
+      "forms": [
+        "фиксај"
+      ]
+    },
+    {
+      "lemma": "почитувањењто",
+      "total_frequency": 1,
+      "forms": [
+        "почитувањењто"
+      ]
+    },
+    {
+      "lemma": "обујам",
+      "total_frequency": 1,
+      "forms": [
+        "обујам"
+      ]
+    },
+    {
+      "lemma": "официјализира",
+      "total_frequency": 1,
+      "forms": [
+        "официјализира"
+      ]
+    },
+    {
+      "lemma": "силувало",
+      "total_frequency": 1,
+      "forms": [
+        "силувало"
+      ]
+    },
+    {
+      "lemma": "шанстие",
+      "total_frequency": 1,
+      "forms": [
+        "шанс.тие"
+      ]
+    },
+    {
+      "lemma": "грлени",
+      "total_frequency": 1,
+      "forms": [
+        "грлени"
+      ]
+    },
+    {
+      "lemma": "вазаи",
+      "total_frequency": 1,
+      "forms": [
+        "вазаи"
+      ]
+    },
+    {
+      "lemma": "товарав",
+      "total_frequency": 1,
+      "forms": [
+        "товарав"
+      ]
+    },
+    {
+      "lemma": "идима",
+      "total_frequency": 1,
+      "forms": [
+        "идима"
+      ]
+    },
+    {
+      "lemma": "дензингеров",
+      "total_frequency": 1,
+      "forms": [
+        "дензингеров"
+      ]
+    },
+    {
+      "lemma": "допаднел",
+      "total_frequency": 1,
+      "forms": [
+        "допаднел"
+      ]
+    },
+    {
+      "lemma": "чокови",
+      "total_frequency": 1,
+      "forms": [
+        "чокови"
+      ]
+    },
+    {
+      "lemma": "туиг",
+      "total_frequency": 1,
+      "forms": [
+        "туиг"
+      ]
+    },
+    {
+      "lemma": "допивате",
+      "total_frequency": 1,
+      "forms": [
+        "допивате"
+      ]
+    },
+    {
+      "lemma": "ебеметие",
+      "total_frequency": 1,
+      "forms": [
+        "ебеме.тие"
+      ]
+    },
+    {
+      "lemma": "дотуркате",
+      "total_frequency": 1,
+      "forms": [
+        "дотуркате"
+      ]
+    },
+    {
+      "lemma": "квичење",
+      "total_frequency": 1,
+      "forms": [
+        "квичење"
+      ]
+    },
+    {
+      "lemma": "кадарни",
+      "total_frequency": 1,
+      "forms": [
+        "кадарни"
+      ]
+    },
+    {
+      "lemma": "рифсајд",
+      "total_frequency": 1,
+      "forms": [
+        "рифсајд"
+      ]
+    },
+    {
+      "lemma": "слушуваче",
+      "total_frequency": 1,
+      "forms": [
+        "слушуваче"
+      ]
+    },
+    {
+      "lemma": "еў",
+      "total_frequency": 1,
+      "forms": [
+        "staviеў"
+      ]
+    },
+    {
+      "lemma": "незнм",
+      "total_frequency": 1,
+      "forms": [
+        "незнм"
+      ]
+    },
+    {
+      "lemma": "доградам",
+      "total_frequency": 1,
+      "forms": [
+        "доградам"
+      ]
+    },
+    {
+      "lemma": "задлабочила",
+      "total_frequency": 1,
+      "forms": [
+        "задлабочила"
+      ]
+    },
+    {
+      "lemma": "позитивецот",
+      "total_frequency": 1,
+      "forms": [
+        "позитивецот"
+      ]
+    },
+    {
+      "lemma": "незафатен",
+      "total_frequency": 1,
+      "forms": [
+        "незафатен"
+      ]
+    },
+    {
+      "lemma": "џентламенот",
+      "total_frequency": 1,
+      "forms": [
+        "џентламенот"
+      ]
+    },
+    {
+      "lemma": "дедомраз",
+      "total_frequency": 1,
+      "forms": [
+        "дедомраз"
+      ]
+    },
+    {
+      "lemma": "едномесечно",
+      "total_frequency": 1,
+      "forms": [
+        "едно-месечно"
+      ]
+    },
+    {
+      "lemma": "грчкара",
+      "total_frequency": 1,
+      "forms": [
+        "грчкара"
+      ]
+    },
+    {
+      "lemma": "поретките",
+      "total_frequency": 1,
+      "forms": [
+        "поретките"
+      ]
+    },
+    {
+      "lemma": "допакувам",
+      "total_frequency": 1,
+      "forms": [
+        "допакувам"
+      ]
+    },
+    {
+      "lemma": "трезвеничиш",
+      "total_frequency": 1,
+      "forms": [
+        "трезвеничиш"
+      ]
+    },
+    {
+      "lemma": "пропаѓавме",
+      "total_frequency": 1,
+      "forms": [
+        "пропаѓавме"
+      ]
+    },
+    {
+      "lemma": "еколошките",
+      "total_frequency": 1,
+      "forms": [
+        "еколошките"
+      ]
+    },
+    {
+      "lemma": "ембрионале",
+      "total_frequency": 1,
+      "forms": [
+        "ембрионале"
+      ]
+    },
+    {
+      "lemma": "педрче",
+      "total_frequency": 1,
+      "forms": [
+        "педрче"
+      ]
+    },
+    {
+      "lemma": "врвт",
+      "total_frequency": 1,
+      "forms": [
+        "врвт"
+      ]
+    },
+    {
+      "lemma": "идаш",
+      "total_frequency": 1,
+      "forms": [
+        "идаш"
+      ]
+    },
+    {
+      "lemma": "одгајат",
+      "total_frequency": 1,
+      "forms": [
+        "одгајат"
+      ]
+    },
+    {
+      "lemma": "среденоќе",
+      "total_frequency": 1,
+      "forms": [
+        "средено.-ќе"
+      ]
+    },
+    {
+      "lemma": "допаѓапродолжи",
+      "total_frequency": 1,
+      "forms": [
+        "допаѓа.продолжи"
+      ]
+    },
+    {
+      "lemma": "грпирајт",
+      "total_frequency": 1,
+      "forms": [
+        "грyпирајтe"
+      ]
+    },
+    {
+      "lemma": "бебетреба",
+      "total_frequency": 1,
+      "forms": [
+        "бебе.треба"
+      ]
+    },
+    {
+      "lemma": "џејкразбуди",
+      "total_frequency": 1,
+      "forms": [
+        "џејк.разбуди"
+      ]
+    },
+    {
+      "lemma": "одронување",
+      "total_frequency": 1,
+      "forms": [
+        "одронување"
+      ]
+    },
+    {
+      "lemma": "мондријан",
+      "total_frequency": 1,
+      "forms": [
+        "мондријан"
+      ]
+    },
+    {
+      "lemma": "никадекога",
+      "total_frequency": 1,
+      "forms": [
+        "никаде.кога"
+      ]
+    },
+    {
+      "lemma": "ослобудувам",
+      "total_frequency": 1,
+      "forms": [
+        "ослобудувам"
+      ]
+    },
+    {
+      "lemma": "пајнвуд",
+      "total_frequency": 1,
+      "forms": [
+        "пајнвуд"
+      ]
+    },
+    {
+      "lemma": "пеколнава",
+      "total_frequency": 1,
+      "forms": [
+        "пеколнава"
+      ]
+    },
+    {
+      "lemma": "закал",
+      "total_frequency": 1,
+      "forms": [
+        "закал"
+      ]
+    },
+    {
+      "lemma": "тегарт",
+      "total_frequency": 1,
+      "forms": [
+        "тегарт"
+      ]
+    },
+    {
+      "lemma": "емитирањето",
+      "total_frequency": 1,
+      "forms": [
+        "емитирањето"
+      ]
+    },
+    {
+      "lemma": "бартхе",
+      "total_frequency": 1,
+      "forms": [
+        "бартхе"
+      ]
+    },
+    {
+      "lemma": "довредојдовте",
+      "total_frequency": 1,
+      "forms": [
+        "довредојдовте"
+      ]
+    },
+    {
+      "lemma": "рафалот",
+      "total_frequency": 1,
+      "forms": [
+        "рафалот"
+      ]
+    },
+    {
+      "lemma": "ругање",
+      "total_frequency": 1,
+      "forms": [
+        "ругање"
+      ]
+    },
+    {
+      "lemma": "мелеската",
+      "total_frequency": 1,
+      "forms": [
+        "мелеската"
+      ]
+    },
+    {
+      "lemma": "мамоедна",
+      "total_frequency": 1,
+      "forms": [
+        "мамо.една"
+      ]
+    },
+    {
+      "lemma": "сабинија",
+      "total_frequency": 1,
+      "forms": [
+        "сабинија"
+      ]
+    },
+    {
+      "lemma": "сакавсамо",
+      "total_frequency": 1,
+      "forms": [
+        "сакав.само"
+      ]
+    },
+    {
+      "lemma": "теглото",
+      "total_frequency": 1,
+      "forms": [
+        "теглото"
+      ]
+    },
+    {
+      "lemma": "шикаша",
+      "total_frequency": 1,
+      "forms": [
+        "шикаша"
+      ]
+    },
+    {
+      "lemma": "сенаторската",
+      "total_frequency": 1,
+      "forms": [
+        "сенаторската"
+      ]
+    },
+    {
+      "lemma": "хаппенед",
+      "total_frequency": 1,
+      "forms": [
+        "хаппенед"
+      ]
+    },
+    {
+      "lemma": "мајсторија",
+      "total_frequency": 1,
+      "forms": [
+        "мајсторијата"
+      ]
+    },
+    {
+      "lemma": "пдпставувам",
+      "total_frequency": 1,
+      "forms": [
+        "пpeдпoставувам"
+      ]
+    },
+    {
+      "lemma": "поволно",
+      "total_frequency": 1,
+      "forms": [
+        "поповолно"
+      ]
+    },
+    {
+      "lemma": "искори",
+      "total_frequency": 1,
+      "forms": [
+        "искори"
+      ]
+    },
+    {
+      "lemma": "впечатокзнам",
+      "total_frequency": 1,
+      "forms": [
+        "впечаток.знам"
+      ]
+    },
+    {
+      "lemma": "проџектс",
+      "total_frequency": 1,
+      "forms": [
+        "проџектс"
+      ]
+    },
+    {
+      "lemma": "метаамфетамини",
+      "total_frequency": 1,
+      "forms": [
+        "метаамфетамини"
+      ]
+    },
+    {
+      "lemma": "маршалако",
+      "total_frequency": 1,
+      "forms": [
+        "маршал.ако"
+      ]
+    },
+    {
+      "lemma": "попуштеа",
+      "total_frequency": 1,
+      "forms": [
+        "попуштеа"
+      ]
+    },
+    {
+      "lemma": "ранчерос",
+      "total_frequency": 1,
+      "forms": [
+        "ранчерос"
+      ]
+    },
+    {
+      "lemma": "светлонашите",
+      "total_frequency": 1,
+      "forms": [
+        "светло.нашите"
+      ]
+    },
+    {
+      "lemma": "ноелитите",
+      "total_frequency": 1,
+      "forms": [
+        "ноелитите"
+      ]
+    },
+    {
+      "lemma": "крижимижи",
+      "total_frequency": 1,
+      "forms": [
+        "крижи-мижи"
+      ]
+    },
+    {
+      "lemma": "камилке",
+      "total_frequency": 1,
+      "forms": [
+        "камилке"
+      ]
+    },
+    {
+      "lemma": "скабетиос",
+      "total_frequency": 1,
+      "forms": [
+        "скабетиос"
+      ]
+    },
+    {
+      "lemma": "загаткарот",
+      "total_frequency": 1,
+      "forms": [
+        "загаткарот"
+      ]
+    },
+    {
+      "lemma": "касаите",
+      "total_frequency": 1,
+      "forms": [
+        "касаите"
+      ]
+    },
+    {
+      "lemma": "иеправено",
+      "total_frequency": 1,
+      "forms": [
+        "иеправено"
+      ]
+    },
+    {
+      "lemma": "ќекам",
+      "total_frequency": 1,
+      "forms": [
+        "ќекам"
+      ]
+    },
+    {
+      "lemma": "освојила",
+      "total_frequency": 1,
+      "forms": [
+        "освојила"
+      ]
+    },
+    {
+      "lemma": "устреми",
+      "total_frequency": 1,
+      "forms": [
+        "устреми"
+      ]
+    },
+    {
+      "lemma": "малтретураше",
+      "total_frequency": 1,
+      "forms": [
+        "малтретураше"
+      ]
+    },
+    {
+      "lemma": "ребутирање",
+      "total_frequency": 1,
+      "forms": [
+        "ребутирање"
+      ]
+    },
+    {
+      "lemma": "кинкед",
+      "total_frequency": 1,
+      "forms": [
+        "кинкед"
+      ]
+    },
+    {
+      "lemma": "споспобна",
+      "total_frequency": 1,
+      "forms": [
+        "споспобна"
+      ]
+    },
+    {
+      "lemma": "антман",
+      "total_frequency": 1,
+      "forms": [
+        "ант-ман"
+      ]
+    },
+    {
+      "lemma": "девочето",
+      "total_frequency": 1,
+      "forms": [
+        "девоjчето"
+      ]
+    },
+    {
+      "lemma": "цинично",
+      "total_frequency": 1,
+      "forms": [
+        "поцинично"
+      ]
+    },
+    {
+      "lemma": "народт",
+      "total_frequency": 1,
+      "forms": [
+        "народoт"
+      ]
+    },
+    {
+      "lemma": "пристгна",
+      "total_frequency": 1,
+      "forms": [
+        "пристгна"
+      ]
+    },
+    {
+      "lemma": "зготвеше",
+      "total_frequency": 1,
+      "forms": [
+        "зготвеше"
+      ]
+    },
+    {
+      "lemma": "ванилен",
+      "total_frequency": 1,
+      "forms": [
+        "ванилен"
+      ]
+    },
+    {
+      "lemma": "иселените",
+      "total_frequency": 1,
+      "forms": [
+        "иселените"
+      ]
+    },
+    {
+      "lemma": "иператорите",
+      "total_frequency": 1,
+      "forms": [
+        "иператорите"
+      ]
+    },
+    {
+      "lemma": "овластенија",
+      "total_frequency": 1,
+      "forms": [
+        "овластенија"
+      ]
+    },
+    {
+      "lemma": "апри",
+      "total_frequency": 1,
+      "forms": [
+        "апри"
+      ]
+    },
+    {
+      "lemma": "турлингтон",
+      "total_frequency": 1,
+      "forms": [
+        "турлингтон"
+      ]
+    },
+    {
+      "lemma": "напоменете",
+      "total_frequency": 1,
+      "forms": [
+        "напоменете"
+      ]
+    },
+    {
+      "lemma": "елизабетвил",
+      "total_frequency": 1,
+      "forms": [
+        "елизабетвил"
+      ]
+    },
+    {
+      "lemma": "идар",
+      "total_frequency": 1,
+      "forms": [
+        "sидар"
+      ]
+    },
+    {
+      "lemma": "срамува",
+      "total_frequency": 1,
+      "forms": [
+        "срамува"
+      ]
+    },
+    {
+      "lemma": "фаер",
+      "total_frequency": 1,
+      "forms": [
+        "фаер"
+      ]
+    },
+    {
+      "lemma": "проплакало",
+      "total_frequency": 1,
+      "forms": [
+        "проплакало"
+      ]
+    },
+    {
+      "lemma": "напреднеш",
+      "total_frequency": 1,
+      "forms": [
+        "напреднеш"
+      ]
+    },
+    {
+      "lemma": "преширок",
+      "total_frequency": 1,
+      "forms": [
+        "преширок"
+      ]
+    },
+    {
+      "lemma": "пренапунетост",
+      "total_frequency": 1,
+      "forms": [
+        "пренапунетост"
+      ]
+    },
+    {
+      "lemma": "потъркалят",
+      "total_frequency": 1,
+      "forms": [
+        "потъркалят"
+      ]
+    },
+    {
+      "lemma": "состанувавте",
+      "total_frequency": 1,
+      "forms": [
+        "состанувавте"
+      ]
+    },
+    {
+      "lemma": "гренсом",
+      "total_frequency": 1,
+      "forms": [
+        "гренсом"
+      ]
+    },
+    {
+      "lemma": "зачув",
+      "total_frequency": 1,
+      "forms": [
+        "зачувaj"
+      ]
+    },
+    {
+      "lemma": "сирловиот",
+      "total_frequency": 1,
+      "forms": [
+        "сирловиот"
+      ]
+    },
+    {
+      "lemma": "кримдосието",
+      "total_frequency": 1,
+      "forms": [
+        "крим-досието"
+      ]
+    },
+    {
+      "lemma": "измиее",
+      "total_frequency": 1,
+      "forms": [
+        "измиее"
+      ]
+    },
+    {
+      "lemma": "индивуалците",
+      "total_frequency": 1,
+      "forms": [
+        "индивуалците"
+      ]
+    },
+    {
+      "lemma": "предупредувачкото",
+      "total_frequency": 1,
+      "forms": [
+        "предупредувачкото"
+      ]
+    },
+    {
+      "lemma": "ќерк",
+      "total_frequency": 1,
+      "forms": [
+        "ќеркo"
+      ]
+    },
+    {
+      "lemma": "душни",
+      "total_frequency": 1,
+      "forms": [
+        "душни"
+      ]
+    },
+    {
+      "lemma": "раскрвавеше",
+      "total_frequency": 1,
+      "forms": [
+        "раскрвавеше"
+      ]
+    },
+    {
+      "lemma": "рискирате",
+      "total_frequency": 1,
+      "forms": [
+        "рискирате"
+      ]
+    },
+    {
+      "lemma": "ревата",
+      "total_frequency": 1,
+      "forms": [
+        "tревата"
+      ]
+    },
+    {
+      "lemma": "стисав",
+      "total_frequency": 1,
+      "forms": [
+        "стисав"
+      ]
+    },
+    {
+      "lemma": "поигурно",
+      "total_frequency": 1,
+      "forms": [
+        "поигурно"
+      ]
+    },
+    {
+      "lemma": "одпоздра",
+      "total_frequency": 1,
+      "forms": [
+        "одпоздра"
+      ]
+    },
+    {
+      "lemma": "сезапочнав",
+      "total_frequency": 1,
+      "forms": [
+        "се.започнав"
+      ]
+    },
+    {
+      "lemma": "уништувањмето",
+      "total_frequency": 1,
+      "forms": [
+        "уништувањмето"
+      ]
+    },
+    {
+      "lemma": "сзкзт",
+      "total_frequency": 1,
+      "forms": [
+        "сзкзт"
+      ]
+    },
+    {
+      "lemma": "карлфилипе",
+      "total_frequency": 1,
+      "forms": [
+        "карл.филипе"
+      ]
+    },
+    {
+      "lemma": "дартањан",
+      "total_frequency": 1,
+      "forms": [
+        "дартањан"
+      ]
+    },
+    {
+      "lemma": "мбање",
+      "total_frequency": 1,
+      "forms": [
+        "мбање"
+      ]
+    },
+    {
+      "lemma": "младича",
+      "total_frequency": 1,
+      "forms": [
+        "младича"
+      ]
+    },
+    {
+      "lemma": "култура",
+      "total_frequency": 1,
+      "forms": [
+        "културава"
+      ]
+    },
+    {
+      "lemma": "заповедете",
+      "total_frequency": 1,
+      "forms": [
+        "заповедете"
+      ]
+    },
+    {
+      "lemma": "животнипосебно",
+      "total_frequency": 1,
+      "forms": [
+        "животни.посебно"
+      ]
+    },
+    {
+      "lemma": "хаделзбург",
+      "total_frequency": 1,
+      "forms": [
+        "хаделзбург"
+      ]
+    },
+    {
+      "lemma": "пакостниот",
+      "total_frequency": 1,
+      "forms": [
+        "пакостниот"
+      ]
+    },
+    {
+      "lemma": "вхф",
+      "total_frequency": 1,
+      "forms": [
+        "вхф"
+      ]
+    },
+    {
+      "lemma": "вознемира",
+      "total_frequency": 1,
+      "forms": [
+        "вознемира"
+      ]
+    },
+    {
+      "lemma": "истовариме",
+      "total_frequency": 1,
+      "forms": [
+        "истовариме."
+      ]
+    },
+    {
+      "lemma": "понтифицирање",
+      "total_frequency": 1,
+      "forms": [
+        "понтифицирање"
+      ]
+    },
+    {
+      "lemma": "помаку",
+      "total_frequency": 1,
+      "forms": [
+        "помаку"
+      ]
+    },
+    {
+      "lemma": "еспоненцијален",
+      "total_frequency": 1,
+      "forms": [
+        "еспоненцијален"
+      ]
+    },
+    {
+      "lemma": "чакалс",
+      "total_frequency": 1,
+      "forms": [
+        "чакалс"
+      ]
+    },
+    {
+      "lemma": "фукаро",
+      "total_frequency": 1,
+      "forms": [
+        "фукаро"
+      ]
+    },
+    {
+      "lemma": "трпд",
+      "total_frequency": 1,
+      "forms": [
+        "тoрпeдo"
+      ]
+    },
+    {
+      "lemma": "фалнгата",
+      "total_frequency": 1,
+      "forms": [
+        "фалнгата"
+      ]
+    },
+    {
+      "lemma": "порадоци",
+      "total_frequency": 1,
+      "forms": [
+        "порадоци"
+      ]
+    },
+    {
+      "lemma": "инвазивно",
+      "total_frequency": 1,
+      "forms": [
+        "инвазивно"
+      ]
+    },
+    {
+      "lemma": "исиот",
+      "total_frequency": 1,
+      "forms": [
+        "исиот"
+      ]
+    },
+    {
+      "lemma": "свртевете",
+      "total_frequency": 1,
+      "forms": [
+        "свртевете"
+      ]
+    },
+    {
+      "lemma": "малинки",
+      "total_frequency": 1,
+      "forms": [
+        "малинки"
+      ]
+    },
+    {
+      "lemma": "гаражаи",
+      "total_frequency": 1,
+      "forms": [
+        "гаражаи"
+      ]
+    },
+    {
+      "lemma": "атонската",
+      "total_frequency": 1,
+      "forms": [
+        "атонската"
+      ]
+    },
+    {
+      "lemma": "криптонката",
+      "total_frequency": 1,
+      "forms": [
+        "криптонката"
+      ]
+    },
+    {
+      "lemma": "сакањата",
+      "total_frequency": 1,
+      "forms": [
+        "сакањата"
+      ]
+    },
+    {
+      "lemma": "трошно",
+      "total_frequency": 1,
+      "forms": [
+        "трошно"
+      ]
+    },
+    {
+      "lemma": "знамзашто",
+      "total_frequency": 1,
+      "forms": [
+        "знам.зашто"
+      ]
+    },
+    {
+      "lemma": "втојата",
+      "total_frequency": 1,
+      "forms": [
+        "втојата"
+      ]
+    },
+    {
+      "lemma": "ариски",
+      "total_frequency": 1,
+      "forms": [
+        "ариски"
+      ]
+    },
+    {
+      "lemma": "влкучете",
+      "total_frequency": 1,
+      "forms": [
+        "влкучете"
+      ]
+    },
+    {
+      "lemma": "неодречлива",
+      "total_frequency": 1,
+      "forms": [
+        "неодречлива"
+      ]
+    },
+    {
+      "lemma": "подпалиме",
+      "total_frequency": 1,
+      "forms": [
+        "подпалиме"
+      ]
+    },
+    {
+      "lemma": "пљачкосувач",
+      "total_frequency": 1,
+      "forms": [
+        "пљачкосувач"
+      ]
+    },
+    {
+      "lemma": "рстестрманден",
+      "total_frequency": 1,
+      "forms": [
+        "рстестyрманден"
+      ]
+    },
+    {
+      "lemma": "додела",
+      "total_frequency": 1,
+      "forms": [
+        "додела"
+      ]
+    },
+    {
+      "lemma": "стпоија",
+      "total_frequency": 1,
+      "forms": [
+        "стпоија"
+      ]
+    },
+    {
+      "lemma": "куинси",
+      "total_frequency": 1,
+      "forms": [
+        "куинси"
+      ]
+    },
+    {
+      "lemma": "тоис",
+      "total_frequency": 1,
+      "forms": [
+        "тоис"
+      ]
+    },
+    {
+      "lemma": "елипса",
+      "total_frequency": 1,
+      "forms": [
+        "елипси"
+      ]
+    },
+    {
+      "lemma": "годата",
+      "total_frequency": 1,
+      "forms": [
+        "годата"
+      ]
+    },
+    {
+      "lemma": "јадливи",
+      "total_frequency": 1,
+      "forms": [
+        "јадливи"
+      ]
+    },
+    {
+      "lemma": "г",
+      "total_frequency": 1,
+      "forms": [
+        "heгo"
+      ]
+    },
+    {
+      "lemma": "сопранои",
+      "total_frequency": 1,
+      "forms": [
+        "сопранои"
+      ]
+    },
+    {
+      "lemma": "траутнам",
+      "total_frequency": 1,
+      "forms": [
+        "траутнам"
+      ]
+    },
+    {
+      "lemma": "снежанке",
+      "total_frequency": 1,
+      "forms": [
+        "снежанке"
+      ]
+    },
+    {
+      "lemma": "прераспределувала",
+      "total_frequency": 1,
+      "forms": [
+        "прераспределувала"
+      ]
+    },
+    {
+      "lemma": "хедери",
+      "total_frequency": 1,
+      "forms": [
+        "хедери"
+      ]
+    },
+    {
+      "lemma": "мисламразмисли",
+      "total_frequency": 1,
+      "forms": [
+        "мислам.размисли"
+      ]
+    },
+    {
+      "lemma": "тимви",
+      "total_frequency": 1,
+      "forms": [
+        "тимoви"
+      ]
+    },
+    {
+      "lemma": "офкајне",
+      "total_frequency": 1,
+      "forms": [
+        "офкај.не"
+      ]
+    },
+    {
+      "lemma": "страхуваше",
+      "total_frequency": 1,
+      "forms": [
+        "страхуваше"
+      ]
+    },
+    {
+      "lemma": "радикалниот",
+      "total_frequency": 1,
+      "forms": [
+        "радикалниот"
+      ]
+    },
+    {
+      "lemma": "реформирање",
+      "total_frequency": 1,
+      "forms": [
+        "реформирање"
+      ]
+    },
+    {
+      "lemma": "макјк",
+      "total_frequency": 1,
+      "forms": [
+        "макјк"
+      ]
+    },
+    {
+      "lemma": "дарквулв",
+      "total_frequency": 1,
+      "forms": [
+        "дарквулв"
+      ]
+    },
+    {
+      "lemma": "разнообразност",
+      "total_frequency": 1,
+      "forms": [
+        "разнообразност"
+      ]
+    },
+    {
+      "lemma": "конзулите",
+      "total_frequency": 1,
+      "forms": [
+        "конзулите"
+      ]
+    },
+    {
+      "lemma": "моцарела",
+      "total_frequency": 1,
+      "forms": [
+        "моцарелата"
+      ]
+    }
+  ]
+}

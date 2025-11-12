@@ -1,0 +1,96 @@
+{
+  "sentence_types": [
+    {
+      "id": "casual_dialogue",
+      "label": "Casual Dialogue",
+      "instructions": "Sound like relaxed spoken Mandarin between friends or family, using natural particles or fillers when appropriate."
+    },
+    {
+      "id": "formal_announcement",
+      "label": "Formal Announcement",
+      "instructions": "Write a concise, written-style statement such as a notice, memo, or news blurb."
+    },
+    {
+      "id": "imperative_request",
+      "label": "Imperative or Request",
+      "instructions": "Give a command, reminder, or polite request that asks someone to do something."
+    },
+    {
+      "id": "reflective_monologue",
+      "label": "Reflective Monologue",
+      "instructions": "Use first-person narration to share feelings, doubts, or plans in a single sentence."
+    },
+    {
+      "id": "descriptive_narration",
+      "label": "Descriptive Narration",
+      "instructions": "Describe what a third-party character is seeing or doing, as if telling a short story moment."
+    },
+    {
+      "id": "instructional_explanation",
+      "label": "Instructional Explanation",
+      "instructions": "Explain how to complete a task or clarify how something works, all within one sentence."
+    },
+    {
+      "id": "question_prompt",
+      "label": "Question Prompt",
+      "instructions": "Pose a single complete question, without providing an answer."
+    },
+    {
+      "id": "reaction_exclamation",
+      "label": "Reaction or Exclamation",
+      "instructions": "Express surprise, delight, frustration, or another strong reaction in a lively sentence."
+    }
+  ],
+  "context_settings": [
+    { "id": "morning_routine", "label": "Morning Routine", "prompt": "Moments like waking up, preparing breakfast, or planning the day." },
+    { "id": "commuting", "label": "Commuting", "prompt": "Traveling by bus, subway, bike, or car through the city." },
+    { "id": "office_meeting", "label": "Office Meeting", "prompt": "Professional updates, project discussions, and deadlines." },
+    { "id": "remote_work", "label": "Remote Work", "prompt": "Working from home, video calls, and productivity hacks." },
+    { "id": "exam_study", "label": "Exam Study", "prompt": "Preparing for tests, cramming, or study strategies." },
+    { "id": "classroom_scene", "label": "Classroom Scene", "prompt": "Interactions between teachers and students in class." },
+    { "id": "tutoring_session", "label": "Tutoring Session", "prompt": "One-on-one explanations, corrections, or encouragement." },
+    { "id": "grocery_shopping", "label": "Grocery Shopping", "prompt": "Choosing ingredients, comparing prices, or checkout moments." },
+    { "id": "street_food", "label": "Street Food", "prompt": "Ordering snacks, lining up at stalls, or tasting new dishes." },
+    { "id": "home_cooking", "label": "Home Cooking", "prompt": "Preparing meals, sharing recipes, or kitchen mishaps." },
+    { "id": "restaurant_dining", "label": "Restaurant Dining", "prompt": "Reservations, waitstaff interactions, and tasting dishes." },
+    { "id": "cafe_chat", "label": "Cafe Chat", "prompt": "Light conversations over coffee or tea." },
+    { "id": "fitness_training", "label": "Fitness Training", "prompt": "Workouts, coaching cues, and staying motivated." },
+    { "id": "health_checkup", "label": "Health Checkup", "prompt": "Clinic visits, doctor advice, or test results." },
+    { "id": "pharmacy_errand", "label": "Pharmacy Errand", "prompt": "Buying medicine, asking about prescriptions, or dosage reminders." },
+    { "id": "weather_update", "label": "Weather Update", "prompt": "Forecasts, sudden storms, or seasonal changes." },
+    { "id": "weekend_trip", "label": "Weekend Trip", "prompt": "Short getaways, sightseeing, or packing decisions." },
+    { "id": "hotel_stay", "label": "Hotel Stay", "prompt": "Check-ins, room service, or travel complaints." },
+    { "id": "airport_travel", "label": "Airport Travel", "prompt": "Security checks, boarding, or flight delays." },
+    { "id": "long_distance_train", "label": "Long-distance Train", "prompt": "Train compartments, station announcements, or scenic rides." },
+    { "id": "city_navigation", "label": "City Navigation", "prompt": "Finding addresses, asking for directions, or traffic issues." },
+    { "id": "museum_visit", "label": "Museum Visit", "prompt": "Viewing exhibits, audio guides, or art opinions." },
+    { "id": "historical_reenactment", "label": "Historical Reenactment", "prompt": "Imagining past eras or narrating historical scenes." },
+    { "id": "news_broadcast", "label": "News Broadcast", "prompt": "Reporting current events or breaking news headlines." },
+    { "id": "political_discussion", "label": "Political Discussion", "prompt": "Debating policies, elections, or civic issues." },
+    { "id": "community_meeting", "label": "Community Meeting", "prompt": "Neighborhood planning, local disputes, or public comments." },
+    { "id": "charity_event", "label": "Charity Event", "prompt": "Fundraisers, volunteer coordination, or gratitude notes." },
+    { "id": "environmental_campaign", "label": "Environmental Campaign", "prompt": "Recycling drives, climate activism, or conservation tips." },
+    { "id": "tech_startup", "label": "Tech Startup", "prompt": "Pitching ideas, product iterations, or investor updates." },
+    { "id": "research_lab", "label": "Research Lab", "prompt": "Experiments, data analysis, or scientific breakthroughs." },
+    { "id": "factory_floor", "label": "Factory Floor", "prompt": "Production lines, quality checks, or safety briefings." },
+    { "id": "farming_life", "label": "Farming Life", "prompt": "Planting, harvesting, or livestock care." },
+    { "id": "market_bargaining", "label": "Market Bargaining", "prompt": "Negotiating prices in bustling markets." },
+    { "id": "banking_errand", "label": "Banking Errand", "prompt": "Deposits, loans, or ATM mishaps." },
+    { "id": "investment_chat", "label": "Investment Chat", "prompt": "Discussing stocks, cryptocurrencies, or savings plans." },
+    { "id": "entrepreneurship_pitch", "label": "Entrepreneurship Pitch", "prompt": "Convincing partners or judges about a new venture." },
+    { "id": "customer_service_call", "label": "Customer Service Call", "prompt": "Reporting issues, troubleshooting, or refunds." },
+    { "id": "product_demo", "label": "Product Demo", "prompt": "Showcasing features or explaining benefits." },
+    { "id": "social_media_post", "label": "Social Media Post", "prompt": "Online updates, captions, or viral trends." },
+    { "id": "livestream_event", "label": "Livestream Event", "prompt": "Real-time interactions with viewers or hosts." },
+    { "id": "gaming_session", "label": "Gaming Session", "prompt": "Cooperative play, strategy talk, or esports commentary." },
+    { "id": "sports_practice", "label": "Sports Practice", "prompt": "Coaching advice, drills, or team pep talks." },
+    { "id": "competition_day", "label": "Competition Day", "prompt": "Pre-game nerves, results, or celebrations." },
+    { "id": "relationship_conversation", "label": "Relationship Conversation", "prompt": "Dating, commitment talks, or resolving conflicts." },
+    { "id": "parenting_moment", "label": "Parenting Moment", "prompt": "Guiding children, bedtime routines, or family rules." },
+    { "id": "festival_celebration", "label": "Festival Celebration", "prompt": "Holiday traditions, parades, or cultural rituals." },
+    { "id": "holiday_planning", "label": "Holiday Planning", "prompt": "Booking travel, gift lists, or itinerary debates." },
+    { "id": "home_renovation", "label": "Home Renovation", "prompt": "DIY fixes, contractor updates, or design choices." },
+    { "id": "neighborhood_issue", "label": "Neighborhood Issue", "prompt": "Noise complaints, public works, or community safety." },
+    { "id": "emergency_response", "label": "Emergency Response", "prompt": "Urgent calls, first aid, or crisis coordination." }
+  ]
+}

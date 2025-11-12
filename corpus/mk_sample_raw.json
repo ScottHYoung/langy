@@ -1,0 +1,4008 @@
+{
+  "source": "corpus_raw/mk_full.txt",
+  "sample_size": 1000,
+  "seed": 42,
+  "generated_at": "2025-11-12T03:05:40.136741+00:00",
+  "entries": [
+    {
+      "word": "чистеа",
+      "frequency": 9
+    },
+    {
+      "word": "морт",
+      "frequency": 90
+    },
+    {
+      "word": "баули",
+      "frequency": 2
+    },
+    {
+      "word": "приметував",
+      "frequency": 2
+    },
+    {
+      "word": "gimme",
+      "frequency": 3
+    },
+    {
+      "word": "завршувале",
+      "frequency": 6
+    },
+    {
+      "word": "wa",
+      "frequency": 11
+    },
+    {
+      "word": "балет.шетај.",
+      "frequency": 1
+    },
+    {
+      "word": "свиок",
+      "frequency": 14
+    },
+    {
+      "word": "грејзен",
+      "frequency": 1
+    },
+    {
+      "word": "технологија.без",
+      "frequency": 1
+    },
+    {
+      "word": "случка",
+      "frequency": 66
+    },
+    {
+      "word": "подобрува",
+      "frequency": 71
+    },
+    {
+      "word": "регар",
+      "frequency": 12
+    },
+    {
+      "word": "разводник",
+      "frequency": 3
+    },
+    {
+      "word": "гонзо-новинарство",
+      "frequency": 2
+    },
+    {
+      "word": "погледми",
+      "frequency": 1
+    },
+    {
+      "word": "дективирај",
+      "frequency": 1
+    },
+    {
+      "word": "федералната",
+      "frequency": 83
+    },
+    {
+      "word": "како--како",
+      "frequency": 1
+    },
+    {
+      "word": "колективни",
+      "frequency": 3
+    },
+    {
+      "word": "нeкoja",
+      "frequency": 1
+    },
+    {
+      "word": "прикраднеш",
+      "frequency": 1
+    },
+    {
+      "word": "истакнал",
+      "frequency": 3
+    },
+    {
+      "word": "вмрежени",
+      "frequency": 1
+    },
+    {
+      "word": "невесели",
+      "frequency": 1
+    },
+    {
+      "word": "маскл",
+      "frequency": 2
+    },
+    {
+      "word": "бавно",
+      "frequency": 459
+    },
+    {
+      "word": "злоупотребувал",
+      "frequency": 5
+    },
+    {
+      "word": "вестие",
+      "frequency": 1
+    },
+    {
+      "word": "многу.-можеш",
+      "frequency": 1
+    },
+    {
+      "word": "измакна",
+      "frequency": 2
+    },
+    {
+      "word": "озвучиле",
+      "frequency": 5
+    },
+    {
+      "word": "рибизла",
+      "frequency": 3
+    },
+    {
+      "word": "најнадарените",
+      "frequency": 1
+    },
+    {
+      "word": "mислите",
+      "frequency": 11
+    },
+    {
+      "word": "прогласува",
+      "frequency": 13
+    },
+    {
+      "word": "борив",
+      "frequency": 1
+    },
+    {
+      "word": "станфорд",
+      "frequency": 12
+    },
+    {
+      "word": "jaвете",
+      "frequency": 1
+    },
+    {
+      "word": "тебе.-тоа",
+      "frequency": 1
+    },
+    {
+      "word": "пошуми",
+      "frequency": 1
+    },
+    {
+      "word": "мое.-навистина",
+      "frequency": 2
+    },
+    {
+      "word": "дрогираше",
+      "frequency": 42
+    },
+    {
+      "word": "oдбpaнa",
+      "frequency": 1
+    },
+    {
+      "word": "железничарите",
+      "frequency": 1
+    },
+    {
+      "word": "стисне",
+      "frequency": 8
+    },
+    {
+      "word": "ченар",
+      "frequency": 1
+    },
+    {
+      "word": "десептикони",
+      "frequency": 17
+    },
+    {
+      "word": "цапит",
+      "frequency": 1
+    },
+    {
+      "word": "мегнетен",
+      "frequency": 2
+    },
+    {
+      "word": "џејкова",
+      "frequency": 1
+    },
+    {
+      "word": "смъртта",
+      "frequency": 1
+    },
+    {
+      "word": "недоследност",
+      "frequency": 3
+    },
+    {
+      "word": "излажала",
+      "frequency": 20
+    },
+    {
+      "word": "пикаш",
+      "frequency": 38
+    },
+    {
+      "word": "притребале",
+      "frequency": 3
+    },
+    {
+      "word": "момент.ќе",
+      "frequency": 2
+    },
+    {
+      "word": "поко",
+      "frequency": 16
+    },
+    {
+      "word": "елзи",
+      "frequency": 2
+    },
+    {
+      "word": "часовничар",
+      "frequency": 11
+    },
+    {
+      "word": "обидинетата",
+      "frequency": 1
+    },
+    {
+      "word": "инспекторка",
+      "frequency": 2
+    },
+    {
+      "word": "варас",
+      "frequency": 1
+    },
+    {
+      "word": "расказете",
+      "frequency": 1
+    },
+    {
+      "word": "услужени",
+      "frequency": 5
+    },
+    {
+      "word": "зафатнина",
+      "frequency": 1
+    },
+    {
+      "word": "дренираат",
+      "frequency": 1
+    },
+    {
+      "word": "сервисите",
+      "frequency": 3
+    },
+    {
+      "word": "правија",
+      "frequency": 2
+    },
+    {
+      "word": "линдерман",
+      "frequency": 19
+    },
+    {
+      "word": "жабец",
+      "frequency": 4
+    },
+    {
+      "word": "бувије",
+      "frequency": 1
+    },
+    {
+      "word": "најсјаниот",
+      "frequency": 2
+    },
+    {
+      "word": "удавите",
+      "frequency": 5
+    },
+    {
+      "word": "замотена",
+      "frequency": 1
+    },
+    {
+      "word": "зејдеј",
+      "frequency": 1
+    },
+    {
+      "word": "преминати",
+      "frequency": 2
+    },
+    {
+      "word": "бесплата",
+      "frequency": 1
+    },
+    {
+      "word": "бидеји",
+      "frequency": 3
+    },
+    {
+      "word": "калпина",
+      "frequency": 1
+    },
+    {
+      "word": "онтарио",
+      "frequency": 28
+    },
+    {
+      "word": "бесонов",
+      "frequency": 3
+    },
+    {
+      "word": "дискови",
+      "frequency": 65
+    },
+    {
+      "word": "nisi",
+      "frequency": 2
+    },
+    {
+      "word": "анак",
+      "frequency": 1
+    },
+    {
+      "word": "сливникот",
+      "frequency": 2
+    },
+    {
+      "word": "невооружени",
+      "frequency": 22
+    },
+    {
+      "word": "наркодилери",
+      "frequency": 3
+    },
+    {
+      "word": "toтален",
+      "frequency": 1
+    },
+    {
+      "word": "најпријателски",
+      "frequency": 2
+    },
+    {
+      "word": "terrain",
+      "frequency": 3
+    },
+    {
+      "word": "недоумици",
+      "frequency": 1
+    },
+    {
+      "word": "замерува",
+      "frequency": 1
+    },
+    {
+      "word": "ограбрува",
+      "frequency": 1
+    },
+    {
+      "word": "плескал",
+      "frequency": 6
+    },
+    {
+      "word": "коноко",
+      "frequency": 2
+    },
+    {
+      "word": "вои",
+      "frequency": 6
+    },
+    {
+      "word": "occur",
+      "frequency": 2
+    },
+    {
+      "word": "2083-та",
+      "frequency": 1
+    },
+    {
+      "word": "џолсон",
+      "frequency": 1
+    },
+    {
+      "word": "рамора.-рамора",
+      "frequency": 2
+    },
+    {
+      "word": "juda",
+      "frequency": 1
+    },
+    {
+      "word": "дечки.кој",
+      "frequency": 1
+    },
+    {
+      "word": "ингид",
+      "frequency": 1
+    },
+    {
+      "word": "ова.-држи",
+      "frequency": 1
+    },
+    {
+      "word": "крштевања",
+      "frequency": 1
+    },
+    {
+      "word": "абецедата",
+      "frequency": 3
+    },
+    {
+      "word": "бесења",
+      "frequency": 6
+    },
+    {
+      "word": "radiљ",
+      "frequency": 1
+    },
+    {
+      "word": "дефни",
+      "frequency": 1
+    },
+    {
+      "word": "истребен",
+      "frequency": 13
+    },
+    {
+      "word": "правилникот",
+      "frequency": 37
+    },
+    {
+      "word": "потери",
+      "frequency": 9
+    },
+    {
+      "word": "луо",
+      "frequency": 5
+    },
+    {
+      "word": "степер",
+      "frequency": 5
+    },
+    {
+      "word": "забодувањето",
+      "frequency": 1
+    },
+    {
+      "word": "утврденото",
+      "frequency": 1
+    },
+    {
+      "word": "урих",
+      "frequency": 23
+    },
+    {
+      "word": "поодобрат",
+      "frequency": 1
+    },
+    {
+      "word": "скришиле",
+      "frequency": 1
+    },
+    {
+      "word": "арпеже",
+      "frequency": 1
+    },
+    {
+      "word": "vortac",
+      "frequency": 1
+    },
+    {
+      "word": "-фала",
+      "frequency": 1
+    },
+    {
+      "word": "информацијта",
+      "frequency": 2
+    },
+    {
+      "word": "припитомува",
+      "frequency": 1
+    },
+    {
+      "word": "работеле",
+      "frequency": 241
+    },
+    {
+      "word": "воздржана",
+      "frequency": 9
+    },
+    {
+      "word": "расколебан",
+      "frequency": 1
+    },
+    {
+      "word": "избуткам",
+      "frequency": 2
+    },
+    {
+      "word": "воздржал",
+      "frequency": 1
+    },
+    {
+      "word": "волен",
+      "frequency": 9
+    },
+    {
+      "word": "уништеме",
+      "frequency": 2
+    },
+    {
+      "word": "распродавање",
+      "frequency": 1
+    },
+    {
+      "word": "уд",
+      "frequency": 5
+    },
+    {
+      "word": "балтика",
+      "frequency": 1
+    },
+    {
+      "word": "кучиња",
+      "frequency": 986
+    },
+    {
+      "word": "редизајнирањето",
+      "frequency": 2
+    },
+    {
+      "word": "купи-куршуми",
+      "frequency": 1
+    },
+    {
+      "word": "вдише",
+      "frequency": 4
+    },
+    {
+      "word": "црвенко",
+      "frequency": 1
+    },
+    {
+      "word": "вијан",
+      "frequency": 10
+    },
+    {
+      "word": "јлу",
+      "frequency": 2
+    },
+    {
+      "word": "bеше",
+      "frequency": 1
+    },
+    {
+      "word": "квалификуваат",
+      "frequency": 3
+    },
+    {
+      "word": "виолинистот",
+      "frequency": 5
+    },
+    {
+      "word": "напивате",
+      "frequency": 1
+    },
+    {
+      "word": "генерирана",
+      "frequency": 5
+    },
+    {
+      "word": "чекај.а",
+      "frequency": 1
+    },
+    {
+      "word": "испуцкам",
+      "frequency": 1
+    },
+    {
+      "word": "остави",
+      "frequency": 6713
+    },
+    {
+      "word": "изполнувате",
+      "frequency": 1
+    },
+    {
+      "word": "ниил",
+      "frequency": 1
+    },
+    {
+      "word": "одградот",
+      "frequency": 1
+    },
+    {
+      "word": "аспирин",
+      "frequency": 125
+    },
+    {
+      "word": "одсечи",
+      "frequency": 9
+    },
+    {
+      "word": "биолошко-механички",
+      "frequency": 1
+    },
+    {
+      "word": "ејт",
+      "frequency": 2
+    },
+    {
+      "word": "поцрвенуваше",
+      "frequency": 2
+    },
+    {
+      "word": "едмундс",
+      "frequency": 27
+    },
+    {
+      "word": "сакашда",
+      "frequency": 2
+    },
+    {
+      "word": "едношинската",
+      "frequency": 1
+    },
+    {
+      "word": "вадев",
+      "frequency": 17
+    },
+    {
+      "word": "авакс",
+      "frequency": 14
+    },
+    {
+      "word": "роденденско-кловновски",
+      "frequency": 1
+    },
+    {
+      "word": "паричниците",
+      "frequency": 20
+    },
+    {
+      "word": "присеќам",
+      "frequency": 1
+    },
+    {
+      "word": "придружила",
+      "frequency": 7
+    },
+    {
+      "word": "духовното",
+      "frequency": 7
+    },
+    {
+      "word": "погрежете",
+      "frequency": 1
+    },
+    {
+      "word": "запонае",
+      "frequency": 1
+    },
+    {
+      "word": "откупен",
+      "frequency": 5
+    },
+    {
+      "word": "белjа",
+      "frequency": 2
+    },
+    {
+      "word": "малък",
+      "frequency": 1
+    },
+    {
+      "word": "несватени",
+      "frequency": 1
+    },
+    {
+      "word": "нна",
+      "frequency": 3
+    },
+    {
+      "word": "хирп",
+      "frequency": 1
+    },
+    {
+      "word": "рin",
+      "frequency": 3
+    },
+    {
+      "word": "содржана",
+      "frequency": 2
+    },
+    {
+      "word": "таурата",
+      "frequency": 1
+    },
+    {
+      "word": "раакрши",
+      "frequency": 1
+    },
+    {
+      "word": "реактивираше",
+      "frequency": 1
+    },
+    {
+      "word": "попуш",
+      "frequency": 1
+    },
+    {
+      "word": "сослушел",
+      "frequency": 1
+    },
+    {
+      "word": "своеглав",
+      "frequency": 8
+    },
+    {
+      "word": "крадиме",
+      "frequency": 2
+    },
+    {
+      "word": "разместат",
+      "frequency": 3
+    },
+    {
+      "word": "асистентот",
+      "frequency": 23
+    },
+    {
+      "word": "мракот.",
+      "frequency": 1
+    },
+    {
+      "word": "одморот",
+      "frequency": 113
+    },
+    {
+      "word": "објасним",
+      "frequency": 1
+    },
+    {
+      "word": "одври",
+      "frequency": 1
+    },
+    {
+      "word": "распрашувала",
+      "frequency": 3
+    },
+    {
+      "word": "сталиони",
+      "frequency": 1
+    },
+    {
+      "word": "навиено",
+      "frequency": 3
+    },
+    {
+      "word": "деталите",
+      "frequency": 408
+    },
+    {
+      "word": "јадица",
+      "frequency": 20
+    },
+    {
+      "word": "митски",
+      "frequency": 26
+    },
+    {
+      "word": "формирало",
+      "frequency": 3
+    },
+    {
+      "word": "светна",
+      "frequency": 21
+    },
+    {
+      "word": "5-ти",
+      "frequency": 66
+    },
+    {
+      "word": "финита",
+      "frequency": 1
+    },
+    {
+      "word": "сложите",
+      "frequency": 20
+    },
+    {
+      "word": "хртка",
+      "frequency": 1
+    },
+    {
+      "word": "фекантно",
+      "frequency": 2
+    },
+    {
+      "word": "азизан",
+      "frequency": 2
+    },
+    {
+      "word": "шумо",
+      "frequency": 1
+    },
+    {
+      "word": "ѕвечкање",
+      "frequency": 3
+    },
+    {
+      "word": "мултифункционалниот",
+      "frequency": 1
+    },
+    {
+      "word": "папирус",
+      "frequency": 7
+    },
+    {
+      "word": "поравме",
+      "frequency": 1
+    },
+    {
+      "word": "премерувањето",
+      "frequency": 1
+    },
+    {
+      "word": "никакова",
+      "frequency": 1
+    },
+    {
+      "word": "набројат",
+      "frequency": 2
+    },
+    {
+      "word": "проникнувачки",
+      "frequency": 1
+    },
+    {
+      "word": "управничкиот",
+      "frequency": 1
+    },
+    {
+      "word": "фармацевтот",
+      "frequency": 4
+    },
+    {
+      "word": "патролна",
+      "frequency": 12
+    },
+    {
+      "word": "коцкав",
+      "frequency": 12
+    },
+    {
+      "word": "спактакуларно",
+      "frequency": 1
+    },
+    {
+      "word": "окапам",
+      "frequency": 1
+    },
+    {
+      "word": "4х",
+      "frequency": 1
+    },
+    {
+      "word": "васт",
+      "frequency": 1
+    },
+    {
+      "word": "слагвуд",
+      "frequency": 1
+    },
+    {
+      "word": "полната",
+      "frequency": 30
+    },
+    {
+      "word": "фенис",
+      "frequency": 11
+    },
+    {
+      "word": "мајкоебачи",
+      "frequency": 25
+    },
+    {
+      "word": "најдде",
+      "frequency": 1
+    },
+    {
+      "word": "wolpor",
+      "frequency": 1
+    },
+    {
+      "word": "тарасов",
+      "frequency": 10
+    },
+    {
+      "word": "стрейзънд",
+      "frequency": 2
+    },
+    {
+      "word": "извинетe",
+      "frequency": 4
+    },
+    {
+      "word": "гег",
+      "frequency": 4
+    },
+    {
+      "word": "осмечлиш",
+      "frequency": 1
+    },
+    {
+      "word": "бродоградилишта",
+      "frequency": 1
+    },
+    {
+      "word": "лекомислено",
+      "frequency": 6
+    },
+    {
+      "word": "избушена",
+      "frequency": 1
+    },
+    {
+      "word": "смрдиме",
+      "frequency": 4
+    },
+    {
+      "word": "хејвајер",
+      "frequency": 2
+    },
+    {
+      "word": "ebeni",
+      "frequency": 1
+    },
+    {
+      "word": "копеподите",
+      "frequency": 2
+    },
+    {
+      "word": "притворен",
+      "frequency": 18
+    },
+    {
+      "word": "репресиjа",
+      "frequency": 1
+    },
+    {
+      "word": "20час",
+      "frequency": 1
+    },
+    {
+      "word": "фрејови",
+      "frequency": 11
+    },
+    {
+      "word": "сликал",
+      "frequency": 33
+    },
+    {
+      "word": "андрјошенка",
+      "frequency": 1
+    },
+    {
+      "word": "темната",
+      "frequency": 178
+    },
+    {
+      "word": "магепсана",
+      "frequency": 12
+    },
+    {
+      "word": "неивните",
+      "frequency": 2
+    },
+    {
+      "word": "отсечената",
+      "frequency": 5
+    },
+    {
+      "word": "г.де",
+      "frequency": 1
+    },
+    {
+      "word": "силноцрвени",
+      "frequency": 1
+    },
+    {
+      "word": "невиновст",
+      "frequency": 1
+    },
+    {
+      "word": "угрински",
+      "frequency": 3
+    },
+    {
+      "word": "излезаше",
+      "frequency": 1
+    },
+    {
+      "word": "млечен",
+      "frequency": 26
+    },
+    {
+      "word": "астероидите",
+      "frequency": 5
+    },
+    {
+      "word": "бетува",
+      "frequency": 1
+    },
+    {
+      "word": "седум",
+      "frequency": 1540
+    },
+    {
+      "word": "ватоси",
+      "frequency": 1
+    },
+    {
+      "word": "мунди",
+      "frequency": 2
+    },
+    {
+      "word": "нумерисаш",
+      "frequency": 1
+    },
+    {
+      "word": "хемлиш",
+      "frequency": 2
+    },
+    {
+      "word": "комуницирајте",
+      "frequency": 1
+    },
+    {
+      "word": "обвинитиот",
+      "frequency": 1
+    },
+    {
+      "word": "љубена.кој",
+      "frequency": 1
+    },
+    {
+      "word": "торзо",
+      "frequency": 5
+    },
+    {
+      "word": "деветнаесеттиот",
+      "frequency": 4
+    },
+    {
+      "word": "згазев",
+      "frequency": 2
+    },
+    {
+      "word": "засакај",
+      "frequency": 3
+    },
+    {
+      "word": "небесните",
+      "frequency": 26
+    },
+    {
+      "word": "офарбани",
+      "frequency": 1
+    },
+    {
+      "word": "секагош",
+      "frequency": 1
+    },
+    {
+      "word": "леќа",
+      "frequency": 25
+    },
+    {
+      "word": "обрзници",
+      "frequency": 2
+    },
+    {
+      "word": "затвораш",
+      "frequency": 27
+    },
+    {
+      "word": "чорап",
+      "frequency": 34
+    },
+    {
+      "word": "велосиопед",
+      "frequency": 1
+    },
+    {
+      "word": "68-годишниот",
+      "frequency": 1
+    },
+    {
+      "word": "игнорантна",
+      "frequency": 1
+    },
+    {
+      "word": "рационалниот",
+      "frequency": 1
+    },
+    {
+      "word": "понос",
+      "frequency": 5
+    },
+    {
+      "word": "докажаа",
+      "frequency": 28
+    },
+    {
+      "word": "варес",
+      "frequency": 1
+    },
+    {
+      "word": "мадо",
+      "frequency": 16
+    },
+    {
+      "word": "смекер",
+      "frequency": 4
+    },
+    {
+      "word": "розенберг",
+      "frequency": 21
+    },
+    {
+      "word": "сукњички",
+      "frequency": 1
+    },
+    {
+      "word": "доживуваат",
+      "frequency": 21
+    },
+    {
+      "word": "натегаш",
+      "frequency": 2
+    },
+    {
+      "word": "амос.ние",
+      "frequency": 1
+    },
+    {
+      "word": "сопрено",
+      "frequency": 8
+    },
+    {
+      "word": "доесам",
+      "frequency": 1
+    },
+    {
+      "word": "поледни",
+      "frequency": 2
+    },
+    {
+      "word": "ечерва",
+      "frequency": 1
+    },
+    {
+      "word": "секс-пријателка",
+      "frequency": 1
+    },
+    {
+      "word": "копилево",
+      "frequency": 48
+    },
+    {
+      "word": "освежувач",
+      "frequency": 15
+    },
+    {
+      "word": "збркуваме",
+      "frequency": 1
+    },
+    {
+      "word": "ќесенце",
+      "frequency": 1
+    },
+    {
+      "word": "можед",
+      "frequency": 1
+    },
+    {
+      "word": "брадосаниот",
+      "frequency": 1
+    },
+    {
+      "word": "v-12",
+      "frequency": 2
+    },
+    {
+      "word": "спојни",
+      "frequency": 2
+    },
+    {
+      "word": "повикано",
+      "frequency": 3
+    },
+    {
+      "word": "познавме",
+      "frequency": 2
+    },
+    {
+      "word": "мразим",
+      "frequency": 2
+    },
+    {
+      "word": "фимови",
+      "frequency": 2
+    },
+    {
+      "word": "листата.но",
+      "frequency": 1
+    },
+    {
+      "word": "поховано",
+      "frequency": 7
+    },
+    {
+      "word": "ирачкото",
+      "frequency": 2
+    },
+    {
+      "word": "попарени",
+      "frequency": 1
+    },
+    {
+      "word": "откажуваа",
+      "frequency": 2
+    },
+    {
+      "word": "гипсон",
+      "frequency": 19
+    },
+    {
+      "word": "мај",
+      "frequency": 308
+    },
+    {
+      "word": "катеричка",
+      "frequency": 1
+    },
+    {
+      "word": "совшено",
+      "frequency": 1
+    },
+    {
+      "word": "шилесто",
+      "frequency": 11
+    },
+    {
+      "word": "идеал",
+      "frequency": 19
+    },
+    {
+      "word": "запазувачи",
+      "frequency": 1
+    },
+    {
+      "word": "поминуват",
+      "frequency": 3
+    },
+    {
+      "word": "алатt",
+      "frequency": 1
+    },
+    {
+      "word": "productions",
+      "frequency": 2
+    },
+    {
+      "word": "медикаменти",
+      "frequency": 7
+    },
+    {
+      "word": "idea",
+      "frequency": 1
+    },
+    {
+      "word": "санки",
+      "frequency": 21
+    },
+    {
+      "word": "мекклак",
+      "frequency": 2
+    },
+    {
+      "word": "литр",
+      "frequency": 1
+    },
+    {
+      "word": "боздоrан",
+      "frequency": 2
+    },
+    {
+      "word": "вајмен",
+      "frequency": 5
+    },
+    {
+      "word": "лап-бендот",
+      "frequency": 1
+    },
+    {
+      "word": "скeнира",
+      "frequency": 1
+    },
+    {
+      "word": "површината.-знам",
+      "frequency": 2
+    },
+    {
+      "word": "иаклучително",
+      "frequency": 1
+    },
+    {
+      "word": "фред",
+      "frequency": 373
+    },
+    {
+      "word": "алејуја",
+      "frequency": 1
+    },
+    {
+      "word": "исчеткам",
+      "frequency": 2
+    },
+    {
+      "word": "успал",
+      "frequency": 10
+    },
+    {
+      "word": "запнеме",
+      "frequency": 7
+    },
+    {
+      "word": "р`бетот",
+      "frequency": 2
+    },
+    {
+      "word": "испариш",
+      "frequency": 9
+    },
+    {
+      "word": "затрупа",
+      "frequency": 10
+    },
+    {
+      "word": "амендола",
+      "frequency": 1
+    },
+    {
+      "word": "тепани",
+      "frequency": 5
+    },
+    {
+      "word": "бубачи",
+      "frequency": 2
+    },
+    {
+      "word": "пејачу",
+      "frequency": 2
+    },
+    {
+      "word": "будалаштините",
+      "frequency": 1
+    },
+    {
+      "word": "ушко",
+      "frequency": 3
+    },
+    {
+      "word": "claiming",
+      "frequency": 1
+    },
+    {
+      "word": "добро.а",
+      "frequency": 3
+    },
+    {
+      "word": "мании",
+      "frequency": 2
+    },
+    {
+      "word": "соминтелен",
+      "frequency": 1
+    },
+    {
+      "word": "мечката-убиец",
+      "frequency": 1
+    },
+    {
+      "word": "кош-дири",
+      "frequency": 2
+    },
+    {
+      "word": "фани",
+      "frequency": 33
+    },
+    {
+      "word": "кружен",
+      "frequency": 13
+    },
+    {
+      "word": "заодоволства",
+      "frequency": 1
+    },
+    {
+      "word": "сметнување",
+      "frequency": 2
+    },
+    {
+      "word": "срж",
+      "frequency": 41
+    },
+    {
+      "word": "користат",
+      "frequency": 896
+    },
+    {
+      "word": "екеспериментот",
+      "frequency": 1
+    },
+    {
+      "word": "скратила",
+      "frequency": 7
+    },
+    {
+      "word": "поттурнете",
+      "frequency": 2
+    },
+    {
+      "word": "навраќаат",
+      "frequency": 5
+    },
+    {
+      "word": "вчита",
+      "frequency": 1
+    },
+    {
+      "word": "зглобна",
+      "frequency": 1
+    },
+    {
+      "word": "напришав",
+      "frequency": 1
+    },
+    {
+      "word": "фала.-на",
+      "frequency": 1
+    },
+    {
+      "word": "златна",
+      "frequency": 295
+    },
+    {
+      "word": "мрша",
+      "frequency": 9
+    },
+    {
+      "word": "одалечена",
+      "frequency": 18
+    },
+    {
+      "word": "пагодата",
+      "frequency": 6
+    },
+    {
+      "word": "дупнатите",
+      "frequency": 1
+    },
+    {
+      "word": "срањата",
+      "frequency": 55
+    },
+    {
+      "word": "виеатнам",
+      "frequency": 1
+    },
+    {
+      "word": "исусе.морате",
+      "frequency": 1
+    },
+    {
+      "word": "нјорнберските",
+      "frequency": 1
+    },
+    {
+      "word": "дезориентирана",
+      "frequency": 6
+    },
+    {
+      "word": "галициа",
+      "frequency": 1
+    },
+    {
+      "word": "трилион",
+      "frequency": 7
+    },
+    {
+      "word": "справите",
+      "frequency": 44
+    },
+    {
+      "word": "подлегнуваш",
+      "frequency": 2
+    },
+    {
+      "word": "кучкa",
+      "frequency": 1
+    },
+    {
+      "word": "идиотите",
+      "frequency": 47
+    },
+    {
+      "word": "рапутација",
+      "frequency": 1
+    },
+    {
+      "word": "нефункционална",
+      "frequency": 3
+    },
+    {
+      "word": "ислушавме",
+      "frequency": 2
+    },
+    {
+      "word": "распаднато",
+      "frequency": 11
+    },
+    {
+      "word": "угаснемо",
+      "frequency": 1
+    },
+    {
+      "word": "пепеласти",
+      "frequency": 1
+    },
+    {
+      "word": "шокиравте",
+      "frequency": 1
+    },
+    {
+      "word": "студираат",
+      "frequency": 5
+    },
+    {
+      "word": "aller",
+      "frequency": 2
+    },
+    {
+      "word": "обвиткано",
+      "frequency": 5
+    },
+    {
+      "word": "нискобуџетен",
+      "frequency": 4
+    },
+    {
+      "word": "пријатно.-благодарам.",
+      "frequency": 1
+    },
+    {
+      "word": "кувар",
+      "frequency": 91
+    },
+    {
+      "word": "разуди",
+      "frequency": 4
+    },
+    {
+      "word": "ѓубрешкото",
+      "frequency": 1
+    },
+    {
+      "word": "растичстете",
+      "frequency": 1
+    },
+    {
+      "word": "кладенци",
+      "frequency": 2
+    },
+    {
+      "word": "vitae",
+      "frequency": 2
+    },
+    {
+      "word": "збришан",
+      "frequency": 5
+    },
+    {
+      "word": "затебе",
+      "frequency": 10
+    },
+    {
+      "word": "g-36",
+      "frequency": 1
+    },
+    {
+      "word": "раскажуваат",
+      "frequency": 50
+    },
+    {
+      "word": "декаф",
+      "frequency": 1
+    },
+    {
+      "word": "одлагања",
+      "frequency": 3
+    },
+    {
+      "word": "неповолните",
+      "frequency": 3
+    },
+    {
+      "word": "човекојадците-алигатори",
+      "frequency": 1
+    },
+    {
+      "word": "семенарист",
+      "frequency": 1
+    },
+    {
+      "word": "извинувам.да.малиот",
+      "frequency": 2
+    },
+    {
+      "word": "пк3кк4",
+      "frequency": 3
+    },
+    {
+      "word": "vietnam",
+      "frequency": 3
+    },
+    {
+      "word": "свиреше",
+      "frequency": 97
+    },
+    {
+      "word": "шавови",
+      "frequency": 3
+    },
+    {
+      "word": "блискоисточен",
+      "frequency": 1
+    },
+    {
+      "word": "толкоу",
+      "frequency": 1
+    },
+    {
+      "word": "мантикора",
+      "frequency": 2
+    },
+    {
+      "word": "плунката",
+      "frequency": 20
+    },
+    {
+      "word": "aлo",
+      "frequency": 2
+    },
+    {
+      "word": "заморување",
+      "frequency": 1
+    },
+    {
+      "word": "испропаѓаме",
+      "frequency": 1
+    },
+    {
+      "word": "винимобил",
+      "frequency": 1
+    },
+    {
+      "word": "гластер",
+      "frequency": 1
+    },
+    {
+      "word": "опашести",
+      "frequency": 1
+    },
+    {
+      "word": "морели",
+      "frequency": 79
+    },
+    {
+      "word": "станбена",
+      "frequency": 9
+    },
+    {
+      "word": "дублатова",
+      "frequency": 2
+    },
+    {
+      "word": "егос",
+      "frequency": 4
+    },
+    {
+      "word": "коако",
+      "frequency": 1
+    },
+    {
+      "word": "инстал-фест",
+      "frequency": 2
+    },
+    {
+      "word": "разјасни",
+      "frequency": 50
+    },
+    {
+      "word": "кинан",
+      "frequency": 10
+    },
+    {
+      "word": "брзодејствувачко",
+      "frequency": 1
+    },
+    {
+      "word": "пијанк",
+      "frequency": 1
+    },
+    {
+      "word": "плашиш.ако",
+      "frequency": 1
+    },
+    {
+      "word": "качуј",
+      "frequency": 2
+    },
+    {
+      "word": "скокање-од-мостови-точка-ком",
+      "frequency": 1
+    },
+    {
+      "word": "заедно-",
+      "frequency": 1
+    },
+    {
+      "word": "избришавме",
+      "frequency": 9
+    },
+    {
+      "word": "сплеткаме",
+      "frequency": 1
+    },
+    {
+      "word": "кејервил",
+      "frequency": 1
+    },
+    {
+      "word": "неrов",
+      "frequency": 4
+    },
+    {
+      "word": "доточката",
+      "frequency": 2
+    },
+    {
+      "word": "свиткам",
+      "frequency": 40
+    },
+    {
+      "word": "зутом",
+      "frequency": 1
+    },
+    {
+      "word": "наоколу",
+      "frequency": 1966
+    },
+    {
+      "word": "вълнува",
+      "frequency": 1
+    },
+    {
+      "word": "напревена",
+      "frequency": 1
+    },
+    {
+      "word": "одсвириш",
+      "frequency": 3
+    },
+    {
+      "word": "цуствувам",
+      "frequency": 1
+    },
+    {
+      "word": "пауновиќ",
+      "frequency": 1
+    },
+    {
+      "word": "подигнува",
+      "frequency": 20
+    },
+    {
+      "word": "стритрејсери",
+      "frequency": 1
+    },
+    {
+      "word": "затнаа",
+      "frequency": 2
+    },
+    {
+      "word": "перестројката",
+      "frequency": 8
+    },
+    {
+      "word": "подржувајки",
+      "frequency": 2
+    },
+    {
+      "word": "бланкуито",
+      "frequency": 1
+    },
+    {
+      "word": "damien",
+      "frequency": 2
+    },
+    {
+      "word": "изораат",
+      "frequency": 1
+    },
+    {
+      "word": "маварот",
+      "frequency": 1
+    },
+    {
+      "word": "вертков",
+      "frequency": 1
+    },
+    {
+      "word": "шупеците",
+      "frequency": 2
+    },
+    {
+      "word": "есап-есап",
+      "frequency": 1
+    },
+    {
+      "word": "симболизираат",
+      "frequency": 7
+    },
+    {
+      "word": "рагбисти",
+      "frequency": 4
+    },
+    {
+      "word": "брадавички",
+      "frequency": 1
+    },
+    {
+      "word": "мрбигстаф08",
+      "frequency": 1
+    },
+    {
+      "word": "пропалитет",
+      "frequency": 4
+    },
+    {
+      "word": "жиравче",
+      "frequency": 1
+    },
+    {
+      "word": "сушстество",
+      "frequency": 2
+    },
+    {
+      "word": "е-maii",
+      "frequency": 1
+    },
+    {
+      "word": "контракултура",
+      "frequency": 1
+    },
+    {
+      "word": "знаете",
+      "frequency": 9405
+    },
+    {
+      "word": "интелегентните",
+      "frequency": 2
+    },
+    {
+      "word": "долко",
+      "frequency": 2
+    },
+    {
+      "word": "искривените",
+      "frequency": 3
+    },
+    {
+      "word": "попуиларна",
+      "frequency": 1
+    },
+    {
+      "word": "џулис",
+      "frequency": 1
+    },
+    {
+      "word": "принцу.оди",
+      "frequency": 1
+    },
+    {
+      "word": "увиеше",
+      "frequency": 1
+    },
+    {
+      "word": "акнеш",
+      "frequency": 1
+    },
+    {
+      "word": "неотровна",
+      "frequency": 1
+    },
+    {
+      "word": "светликав",
+      "frequency": 3
+    },
+    {
+      "word": "подскокна",
+      "frequency": 1
+    },
+    {
+      "word": "парковата",
+      "frequency": 1
+    },
+    {
+      "word": "дваицата",
+      "frequency": 4
+    },
+    {
+      "word": "заливската",
+      "frequency": 15
+    },
+    {
+      "word": "smarttech",
+      "frequency": 2
+    },
+    {
+      "word": "изоставаат",
+      "frequency": 1
+    },
+    {
+      "word": "мажти",
+      "frequency": 1
+    },
+    {
+      "word": "обвинувајќи",
+      "frequency": 12
+    },
+    {
+      "word": "панхед",
+      "frequency": 2
+    },
+    {
+      "word": "зох",
+      "frequency": 2
+    },
+    {
+      "word": "фигурира",
+      "frequency": 3
+    },
+    {
+      "word": "ѕидарите",
+      "frequency": 3
+    },
+    {
+      "word": "осцилатор",
+      "frequency": 6
+    },
+    {
+      "word": "оштетување",
+      "frequency": 93
+    },
+    {
+      "word": "зацврсти",
+      "frequency": 38
+    },
+    {
+      "word": "текстуални",
+      "frequency": 2
+    },
+    {
+      "word": "тите.-излегувај.",
+      "frequency": 1
+    },
+    {
+      "word": "уметничките",
+      "frequency": 19
+    },
+    {
+      "word": "харикири",
+      "frequency": 1
+    },
+    {
+      "word": "посетта",
+      "frequency": 1
+    },
+    {
+      "word": "вајскарвер",
+      "frequency": 1
+    },
+    {
+      "word": "грац",
+      "frequency": 3
+    },
+    {
+      "word": "ебaн",
+      "frequency": 1
+    },
+    {
+      "word": "декораторот",
+      "frequency": 1
+    },
+    {
+      "word": "парамаунт",
+      "frequency": 1
+    },
+    {
+      "word": "наслонувач",
+      "frequency": 2
+    },
+    {
+      "word": "заслепување",
+      "frequency": 6
+    },
+    {
+      "word": "мајмун",
+      "frequency": 552
+    },
+    {
+      "word": "испразнивме",
+      "frequency": 10
+    },
+    {
+      "word": "кочијашите",
+      "frequency": 1
+    },
+    {
+      "word": "допиеш",
+      "frequency": 3
+    },
+    {
+      "word": "недостапниот",
+      "frequency": 4
+    },
+    {
+      "word": "надоаѓачко",
+      "frequency": 1
+    },
+    {
+      "word": "орфан",
+      "frequency": 1
+    },
+    {
+      "word": "докажуваш",
+      "frequency": 34
+    },
+    {
+      "word": "искачувачко",
+      "frequency": 1
+    },
+    {
+      "word": "климне",
+      "frequency": 2
+    },
+    {
+      "word": "притиснати",
+      "frequency": 8
+    },
+    {
+      "word": "агаве",
+      "frequency": 1
+    },
+    {
+      "word": "шератон",
+      "frequency": 7
+    },
+    {
+      "word": "launch",
+      "frequency": 1
+    },
+    {
+      "word": "eres",
+      "frequency": 1
+    },
+    {
+      "word": "ahghghgh",
+      "frequency": 1
+    },
+    {
+      "word": "кидам",
+      "frequency": 1
+    },
+    {
+      "word": "булеарот",
+      "frequency": 2
+    },
+    {
+      "word": "tomasso",
+      "frequency": 1
+    },
+    {
+      "word": "transit",
+      "frequency": 1
+    },
+    {
+      "word": "гејлзила",
+      "frequency": 1
+    },
+    {
+      "word": "промрмори",
+      "frequency": 1
+    },
+    {
+      "word": "начелниче",
+      "frequency": 1
+    },
+    {
+      "word": "задолго",
+      "frequency": 5
+    },
+    {
+      "word": "овсените",
+      "frequency": 1
+    },
+    {
+      "word": "устре",
+      "frequency": 1
+    },
+    {
+      "word": "донелиевата",
+      "frequency": 2
+    },
+    {
+      "word": "луке",
+      "frequency": 2
+    },
+    {
+      "word": "слонската",
+      "frequency": 2
+    },
+    {
+      "word": "висожество",
+      "frequency": 1
+    },
+    {
+      "word": "протријува",
+      "frequency": 1
+    },
+    {
+      "word": "поинаку.тоа",
+      "frequency": 2
+    },
+    {
+      "word": "нагала",
+      "frequency": 2
+    },
+    {
+      "word": "споменица",
+      "frequency": 1
+    },
+    {
+      "word": "модрица",
+      "frequency": 17
+    },
+    {
+      "word": "покачена",
+      "frequency": 2
+    },
+    {
+      "word": "пресметувањето",
+      "frequency": 2
+    },
+    {
+      "word": "голтнувате",
+      "frequency": 2
+    },
+    {
+      "word": "кенебанк",
+      "frequency": 1
+    },
+    {
+      "word": "обучувале",
+      "frequency": 1
+    },
+    {
+      "word": "мачкиниот",
+      "frequency": 1
+    },
+    {
+      "word": "пробувал",
+      "frequency": 16
+    },
+    {
+      "word": "синг-синг",
+      "frequency": 6
+    },
+    {
+      "word": "куревите",
+      "frequency": 5
+    },
+    {
+      "word": "потфатив",
+      "frequency": 2
+    },
+    {
+      "word": "гњуриш",
+      "frequency": 1
+    },
+    {
+      "word": "глодач",
+      "frequency": 5
+    },
+    {
+      "word": "намигнав",
+      "frequency": 3
+    },
+    {
+      "word": "гримхолд",
+      "frequency": 23
+    },
+    {
+      "word": "исцитира",
+      "frequency": 1
+    },
+    {
+      "word": "теамо",
+      "frequency": 1
+    },
+    {
+      "word": "фииино",
+      "frequency": 1
+    },
+    {
+      "word": "прeтстaвниk",
+      "frequency": 1
+    },
+    {
+      "word": "залите",
+      "frequency": 1
+    },
+    {
+      "word": "канибалски",
+      "frequency": 1
+    },
+    {
+      "word": "фосили",
+      "frequency": 24
+    },
+    {
+      "word": "прејаден",
+      "frequency": 3
+    },
+    {
+      "word": "потплаќа",
+      "frequency": 1
+    },
+    {
+      "word": "прободувале",
+      "frequency": 1
+    },
+    {
+      "word": "iorona",
+      "frequency": 1
+    },
+    {
+      "word": "шампиони",
+      "frequency": 125
+    },
+    {
+      "word": "семвајз",
+      "frequency": 1
+    },
+    {
+      "word": "дензигер",
+      "frequency": 1
+    },
+    {
+      "word": "позборувано",
+      "frequency": 1
+    },
+    {
+      "word": "тргнуваме",
+      "frequency": 517
+    },
+    {
+      "word": "погребем",
+      "frequency": 1
+    },
+    {
+      "word": "доматно",
+      "frequency": 2
+    },
+    {
+      "word": "фиксај",
+      "frequency": 1
+    },
+    {
+      "word": "почитувањењто",
+      "frequency": 1
+    },
+    {
+      "word": "ganna",
+      "frequency": 1
+    },
+    {
+      "word": "обујам",
+      "frequency": 1
+    },
+    {
+      "word": "официјализира",
+      "frequency": 1
+    },
+    {
+      "word": "крекхол",
+      "frequency": 3
+    },
+    {
+      "word": "силувало",
+      "frequency": 1
+    },
+    {
+      "word": "wareeth",
+      "frequency": 3
+    },
+    {
+      "word": "чевличето",
+      "frequency": 2
+    },
+    {
+      "word": "шанс.тие",
+      "frequency": 1
+    },
+    {
+      "word": "грлени",
+      "frequency": 1
+    },
+    {
+      "word": "проблематичен",
+      "frequency": 74
+    },
+    {
+      "word": "вазаи",
+      "frequency": 1
+    },
+    {
+      "word": "товарав",
+      "frequency": 1
+    },
+    {
+      "word": "идима",
+      "frequency": 1
+    },
+    {
+      "word": "татковинска",
+      "frequency": 5
+    },
+    {
+      "word": "дензингеров",
+      "frequency": 1
+    },
+    {
+      "word": "тиквите",
+      "frequency": 7
+    },
+    {
+      "word": "допаднел",
+      "frequency": 1
+    },
+    {
+      "word": "утакмицата",
+      "frequency": 82
+    },
+    {
+      "word": "чокови",
+      "frequency": 1
+    },
+    {
+      "word": "туиг",
+      "frequency": 1
+    },
+    {
+      "word": "допивате",
+      "frequency": 1
+    },
+    {
+      "word": "нафтата",
+      "frequency": 81
+    },
+    {
+      "word": "здобиеш",
+      "frequency": 15
+    },
+    {
+      "word": "ебеме.тие",
+      "frequency": 1
+    },
+    {
+      "word": "подраматично",
+      "frequency": 7
+    },
+    {
+      "word": "следните48",
+      "frequency": 1
+    },
+    {
+      "word": "стабилизираше",
+      "frequency": 4
+    },
+    {
+      "word": "хедли",
+      "frequency": 33
+    },
+    {
+      "word": "парализирачките",
+      "frequency": 2
+    },
+    {
+      "word": "singer",
+      "frequency": 1
+    },
+    {
+      "word": "дотуркате",
+      "frequency": 1
+    },
+    {
+      "word": "swans",
+      "frequency": 3
+    },
+    {
+      "word": "квичење",
+      "frequency": 1
+    },
+    {
+      "word": "кадарни",
+      "frequency": 1
+    },
+    {
+      "word": "рифсајд",
+      "frequency": 1
+    },
+    {
+      "word": "слушуваче",
+      "frequency": 1
+    },
+    {
+      "word": "стелиј",
+      "frequency": 2
+    },
+    {
+      "word": "staviеў",
+      "frequency": 1
+    },
+    {
+      "word": "илза",
+      "frequency": 2
+    },
+    {
+      "word": "сторијава",
+      "frequency": 16
+    },
+    {
+      "word": "choice",
+      "frequency": 1
+    },
+    {
+      "word": "заборавев",
+      "frequency": 126
+    },
+    {
+      "word": "незнм",
+      "frequency": 1
+    },
+    {
+      "word": "русинка",
+      "frequency": 32
+    },
+    {
+      "word": "с02е04",
+      "frequency": 1
+    },
+    {
+      "word": "гушкале",
+      "frequency": 3
+    },
+    {
+      "word": "radiohead",
+      "frequency": 21
+    },
+    {
+      "word": "обавезно",
+      "frequency": 47
+    },
+    {
+      "word": "сметал",
+      "frequency": 68
+    },
+    {
+      "word": "bounty",
+      "frequency": 2
+    },
+    {
+      "word": "вилушкава",
+      "frequency": 3
+    },
+    {
+      "word": "читате",
+      "frequency": 118
+    },
+    {
+      "word": "сими",
+      "frequency": 5
+    },
+    {
+      "word": "еврејско-христијански",
+      "frequency": 2
+    },
+    {
+      "word": "целодневна",
+      "frequency": 7
+    },
+    {
+      "word": "доградам",
+      "frequency": 1
+    },
+    {
+      "word": "сигуран",
+      "frequency": 9
+    },
+    {
+      "word": "задлабочила",
+      "frequency": 1
+    },
+    {
+      "word": "океанското",
+      "frequency": 3
+    },
+    {
+      "word": "позитивецот",
+      "frequency": 1
+    },
+    {
+      "word": "вупс",
+      "frequency": 2
+    },
+    {
+      "word": "незафатен",
+      "frequency": 1
+    },
+    {
+      "word": "печиво",
+      "frequency": 4
+    },
+    {
+      "word": "погине",
+      "frequency": 9
+    },
+    {
+      "word": "наоружаме",
+      "frequency": 5
+    },
+    {
+      "word": "фисија",
+      "frequency": 2
+    },
+    {
+      "word": "пара-ден",
+      "frequency": 10
+    },
+    {
+      "word": "џентламенот",
+      "frequency": 1
+    },
+    {
+      "word": "англичанец",
+      "frequency": 87
+    },
+    {
+      "word": "бељаџиите",
+      "frequency": 2
+    },
+    {
+      "word": "дедомраз",
+      "frequency": 1
+    },
+    {
+      "word": "едно-месечно",
+      "frequency": 1
+    },
+    {
+      "word": "грчкара",
+      "frequency": 1
+    },
+    {
+      "word": "реваншот",
+      "frequency": 3
+    },
+    {
+      "word": "концентрирате",
+      "frequency": 18
+    },
+    {
+      "word": "поретките",
+      "frequency": 1
+    },
+    {
+      "word": "понесигурен",
+      "frequency": 2
+    },
+    {
+      "word": "distributed",
+      "frequency": 11
+    },
+    {
+      "word": "преиспитувајте",
+      "frequency": 2
+    },
+    {
+      "word": "допакувам",
+      "frequency": 1
+    },
+    {
+      "word": "гасната",
+      "frequency": 8
+    },
+    {
+      "word": "5цц",
+      "frequency": 1
+    },
+    {
+      "word": "ориентација",
+      "frequency": 45
+    },
+    {
+      "word": "трезвеничиш",
+      "frequency": 1
+    },
+    {
+      "word": "пропаѓавме",
+      "frequency": 1
+    },
+    {
+      "word": "еколошките",
+      "frequency": 1
+    },
+    {
+      "word": "ембрионале",
+      "frequency": 1
+    },
+    {
+      "word": "савијано",
+      "frequency": 20
+    },
+    {
+      "word": "педрче",
+      "frequency": 1
+    },
+    {
+      "word": "врвт",
+      "frequency": 1
+    },
+    {
+      "word": "напијам",
+      "frequency": 214
+    },
+    {
+      "word": "идаш",
+      "frequency": 1
+    },
+    {
+      "word": "одгајат",
+      "frequency": 1
+    },
+    {
+      "word": "os",
+      "frequency": 10
+    },
+    {
+      "word": "средено.-ќе",
+      "frequency": 1
+    },
+    {
+      "word": "допаѓа.продолжи",
+      "frequency": 1
+    },
+    {
+      "word": "грyпирајтe",
+      "frequency": 1
+    },
+    {
+      "word": "шарите",
+      "frequency": 5
+    },
+    {
+      "word": "бебе.треба",
+      "frequency": 1
+    },
+    {
+      "word": "скалп",
+      "frequency": 4
+    },
+    {
+      "word": "џејк.разбуди",
+      "frequency": 1
+    },
+    {
+      "word": "екстракти",
+      "frequency": 2
+    },
+    {
+      "word": "одронување",
+      "frequency": 1
+    },
+    {
+      "word": "80-десетите",
+      "frequency": 1
+    },
+    {
+      "word": "мондријан",
+      "frequency": 1
+    },
+    {
+      "word": "никаде.кога",
+      "frequency": 1
+    },
+    {
+      "word": "ослобудувам",
+      "frequency": 1
+    },
+    {
+      "word": "црнчуга-момчиња",
+      "frequency": 2
+    },
+    {
+      "word": "пајнвуд",
+      "frequency": 1
+    },
+    {
+      "word": "цнг",
+      "frequency": 2
+    },
+    {
+      "word": "зимај",
+      "frequency": 14
+    },
+    {
+      "word": "доживувал",
+      "frequency": 2
+    },
+    {
+      "word": "пеколнава",
+      "frequency": 1
+    },
+    {
+      "word": "павија",
+      "frequency": 2
+    },
+    {
+      "word": "закал",
+      "frequency": 1
+    },
+    {
+      "word": "тегарт",
+      "frequency": 1
+    },
+    {
+      "word": "емитирањето",
+      "frequency": 1
+    },
+    {
+      "word": "бартхе",
+      "frequency": 1
+    },
+    {
+      "word": "латино",
+      "frequency": 75
+    },
+    {
+      "word": "довредојдовте",
+      "frequency": 1
+    },
+    {
+      "word": "рафалот",
+      "frequency": 1
+    },
+    {
+      "word": "rорд",
+      "frequency": 4
+    },
+    {
+      "word": "ругање",
+      "frequency": 1
+    },
+    {
+      "word": "избалансира",
+      "frequency": 3
+    },
+    {
+      "word": "мелеската",
+      "frequency": 1
+    },
+    {
+      "word": "деланчето",
+      "frequency": 2
+    },
+    {
+      "word": "мамо.една",
+      "frequency": 1
+    },
+    {
+      "word": "раширивме",
+      "frequency": 2
+    },
+    {
+      "word": "сабинија",
+      "frequency": 1
+    },
+    {
+      "word": "какое",
+      "frequency": 2
+    },
+    {
+      "word": "сакав.само",
+      "frequency": 1
+    },
+    {
+      "word": "злосторство",
+      "frequency": 280
+    },
+    {
+      "word": "теглото",
+      "frequency": 1
+    },
+    {
+      "word": "запоставено",
+      "frequency": 4
+    },
+    {
+      "word": "вајлет",
+      "frequency": 14
+    },
+    {
+      "word": "навредиш.-што",
+      "frequency": 2
+    },
+    {
+      "word": "шикаша",
+      "frequency": 1
+    },
+    {
+      "word": "сенаторската",
+      "frequency": 1
+    },
+    {
+      "word": "хаппенед",
+      "frequency": 1
+    },
+    {
+      "word": "зајаковата",
+      "frequency": 2
+    },
+    {
+      "word": "мајсторијата",
+      "frequency": 1
+    },
+    {
+      "word": "пpeдпoставувам",
+      "frequency": 1
+    },
+    {
+      "word": "поповолно",
+      "frequency": 1
+    },
+    {
+      "word": "истражува",
+      "frequency": 147
+    },
+    {
+      "word": "вресоци",
+      "frequency": 13
+    },
+    {
+      "word": "бакнувано",
+      "frequency": 2
+    },
+    {
+      "word": "додавал",
+      "frequency": 3
+    },
+    {
+      "word": "4000-ди",
+      "frequency": 1
+    },
+    {
+      "word": "припремала",
+      "frequency": 2
+    },
+    {
+      "word": "судиското",
+      "frequency": 2
+    },
+    {
+      "word": "искори",
+      "frequency": 1
+    },
+    {
+      "word": "тиквава",
+      "frequency": 1
+    },
+    {
+      "word": "впечаток.знам",
+      "frequency": 1
+    },
+    {
+      "word": "проџектс",
+      "frequency": 1
+    },
+    {
+      "word": "метаамфетамини",
+      "frequency": 1
+    },
+    {
+      "word": "маршал.ако",
+      "frequency": 1
+    },
+    {
+      "word": "попуштеа",
+      "frequency": 1
+    },
+    {
+      "word": "ранчерос",
+      "frequency": 1
+    },
+    {
+      "word": "светло.нашите",
+      "frequency": 1
+    },
+    {
+      "word": "ноелитите",
+      "frequency": 1
+    },
+    {
+      "word": "крижи-мижи",
+      "frequency": 1
+    },
+    {
+      "word": "вудуто",
+      "frequency": 2
+    },
+    {
+      "word": "либиската",
+      "frequency": 2
+    },
+    {
+      "word": "имато",
+      "frequency": 2
+    },
+    {
+      "word": "распалил",
+      "frequency": 2
+    },
+    {
+      "word": "ноб",
+      "frequency": 8
+    },
+    {
+      "word": "еврипид",
+      "frequency": 3
+    },
+    {
+      "word": "1987-ма",
+      "frequency": 2
+    },
+    {
+      "word": "ирфански",
+      "frequency": 8
+    },
+    {
+      "word": "камилке",
+      "frequency": 1
+    },
+    {
+      "word": "дадевте",
+      "frequency": 4
+    },
+    {
+      "word": "прецедател",
+      "frequency": 4
+    },
+    {
+      "word": "останеп",
+      "frequency": 3
+    },
+    {
+      "word": "скабетиос",
+      "frequency": 1
+    },
+    {
+      "word": "неп",
+      "frequency": 2
+    },
+    {
+      "word": "загаткарот",
+      "frequency": 1
+    },
+    {
+      "word": "касаите",
+      "frequency": 1
+    },
+    {
+      "word": "иеправено",
+      "frequency": 1
+    },
+    {
+      "word": "dee",
+      "frequency": 2
+    },
+    {
+      "word": "звончиња",
+      "frequency": 11
+    },
+    {
+      "word": "слаткарата",
+      "frequency": 3
+    },
+    {
+      "word": "морковиве",
+      "frequency": 2
+    },
+    {
+      "word": "идинината",
+      "frequency": 3
+    },
+    {
+      "word": "ќекам",
+      "frequency": 1
+    },
+    {
+      "word": "победеме",
+      "frequency": 4
+    },
+    {
+      "word": "техологија",
+      "frequency": 2
+    },
+    {
+      "word": "правиот",
+      "frequency": 187
+    },
+    {
+      "word": "освојила",
+      "frequency": 1
+    },
+    {
+      "word": "попречите",
+      "frequency": 7
+    },
+    {
+      "word": "ропските",
+      "frequency": 2
+    },
+    {
+      "word": "мировен",
+      "frequency": 39
+    },
+    {
+      "word": "доживотни",
+      "frequency": 30
+    },
+    {
+      "word": "устреми",
+      "frequency": 1
+    },
+    {
+      "word": "сублимиран",
+      "frequency": 2
+    },
+    {
+      "word": "прогресивен",
+      "frequency": 7
+    },
+    {
+      "word": "малтретураше",
+      "frequency": 1
+    },
+    {
+      "word": "фрлеше",
+      "frequency": 11
+    },
+    {
+      "word": "шета",
+      "frequency": 222
+    },
+    {
+      "word": "vraziji",
+      "frequency": 1
+    },
+    {
+      "word": "фд113",
+      "frequency": 2
+    },
+    {
+      "word": "ребутирање",
+      "frequency": 1
+    },
+    {
+      "word": "кинкед",
+      "frequency": 1
+    },
+    {
+      "word": "споспобна",
+      "frequency": 1
+    },
+    {
+      "word": "ант-ман",
+      "frequency": 1
+    },
+    {
+      "word": "појче",
+      "frequency": 4
+    },
+    {
+      "word": "оствариш",
+      "frequency": 32
+    },
+    {
+      "word": "засјаат",
+      "frequency": 2
+    },
+    {
+      "word": "девоjчето",
+      "frequency": 1
+    },
+    {
+      "word": "книшки",
+      "frequency": 9
+    },
+    {
+      "word": "електрично",
+      "frequency": 22
+    },
+    {
+      "word": "поцинично",
+      "frequency": 1
+    },
+    {
+      "word": "народoт",
+      "frequency": 1
+    },
+    {
+      "word": "разочарувам",
+      "frequency": 18
+    },
+    {
+      "word": "пристгна",
+      "frequency": 1
+    },
+    {
+      "word": "шпанец",
+      "frequency": 30
+    },
+    {
+      "word": "релаксираме",
+      "frequency": 5
+    },
+    {
+      "word": "велеле",
+      "frequency": 6
+    },
+    {
+      "word": "зготвеше",
+      "frequency": 1
+    },
+    {
+      "word": "профитирала",
+      "frequency": 2
+    },
+    {
+      "word": "прогласуваме",
+      "frequency": 15
+    },
+    {
+      "word": "сурогатските",
+      "frequency": 2
+    },
+    {
+      "word": "показалец",
+      "frequency": 8
+    },
+    {
+      "word": "ванилен",
+      "frequency": 1
+    },
+    {
+      "word": "иселените",
+      "frequency": 1
+    },
+    {
+      "word": "иператорите",
+      "frequency": 1
+    },
+    {
+      "word": "опседнувања",
+      "frequency": 3
+    },
+    {
+      "word": "овластенија",
+      "frequency": 1
+    },
+    {
+      "word": "апри",
+      "frequency": 1
+    },
+    {
+      "word": "турлингтон",
+      "frequency": 1
+    },
+    {
+      "word": "напоменете",
+      "frequency": 1
+    },
+    {
+      "word": "озна",
+      "frequency": 2
+    },
+    {
+      "word": "елизабетвил",
+      "frequency": 1
+    },
+    {
+      "word": "sидар",
+      "frequency": 1
+    },
+    {
+      "word": "смејачка",
+      "frequency": 2
+    },
+    {
+      "word": "срамува",
+      "frequency": 1
+    },
+    {
+      "word": "преговарач",
+      "frequency": 25
+    },
+    {
+      "word": "крстич",
+      "frequency": 11
+    },
+    {
+      "word": "оддржете",
+      "frequency": 3
+    },
+    {
+      "word": "оздравува",
+      "frequency": 3
+    },
+    {
+      "word": "притисоков",
+      "frequency": 2
+    },
+    {
+      "word": "саундерс",
+      "frequency": 16
+    },
+    {
+      "word": "клетвите",
+      "frequency": 5
+    },
+    {
+      "word": "благословувам",
+      "frequency": 2
+    },
+    {
+      "word": "неписмена",
+      "frequency": 4
+    },
+    {
+      "word": "фаер",
+      "frequency": 1
+    },
+    {
+      "word": "селмо",
+      "frequency": 18
+    },
+    {
+      "word": "штитела",
+      "frequency": 5
+    },
+    {
+      "word": "лондон",
+      "frequency": 1214
+    },
+    {
+      "word": "проплакало",
+      "frequency": 1
+    },
+    {
+      "word": "напреднеш",
+      "frequency": 1
+    },
+    {
+      "word": "преширок",
+      "frequency": 1
+    },
+    {
+      "word": "пренапунетост",
+      "frequency": 1
+    },
+    {
+      "word": "сиракјуз",
+      "frequency": 2
+    },
+    {
+      "word": "прашуваа",
+      "frequency": 63
+    },
+    {
+      "word": "решeнието",
+      "frequency": 2
+    },
+    {
+      "word": "најyбавиот",
+      "frequency": 2
+    },
+    {
+      "word": "кабрал",
+      "frequency": 2
+    },
+    {
+      "word": "потъркалят",
+      "frequency": 1
+    },
+    {
+      "word": "изменат",
+      "frequency": 19
+    },
+    {
+      "word": "уништувавме",
+      "frequency": 2
+    },
+    {
+      "word": "сајбертроникс",
+      "frequency": 2
+    },
+    {
+      "word": "состанувавте",
+      "frequency": 1
+    },
+    {
+      "word": "исмеаната",
+      "frequency": 3
+    },
+    {
+      "word": "гренсом",
+      "frequency": 1
+    },
+    {
+      "word": "проклетниците",
+      "frequency": 9
+    },
+    {
+      "word": "зачувaj",
+      "frequency": 1
+    },
+    {
+      "word": "дилија",
+      "frequency": 3
+    },
+    {
+      "word": "негирањето",
+      "frequency": 6
+    },
+    {
+      "word": "марида",
+      "frequency": 2
+    },
+    {
+      "word": "г.спок.",
+      "frequency": 6
+    },
+    {
+      "word": "прикажам",
+      "frequency": 19
+    },
+    {
+      "word": "минување",
+      "frequency": 26
+    },
+    {
+      "word": "знел",
+      "frequency": 5
+    },
+    {
+      "word": "аморална",
+      "frequency": 2
+    },
+    {
+      "word": "сирловиот",
+      "frequency": 1
+    },
+    {
+      "word": "крим-досието",
+      "frequency": 1
+    },
+    {
+      "word": "отпутштен",
+      "frequency": 2
+    },
+    {
+      "word": "измиее",
+      "frequency": 1
+    },
+    {
+      "word": "соино",
+      "frequency": 8
+    },
+    {
+      "word": "индивуалците",
+      "frequency": 1
+    },
+    {
+      "word": "неа.ова",
+      "frequency": 2
+    },
+    {
+      "word": "предупредувачкото",
+      "frequency": 1
+    },
+    {
+      "word": "кожувот",
+      "frequency": 2
+    },
+    {
+      "word": "upchuck",
+      "frequency": 1
+    },
+    {
+      "word": "ќеркo",
+      "frequency": 1
+    },
+    {
+      "word": "душни",
+      "frequency": 1
+    },
+    {
+      "word": "carrillovi",
+      "frequency": 1
+    },
+    {
+      "word": "рубли",
+      "frequency": 16
+    },
+    {
+      "word": "раскрвавеше",
+      "frequency": 1
+    },
+    {
+      "word": "напаѓај",
+      "frequency": 47
+    },
+    {
+      "word": "рискирате",
+      "frequency": 1
+    },
+    {
+      "word": "tревата",
+      "frequency": 1
+    },
+    {
+      "word": "стисав",
+      "frequency": 1
+    },
+    {
+      "word": "сам-самичок",
+      "frequency": 2
+    },
+    {
+      "word": "милоста",
+      "frequency": 86
+    },
+    {
+      "word": "обезбедија",
+      "frequency": 13
+    },
+    {
+      "word": "изразувајќи",
+      "frequency": 3
+    },
+    {
+      "word": "поигурно",
+      "frequency": 1
+    },
+    {
+      "word": "одпоздра",
+      "frequency": 1
+    },
+    {
+      "word": "кира",
+      "frequency": 115
+    },
+    {
+      "word": "ублаживме",
+      "frequency": 2
+    },
+    {
+      "word": "се.започнав",
+      "frequency": 1
+    },
+    {
+      "word": "подготвував",
+      "frequency": 47
+    },
+    {
+      "word": "приближувал",
+      "frequency": 4
+    },
+    {
+      "word": "erase",
+      "frequency": 1
+    },
+    {
+      "word": "уништувањмето",
+      "frequency": 1
+    },
+    {
+      "word": "сзкзт",
+      "frequency": 1
+    },
+    {
+      "word": "преговорот",
+      "frequency": 2
+    },
+    {
+      "word": "стиснеше",
+      "frequency": 4
+    },
+    {
+      "word": "карл.филипе",
+      "frequency": 1
+    },
+    {
+      "word": "дартањан",
+      "frequency": 1
+    },
+    {
+      "word": "мбање",
+      "frequency": 1
+    },
+    {
+      "word": "транзит",
+      "frequency": 13
+    },
+    {
+      "word": "младича",
+      "frequency": 1
+    },
+    {
+      "word": "културава",
+      "frequency": 1
+    },
+    {
+      "word": "заповедете",
+      "frequency": 1
+    },
+    {
+      "word": "животни.посебно",
+      "frequency": 1
+    },
+    {
+      "word": "хаделзбург",
+      "frequency": 1
+    },
+    {
+      "word": "дефкон",
+      "frequency": 10
+    },
+    {
+      "word": "бермудски",
+      "frequency": 5
+    },
+    {
+      "word": "пакостниот",
+      "frequency": 1
+    },
+    {
+      "word": "вхф",
+      "frequency": 1
+    },
+    {
+      "word": "вознемира",
+      "frequency": 1
+    },
+    {
+      "word": "прехрамбени",
+      "frequency": 2
+    },
+    {
+      "word": "истовариме.",
+      "frequency": 1
+    },
+    {
+      "word": "понтифицирање",
+      "frequency": 1
+    },
+    {
+      "word": "горе-долу",
+      "frequency": 53
+    },
+    {
+      "word": "помаку",
+      "frequency": 1
+    },
+    {
+      "word": "харам",
+      "frequency": 14
+    },
+    {
+      "word": "аналитичката",
+      "frequency": 2
+    },
+    {
+      "word": "тимокселин",
+      "frequency": 2
+    },
+    {
+      "word": "еспоненцијален",
+      "frequency": 1
+    },
+    {
+      "word": "враќала",
+      "frequency": 9
+    },
+    {
+      "word": "чакалс",
+      "frequency": 1
+    },
+    {
+      "word": "фукаро",
+      "frequency": 1
+    },
+    {
+      "word": "проблемот",
+      "frequency": 3120
+    },
+    {
+      "word": "тoрпeдo",
+      "frequency": 1
+    },
+    {
+      "word": "фалнгата",
+      "frequency": 1
+    },
+    {
+      "word": "порадоци",
+      "frequency": 1
+    },
+    {
+      "word": "торпедото",
+      "frequency": 30
+    },
+    {
+      "word": "едновремено",
+      "frequency": 4
+    },
+    {
+      "word": "инвазивно",
+      "frequency": 1
+    },
+    {
+      "word": "исиот",
+      "frequency": 1
+    },
+    {
+      "word": "свртевете",
+      "frequency": 1
+    },
+    {
+      "word": "малинки",
+      "frequency": 1
+    },
+    {
+      "word": "болничарка",
+      "frequency": 32
+    },
+    {
+      "word": "злобнику",
+      "frequency": 3
+    },
+    {
+      "word": "тројанска",
+      "frequency": 2
+    },
+    {
+      "word": "гаражаи",
+      "frequency": 1
+    },
+    {
+      "word": "подразбираше",
+      "frequency": 7
+    },
+    {
+      "word": "непоштени",
+      "frequency": 2
+    },
+    {
+      "word": "murphy",
+      "frequency": 1
+    },
+    {
+      "word": "атонската",
+      "frequency": 1
+    },
+    {
+      "word": "христово",
+      "frequency": 8
+    },
+    {
+      "word": "полиса",
+      "frequency": 74
+    },
+    {
+      "word": "чеиз.-можеби",
+      "frequency": 2
+    },
+    {
+      "word": "кажаја",
+      "frequency": 5
+    },
+    {
+      "word": "блааагодараааам",
+      "frequency": 2
+    },
+    {
+      "word": "криптонката",
+      "frequency": 1
+    },
+    {
+      "word": "андреј",
+      "frequency": 195
+    },
+    {
+      "word": "сакањата",
+      "frequency": 1
+    },
+    {
+      "word": "трошно",
+      "frequency": 1
+    },
+    {
+      "word": "елам",
+      "frequency": 13
+    },
+    {
+      "word": "дискџокеите",
+      "frequency": 3
+    },
+    {
+      "word": "конечни",
+      "frequency": 9
+    },
+    {
+      "word": "знам.зашто",
+      "frequency": 1
+    },
+    {
+      "word": "даз",
+      "frequency": 8
+    },
+    {
+      "word": "наликувам",
+      "frequency": 5
+    },
+    {
+      "word": "втојата",
+      "frequency": 1
+    },
+    {
+      "word": "слизнав",
+      "frequency": 2
+    },
+    {
+      "word": "ариски",
+      "frequency": 1
+    },
+    {
+      "word": "cqd",
+      "frequency": 2
+    },
+    {
+      "word": "влкучете",
+      "frequency": 1
+    },
+    {
+      "word": "неодречлива",
+      "frequency": 1
+    },
+    {
+      "word": "подпалиме",
+      "frequency": 1
+    },
+    {
+      "word": "шиндеровата",
+      "frequency": 2
+    },
+    {
+      "word": "пљачкосувач",
+      "frequency": 1
+    },
+    {
+      "word": "рстестyрманден",
+      "frequency": 1
+    },
+    {
+      "word": "дот-ком",
+      "frequency": 6
+    },
+    {
+      "word": "додела",
+      "frequency": 1
+    },
+    {
+      "word": "gnarls",
+      "frequency": 4
+    },
+    {
+      "word": "стпоија",
+      "frequency": 1
+    },
+    {
+      "word": "куинси",
+      "frequency": 1
+    },
+    {
+      "word": "членската",
+      "frequency": 6
+    },
+    {
+      "word": "рефлектори",
+      "frequency": 20
+    },
+    {
+      "word": "порт-о-пренс",
+      "frequency": 2
+    },
+    {
+      "word": "woodridge",
+      "frequency": 1
+    },
+    {
+      "word": "тоис",
+      "frequency": 1
+    },
+    {
+      "word": "елипси",
+      "frequency": 1
+    },
+    {
+      "word": "џоната",
+      "frequency": 2
+    },
+    {
+      "word": "поентата",
+      "frequency": 1269
+    },
+    {
+      "word": "нагласен",
+      "frequency": 2
+    },
+    {
+      "word": "можаат",
+      "frequency": 2
+    },
+    {
+      "word": "годата",
+      "frequency": 1
+    },
+    {
+      "word": "јадливи",
+      "frequency": 1
+    },
+    {
+      "word": "heгo",
+      "frequency": 1
+    },
+    {
+      "word": "нешт",
+      "frequency": 6
+    },
+    {
+      "word": "сопранои",
+      "frequency": 1
+    },
+    {
+      "word": "траутнам",
+      "frequency": 1
+    },
+    {
+      "word": "снежанке",
+      "frequency": 1
+    },
+    {
+      "word": "прераспределувала",
+      "frequency": 1
+    },
+    {
+      "word": "хедери",
+      "frequency": 1
+    },
+    {
+      "word": "мислам.размисли",
+      "frequency": 1
+    },
+    {
+      "word": "тимoви",
+      "frequency": 1
+    },
+    {
+      "word": "офкај.не",
+      "frequency": 1
+    },
+    {
+      "word": "страхуваше",
+      "frequency": 1
+    },
+    {
+      "word": "радикалниот",
+      "frequency": 1
+    },
+    {
+      "word": "слушните",
+      "frequency": 4
+    },
+    {
+      "word": "серод",
+      "frequency": 2
+    },
+    {
+      "word": "реформирање",
+      "frequency": 1
+    },
+    {
+      "word": "макјк",
+      "frequency": 1
+    },
+    {
+      "word": "сторико",
+      "frequency": 2
+    },
+    {
+      "word": "дарквулв",
+      "frequency": 1
+    },
+    {
+      "word": "марџи",
+      "frequency": 41
+    },
+    {
+      "word": "наддаваат",
+      "frequency": 2
+    },
+    {
+      "word": "разнообразност",
+      "frequency": 1
+    },
+    {
+      "word": "конзулите",
+      "frequency": 1
+    },
+    {
+      "word": "моцарелата",
+      "frequency": 1
+    }
+  ]
+}
